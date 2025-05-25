@@ -44,7 +44,7 @@
 
     function searchYouTube() {
       const query = document.getElementById('searchQuery').value;
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(query)}&key=${apiKey}`;
+      const url = `https://www.googleapis.com./youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(query)}&key=${apiKey}`;
 
       fetch(url)
         .then(response => response.json())
@@ -57,7 +57,7 @@
             const button = document.createElement('button');
             button.textContent = title;
             button.onclick = () => {
-              document.getElementById('youtubePlayer').src = `https://www.youtube.com./embed/${videoId}?autoplay=1`;
+              document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
             };
             results.appendChild(button);
           });
