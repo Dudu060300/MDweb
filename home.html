@@ -40,33 +40,12 @@
     allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
   <script>
-    const apiKey = 'AIzaSyAAnK9-ITu_GRhwrBTM-FX0ZBmwdzIy90U';
-
     function searchYouTube() {
-      const query = document.getElementById('searchQuery').value;
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(query)}&key=${apiKey}`;
+    const query = document.getElementById("youtubeQuery").value;
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+    window.open(url, "_blank"); // apre in nuova scheda
+  }
 
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          const results = document.getElementById('results');
-          results.innerHTML = '';
-          data.items.forEach(item => {
-            const videoId = item.id.videoId;
-            const title = item.snippet.title;
-            const button = document.createElement('button');
-            button.textContent = title;
-            button.onclick = () => {
-              document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-            };
-            results.appendChild(button);
-          });
-        })
-        .catch(error => {
-          alert("Errore nella ricerca. Verifica la chiave API o connessione.");
-          console.error(error);
-        });
-    }
     </script>
     
     <!-- SCRIPT -->
