@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Home</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/styleHome.css">
+<link rel="stylesheet" href="assets/css.css">
+
+
+  </head>
+  <body>
+<div id="overlay" class="hidden"></div>
+    <!-- NAV BAR -->
+    <nav>
+      <h1>MDweb</h1>
+      <div class="user-menu" id="userMenu" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Menu utente">
+        <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
+        <span class="arrow" aria-hidden="true">&#9662;</span>
+        <div class="dropdown" id="dropdownMenu" role="menu" aria-label="Menu opzioni utente">
+          <span class="dropdown-item username-display" id="userName">Utente</span>
+          <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
+          <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
+          <a href="" id="logout" role="menuitem" tabindex="-1">Logout</a>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9VYKQ8W52L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-9VYKQ8W52L');
+</script>
+    <div class="top-container">
+        <form action="/convert-mp3" method = "POST" id="form">
+            <p>by   <a href="https://www.linkedin.com/in/sarthak-s-b622b022a/">sarthakvs</p></a>
+            <h1><i class="fa-brands fa-youtube"></i>Youtube to MP3 Magic</h1>
+            <h4>Enter Video url</h4>
+            <div>
+                <input type="text" name="url" placeholder="Video goes here"><button type="submit" id="convert-btn">Download!</button>
+            </div>
+            <div>
+                <p><b> Please wait for 20-30 seconds after clicking the download button</b> </p>
+            </div>
+        </form>
+    </div>
+
+    
+    <!-- SCRIPT -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="assets/tema.js"></script>
+    <script src="assets/scriptHome.js"></script>
+
+    
+  </body>
+</html>
