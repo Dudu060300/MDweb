@@ -97,3 +97,54 @@ editProfileBtn.addEventListener('click', (e) => {
   }
   window.location.href = 'profilo.html';
 });
+
+
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const urlInput = e.target.querySelector('input[name="url"]');
+  const videoUrl = urlInput.value.trim();
+  if (!videoUrl) {
+    alert('Inserisci un URL valido!');
+    return;
+  }
+
+  // Disabilita il bottone per evitare più click
+  const btn = document.getElementById('convert-btn');
+  btn.disabled = true;
+  btn.textContent = 'Converting...';
+
+  try {
+    // Fai la POST con fetch, aspettando il file mp3 come blob
+    const response = await fetch('/convert-mp3', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ url: videoUrl })
+    });
+
+    if (!response.ok) {
+      throw new Error('Errore nella conversione');
+    }
+
+    const blob = await response.blob();
+
+    // Crea un link temporaneo per scaricare il file
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+
+    // Imposta nome file (puoi cambiarlo se vuoi dinamico)
+    a.download = 'video-converted.mp3';
+    document.body.appendChild(a);
+    a.click();
+
+    // Pulizia
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Download!';
+  }
+});
