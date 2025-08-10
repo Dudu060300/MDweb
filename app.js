@@ -16,6 +16,34 @@ app.get('/', (req, res) => {
     res.render("index");
 });
 
+document.getElementById('form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const url = e.target.url.value;
+
+  try {
+    const response = await fetch('/convert-mp3', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) throw new Error('Download fallito');
+
+    const blob = await response.blob();
+    const fileURL = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = fileURL;
+    a.download = 'audio.mp3'; // qui potresti mettere titolo dinamico se vuoi
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(fileURL);
+
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
 // Polling utility
 const pollForDownloadUrl = async (progressId, apiKey, maxAttempts = 10, delay = 8000) => {
     const progressUrl = `https://youtube-mp4-mp3-downloader.p.rapidapi.com/api/v1/progress?id=${progressId}`;
