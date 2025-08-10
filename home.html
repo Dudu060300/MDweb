@@ -28,48 +28,6 @@
       </div>
     </nav>
 
-    <!-- CORPO PAGINA -->
-    <h1>🎵 Cerca Canzoni da YouTube</h1>
-
-  <input type="text" id="searchQuery" placeholder="Es: Coldplay - Viva la Vida" size="50">
-  <button onclick="searchYouTube()">Cerca</button>
-
-  <div id="results"></div>
-
-  <iframe id="youtubePlayer" frameborder="0"
-    allow="autoplay; encrypted-media" allowfullscreen></iframe>
-
-  <script>
-    const apiKey = 'AIzaSyAAnK9-ITu_GRhwrBTM-FX0ZBmwdzIy90U';
-
-    function searchYouTube() {
-      const query = document.getElementById('searchQuery').value;
-      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=5&q=${encodeURIComponent(query)}&key=${apiKey}`;
-
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          const results = document.getElementById('results');
-          results.innerHTML = '';
-          data.items.forEach(item => {
-            const videoId = item.id.videoId;
-            const title = item.snippet.title;
-            const button = document.createElement('button');
-            button.textContent = title;
-            button.onclick = () => {
-              document.getElementById('youtubePlayer').src = `https://www.youtube.ttools.io/embed/${videoId}?autoplay=1`;
-            };
-            results.appendChild(button);
-          });
-        })
-        .catch(error => {
-          alert("Errore nella ricerca. Verifica la chiave API o connessione.");
-          console.error(error);
-        });
-    }
-
-
-    </script>
     
     <!-- SCRIPT -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
