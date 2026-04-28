@@ -1,46 +1,15 @@
 :root {
-  --bg-color: #ffffff;
-  --text-color: #000000;
-  --nav-bg: #000000;
-  --nav-text: #ffffff;
-  --accent-color: #00f7ff;
-  --transition-speed: 0.3s;
-}
-
-body.dark {
-  --bg-color: #000000;
-  --text-color: #ffffff;
-  --nav-bg: #ffffff;
-  --nav-text: #000000;
-}
-
-* {
-  box-sizing: border-box;
+  --bg: #ffffff;
+  --text: #000000;
+  --accent: #00f7ff;
 }
 
 body {
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: var(--bg-color);
-  color: var(--text-color);
-}
-
-/* ================= NAV ================= */
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: var(--nav-bg);
-  color: var(--nav-text);
-  padding: 0 20px;
-  height: 60px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-nav h1 {
-  font-size: 1.5rem;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
 }
 
 /* ================= CANVAS ================= */
@@ -48,9 +17,8 @@ canvas {
   display: block;
   margin: 20px auto;
   background: #555;
-  border: 3px solid white;
-  border-radius: 10px;
-  max-width: 90%;
+  border: 3px solid #fff;
+  border-radius: 12px;
   position: relative;
   z-index: 1;
 }
@@ -73,21 +41,22 @@ canvas {
   pointer-events: auto;
 }
 
-/* ================= VOLANTE ================= */
+/* ================= VOLANTE 900° ================= */
 .steering-wheel {
-  width: 95px;
-  height: 95px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: radial-gradient(circle at 30% 30%, #444, #111);
   color: white;
-  font-size: 42px;
+  font-size: 44px;
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
   touch-action: none;
-  border: 3px solid var(--accent-color);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  border: 3px solid var(--accent);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  transition: transform 0.05s linear;
 }
 
 /* ================= PEDALI ================= */
@@ -101,7 +70,7 @@ canvas {
 .gas {
   background: linear-gradient(145deg, #00c853, #007e33);
   color: white;
-  padding: 16px 20px;
+  padding: 18px 22px;
   border: none;
   border-radius: 12px;
   font-weight: bold;
@@ -117,7 +86,7 @@ canvas {
 .brake {
   background: linear-gradient(145deg, #ff1744, #b00020);
   color: white;
-  padding: 16px 20px;
+  padding: 18px 22px;
   border: none;
   border-radius: 12px;
   font-weight: bold;
@@ -141,28 +110,4 @@ canvas {
     padding: 14px 16px;
     font-size: 14px;
   }
-}
-
-/* ================= DROPDOWN MENU (tuo sito) ================= */
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 50px;
-  background: #333;
-  border-radius: 8px;
-  display: none;
-  flex-direction: column;
-  min-width: 180px;
-  z-index: 20;
-}
-
-.dropdown a {
-  color: white;
-  padding: 12px;
-  text-decoration: none;
-}
-
-.dropdown a:hover {
-  background: var(--accent-color);
-  color: black;
 }
