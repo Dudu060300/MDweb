@@ -12,7 +12,7 @@
 
 <body>
 
-<!-- ================= NAV ================= -->
+<!-- ================= NAVBAR ================= -->
 <nav>
   <h1>MDweb</h1>
 
@@ -32,10 +32,10 @@
 <!-- ================= GAME ================= -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ================= CONTROLS ================= -->
+<!-- ================= CONTROLLI ================= -->
 <div class="controls">
 
-  <!-- 🛞 VOLANTE CIRCOLARE -->
+  <!-- 🛞 VOLANTE -->
   <div class="steering-wheel" id="wheel">
     <img src="assets/Steering-Wheel.png" draggable="false">
   </div>
@@ -48,19 +48,13 @@
 
 </div>
 
-<!-- ================= FIREBASE ================= -->
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-
-<script src="assets/scriptHome.js"></script>
-
-<!-- ================= GAME LOGIC ================= -->
+<!-- ================= GAME SCRIPT ================= -->
 <script>
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// 🚗 CAR
+// 🚗 AUTO
 let car = {
   x: 200,
   y: 500,
@@ -70,7 +64,7 @@ let car = {
   speed: 0
 };
 
-// 🅿️ PARKING
+// 🅿️ PARCHEGGIO
 let parking = {
   x: 160,
   y: 50,
@@ -84,9 +78,9 @@ let brakePressed = false;
 
 let steeringAngle = 0;
 let steeringInput = 0;
-let gameOverFlag = false;
+let gameOver = false;
 
-// 🖼️ CAR IMAGE
+// 🖼️ AUTO IMG
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
@@ -120,6 +114,7 @@ function setupControls() {
   });
 
   wheel.addEventListener("pointermove", (e) => {
+
     if (!dragging) return;
 
     let currentAngle = getAngle(e);
@@ -129,7 +124,14 @@ function setupControls() {
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    steeringAngle += delta * 2.5;
+    // 🔥 controllo preciso (NO scatti)
+    let maxSpeed = 5;
+    let target = steeringAngle + delta * 2;
+
+    let diff = target - steeringAngle;
+    diff = Math.max(-maxSpeed, Math.min(maxSpeed, diff));
+
+    steeringAngle += diff;
 
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
 
@@ -155,10 +157,13 @@ function setupControls() {
 // ================= UPDATE =================
 function update() {
 
-  if (gameOverFlag) return;
+  if (gameOver) return;
 
   if (gasPressed) car.speed += 0.18;
   if (brakePressed) car.speed -= 0.25;
+
+  // 🔥 rallenta quando sterzi
+  car.speed *= (1 - Math.abs(steeringInput) * 0.5);
 
   if (Math.abs(car.speed) > 0.1) {
     car.angle += steeringInput * 0.04;
@@ -169,19 +174,16 @@ function update() {
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
+  // collisione bordi
   if (
     car.x < 0 || car.x > canvas.width ||
     car.y < 0 || car.y > canvas.height
   ) {
-    gameOver();
+    alert("💥 HAI PERSO!");
+    reset();
   }
 
-  checkWin();
-}
-
-// ================= WIN =================
-function checkWin() {
-
+  // win
   let inside =
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
@@ -194,13 +196,6 @@ function checkWin() {
   }
 }
 
-// ================= GAME OVER =================
-function gameOver() {
-  gameOverFlag = true;
-  alert("💥 HAI PERSO!");
-  reset();
-}
-
 // ================= RESET =================
 function reset() {
   car.x = 200;
@@ -210,8 +205,6 @@ function reset() {
 
   steeringAngle = 0;
   steeringInput = 0;
-
-  gameOverFlag = false;
 }
 
 // ================= DRAW =================
