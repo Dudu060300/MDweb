@@ -44,165 +44,161 @@ const canvas = document.getElementById("gameCanvas");
 
 const ctx = canvas.getContext("2d");
 
-// 🚗 Macchina
+canvas.tabIndex = 1;
+
+canvas.focus();
+
+canvas.addEventListener("click", () => canvas.focus());
+
+// 🚗 macchina
 
 let car = {
 
-  x: 180,
+  x: 200,
 
   y: 500,
 
-  width: 40,
+  width: 30,
 
-  height: 70,
+  height: 50,
 
-  speed: 4
+  angle: 0,
 
-};
-
-// 🅿️ Parcheggio (obiettivo)
-
-let parking = {
-
-  x: 150,
-
-  y: 50,
-
-  width: 100,
-
-  height: 80
+  speed: 0
 
 };
-
-// 🚧 Ostacoli
-
-let obstacles = [
-
-  {x: 100, y: 300, width: 60, height: 30},
-
-  {x: 250, y: 200, width: 60, height: 30}
-
-];
-
-// 🎮 Controlli
 
 let keys = {};
 
-document.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keydown", (e) => keys[e.key] = true);
 
-document.addEventListener("keyup", e => keys[e.key] = false);
+window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// 🔄 Update
+// 🅿️ parcheggio
+
+let parking = {
+
+  x: 160,
+
+  y: 50,
+
+  width: 80,
+
+  height: 120
+
+};
 
 function update() {
 
-  if (keys["ArrowUp"]) car.y -= car.speed;
+  // accelerazione
 
-  if (keys["ArrowDown"]) car.y += car.speed;
+  if (keys["ArrowUp"]) {
 
-  if (keys["ArrowLeft"]) car.x -= car.speed;
-
-  if (keys["ArrowRight"]) car.x += car.speed;
-
-  // Collisioni con ostacoli
-
-  for (let obs of obstacles) {
-
-    if (
-
-      car.x < obs.x + obs.width &&
-
-      car.x + car.width > obs.x &&
-
-      car.y < obs.y + obs.height &&
-
-      car.y + car.height > obs.y
-
-    ) {
-
-      alert("💥 Hai colpito un ostacolo!");
-
-      resetGame();
-
-    }
+    car.speed += 0.2;
 
   }
 
-  // Vittoria
+  if (keys["ArrowDown"]) {
+
+    car.speed -= 0.2;
+
+  }
+
+  // sterzo
+
+  if (keys["ArrowLeft"]) {
+
+    car.angle -= 0.05;
+
+  }
+
+  if (keys["ArrowRight"]) {
+
+    car.angle += 0.05;
+
+  }
+
+  // attrito
+
+  car.speed *= 0.98;
+
+  // movimento realistico
+
+  car.x += Math.sin(car.angle) * car.speed;
+
+  car.y -= Math.cos(car.angle) * car.speed;
+
+  // collisione parcheggio
 
   if (
 
+    car.x > parking.x &&
+
     car.x < parking.x + parking.width &&
 
-    car.x + car.width > parking.x &&
+    car.y > parking.y &&
 
-    car.y < parking.y + parking.height &&
-
-    car.y + car.height > parking.y
+    car.y < parking.y + parking.height
 
   ) {
 
-    alert("🎉 Parcheggio completato!");
+    alert("🎉 PARCHEGGIATO!");
 
-    resetGame();
+    reset();
 
   }
 
 }
 
-// 🔁 Reset
+function reset() {
 
-function resetGame() {
-
-  car.x = 180;
+  car.x = 200;
 
   car.y = 500;
 
-}
+  car.speed = 0;
 
-// 🎨 Disegno
+  car.angle = 0;
+
+}
 
 function draw() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Parcheggio
+  // parcheggio
 
   ctx.fillStyle = "green";
 
   ctx.fillRect(parking.x, parking.y, parking.width, parking.height);
 
-  // Ostacoli
+  // macchina
 
-  ctx.fillStyle = "red";
+  ctx.save();
 
-  for (let obs of obstacles) {
+  ctx.translate(car.x, car.y);
 
-    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-
-  }
-
-  // Macchina
+  ctx.rotate(car.angle);
 
   ctx.fillStyle = "blue";
 
-  ctx.fillRect(car.x, car.y, car.width, car.height);
+  ctx.fillRect(-15, -25, car.width, car.height);
+
+  ctx.restore();
 
 }
 
-// 🔁 Loop
-
-function gameLoop() {
+function loop() {
 
   update();
 
   draw();
 
-  requestAnimationFrame(gameLoop);
+  requestAnimationFrame(loop);
 
 }
 
-gameLoop();
+loop();
 
 </script>
     
