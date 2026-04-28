@@ -3,17 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+  <title>MDweb - Parking Game</title>
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
 </head>
 
 <body>
-
-<nav>
-  <h1>MDweb</h1>
-</nav>
 
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
@@ -33,6 +29,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
+// 🚗 CAR
 let car = {
   x: 200,
   y: 500,
@@ -42,28 +39,37 @@ let car = {
   speed: 0
 };
 
+// 🅿️ PARKING
+let parking = {
+  x: 160,
+  y: 50,
+  width: 80,
+  height: 120
+};
+
+// 🎮 INPUT
 let keys = {};
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
 
-// 🖼️ CAR IMAGE
+let gasPressed = false;
+let brakePressed = false;
+
+// 🧭 VOLANTE 900°
+let steeringAngle = 0;   // -450 → +450
+let steeringInput = 0;
+
+let isGameOver = false;
+
+// 🖼️ AUTO
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
-// 🅿️ PARKING
-let parking = { x: 160, y: 50, width: 80, height: 120 };
-
-// 🎮 CONTROLS
-let steering = 0;
-let gasPressed = false;
-let brakePressed = false;
-let isGameOver = false;
-
-// 🔧 INPUT
+// 🔧 CONTROLLI GAS / FRENO
 function setGas(v){ gasPressed = v; }
 function setBrake(v){ brakePressed = v; }
 
-// 🎮 VOLANTE FIXED
+// 🎮 VOLANTE
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
@@ -82,10 +88,12 @@ function setupControls() {
     let delta = x - lastX;
     lastX = x;
 
-    steering += delta * 0.01;
-    steering = Math.max(-1, Math.min(1, steering));
+    steeringAngle += delta * 1.2;
+    steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
 
-    wheel.style.transform = `rotate(${steering * 180}deg)`;
+    steeringInput = steeringAngle / 450;
+
+    wheel.style.transform = `rotate(${steeringAngle}deg)`;
   }
 
   function end(){
@@ -121,6 +129,7 @@ function setupControls() {
 function gameOver(){
   if (isGameOver) return;
   isGameOver = true;
+
   alert("💥 HAI PERSO!");
   reset();
 }
@@ -131,7 +140,10 @@ function reset(){
   car.y = 500;
   car.speed = 0;
   car.angle = 0;
-  steering = 0;
+
+  steeringAngle = 0;
+  steeringInput = 0;
+
   isGameOver = false;
 }
 
@@ -142,7 +154,35 @@ function checkBorders(){
     car.x > canvas.width ||
     car.y < 0 ||
     car.y > canvas.height
-  ) gameOver();
+  ){
+    gameOver();
+  }
+}
+
+// 🅿️ CHECK PARCHEGGIO PRECISO
+function checkParkingWin(){
+
+  let centerX = parking.x + parking.width / 2;
+  let centerY = parking.y + parking.height / 2;
+
+  let dx = car.x - centerX;
+  let dy = car.y - centerY;
+
+  let distance = Math.sqrt(dx*dx + dy*dy);
+
+  let angleOk = Math.abs(car.angle % Math.PI) < 0.25; // quasi dritta
+  let speedOk = Math.abs(car.speed) < 0.4;
+  let positionOk = distance < 22;
+
+  if (positionOk && angleOk && speedOk){
+    win();
+  }
+}
+
+// 🏆 WIN
+function win(){
+  alert("🎉 PARCHEGGIO PERFETTO!");
+  reset();
 }
 
 // 🚗 UPDATE
@@ -150,29 +190,25 @@ function update(){
 
   if (isGameOver) return;
 
+  // accelerazione
   if (gasPressed || keys["ArrowUp"]) car.speed += 0.2;
   if (brakePressed || keys["ArrowDown"]) car.speed -= 0.3;
 
-  car.angle += steering * 0.03;
-  steering *= 0.9;
+  // sterzo reale
+  car.angle += steeringInput * 0.04;
 
+  // ritorno volante
+  steeringAngle *= 0.97;
+  steeringInput = steeringAngle / 450;
+
+  // fisica
   car.speed *= 0.98;
 
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
   checkBorders();
-
-  // 🅿️ WIN
-  if (
-    car.x > parking.x &&
-    car.x < parking.x + parking.width &&
-    car.y > parking.y &&
-    car.y < parking.y + parking.height
-  ){
-    alert("🎉 PARCHEGGIATO!");
-    reset();
-  }
+  checkParkingWin();
 }
 
 // 🎨 DRAW
@@ -200,14 +236,14 @@ function draw(){
   }
 }
 
-// 🔁 LOOP
+// LOOP
 function loop(){
   update();
   draw();
   requestAnimationFrame(loop);
 }
 
-// 🚀 START
+// START
 carImg.onload = () => {
   setupControls();
   loop();
