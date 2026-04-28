@@ -52,8 +52,8 @@ nav h1 {
   top: 0; left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0,0,0,0.5); /* semi-trasparente nero */
-  z-index: 15; /* sotto la dropdown (che ha z-index 20) */
+  background: rgba(0,0,0,0.5);
+  z-index: 15;
   display: none;
 }
 
@@ -61,6 +61,7 @@ nav h1 {
   display: block;
 }
 
+/* USER MENU */
 .user-menu {
   position: relative;
   cursor: pointer;
@@ -81,9 +82,9 @@ nav h1 {
   align-items: center;
   font-weight: bold;
   font-size: 1.2rem;
-  flex-shrink: 0;
 }
 
+/* DROPDOWN */
 .dropdown {
   position: absolute;
   right: 0;
@@ -95,75 +96,24 @@ nav h1 {
   flex-direction: column;
   min-width: 180px;
   z-index: 20;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
-  pointer-events: none;
+}
+
+.user-menu.open .dropdown {
+  display: flex;
 }
 
 .dropdown a {
   color: var(--text-light);
   padding: 12px 16px;
   text-decoration: none;
-  transition: background var(--transition-speed);
-  font-weight: 600;
 }
 
-.dropdown a:hover,
-.dropdown a:focus {
+.dropdown a:hover {
   background: var(--accent-color);
   color: #000;
-  outline: none;
 }
 
-/* Username display non cliccabile */
-.dropdown-item.username-display {
-  color: #000000;
-  padding: 12px 16px;
-  font-weight: 600;
-  display: block;
-  cursor: default;
-  user-select: none;
-  background: var(--accent-color);
-}
-
-.dropdown-item.username-display:hover,
-.dropdown-item.username-display:focus {
-  background: transparent;
-  color: var(--text-light);
-  outline: none;
-}
-
-.user-menu.open .dropdown {
-  display: flex;
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.arrow {
-  display: inline-block;
-  margin-left: 6px;
-  transition: transform var(--transition-speed) ease;
-  font-size: 1.1rem;
-  user-select: none;
-}
-
-.user-menu.open .arrow {
-  transform: rotate(180deg);
-}
-
-/* MAIN CONTENT */
-main {
-  padding: 40px 20px;
-  text-align: center;
-}
-
-main h2 {
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
+/* CANVAS */
 canvas {
   display: block;
   margin: 20px auto;
@@ -171,143 +121,111 @@ canvas {
   border: 3px solid white;
   border-radius: 10px;
   max-width: 90%;
-  height: auto;
 }
+
+/* =========================
+   🎮 GAME CONTROLS (UPDATED)
+   ========================= */
 
 .controls {
-
-  text-align: center;
-
-  margin-top: 10px;
-
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 20px;
+  z-index: 50;
+  pointer-events: none;
 }
 
-.controls button {
+.controls * {
+  pointer-events: auto;
+}
 
-  width: 60px;
-
-  height: 60px;
-
-  font-size: 20px;
-
-  margin: 5px;
-
-  border-radius: 10px;
-
-  border: none;
-
-  background: #333;
-
+/* 🚗 VOLANTE */
+.steering-wheel {
+  width: 95px;
+  height: 95px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #444, #111);
   color: white;
-
+  font-size: 42px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+  touch-action: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  border: 3px solid #00f7ff;
 }
 
-.controls button:active {
-
-  background: #00f7ff;
-
-  color: black;
-
+/* PEDALI */
+.pedals {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
+/* 🟢 GAS */
+.gas {
+  background: linear-gradient(145deg, #00c853, #007e33);
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+.gas:active {
+  transform: scale(0.95);
+}
+
+/* 🔴 FRENO */
+.brake {
+  background: linear-gradient(145deg, #ff1744, #b00020);
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: bold;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+}
+
+.brake:active {
+  transform: scale(0.95);
+}
+
+/* 📱 MOBILE */
 @media (max-width: 600px) {
-  /* Layout form */
+  .steering-wheel {
+    width: 80px;
+    height: 80px;
+    font-size: 36px;
+  }
+
+  .gas, .brake {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+}
+
+/* FORM RESPONSIVE (FIXED) */
+@media (max-width: 600px) {
   form {
     display: flex;
     flex-direction: column;
     gap: 18px;
     width: 100%;
   }
-
-  .form-group {
-    display: flex;
-    flex-direction: column;
-    align-items: anchor-center;
-    width: 100%;
-  }
-
-  .form-group label {
-    width: 100%;
-    text-align: left;
-    margin-bottom: 5px;
-    font-weight: 600;
-  }
-
-  .form-group input {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-.username-group, .old-password-group {
-    display: flex;
-    flex-direction: column;
-    align-items: anchor-center;
-    width: 100%;
-    gap: 5px;
-  }
-
-  .username-group label, .old-password-group label {
-    width: 100%;
-    text-align: left;
-    margin-bottom: 5px;
-    font-weight: 600;
-  }
-
-   .username-group input, .old-password-group input {
-    width: 100%;
-    margin-bottom: 10px;
-  }
-
-  #changeUsernameBtn,
-  #verifyPasswordBtn,
-  button[type="submit"] {
-    width: 100%;
-  }
 }
 
-  @media (min-width: 601px) and (orientation: landscape) {
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .form-group,
-  .username-group,
-  .old-password-group {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    width: 100%;
-  }
-
-  .form-group label,
-  .username-group label,
-  .old-password-group label {
-    font-weight: 600;
-    width: 25%;
-    text-align: left;
-  }
-
-  .form-group input,
-  .username-group input,
-  .old-password-group input {
-    width: 100%;
-    margin-bottom: 0px;
-  }
-
-  #changeUsernameBtn,
-  #verifyPasswordBtn{
-    width: 30%;
-    margin-top: 0;
-  }
-   
-  button[type="submit"] {
-    width: 100%;
-  }
-  
+/* LANDSCAPE FIX (CORRETTO) */
+@media (min-width: 601px) and (orientation: landscape) {
   html, body {
     height: 90vh;
     overflow: auto;
   }
-
+}
