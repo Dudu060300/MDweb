@@ -164,6 +164,16 @@ main h2 {
   margin-bottom: 20px;
 }
 
+canvas {
+
+      display: block;
+
+      margin: auto;
+
+      background: #555;
+
+    }
+
 @media (max-width: 600px) {
   /* Layout form */
   form {
@@ -265,12 +275,3 @@ main h2 {
     overflow: auto;
   }
 
-canvas {
-
-      display: block;
-
-      margin: auto;
-
-      background: #555;
-
-    }
