@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDweb - Parking Game</title>
+  <title>MDweb Parking</title>
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
@@ -16,7 +16,9 @@
 <!-- 🎮 CONTROLLI -->
 <div class="controls">
 
-  <div class="steering-wheel" id="wheel">🚗</div>
+  <div class="steering-wheel" id="wheel">
+    <img src="assets/Steering-Wheel.png" />
+  </div>
 
   <div class="pedals">
     <button class="gas" id="gas">ACCELERA</button>
@@ -40,39 +42,31 @@ let car = {
 };
 
 // 🅿️ PARKING
-let parking = {
-  x: 160,
-  y: 50,
-  width: 80,
-  height: 120
-};
+let parking = { x: 160, y: 50, width: 80, height: 120 };
 
-// 🎮 INPUT
-let keys = {};
-window.addEventListener("keydown", e => keys[e.key] = true);
-window.addEventListener("keyup", e => keys[e.key] = false);
-
+// 🧠 INPUT
 let gasPressed = false;
 let brakePressed = false;
+let keys = {};
 
-// 🧭 VOLANTE 900°
-let steeringAngle = 0;   // -450 → +450
+let steeringAngle = 0;  // -450 → +450
 let steeringInput = 0;
 
 let isGameOver = false;
 
-// 🖼️ AUTO
+// 🖼️ AUTO IMAGE
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
-// 🔧 CONTROLLI GAS / FRENO
+// 🔧 CONTROLLI
 function setGas(v){ gasPressed = v; }
 function setBrake(v){ brakePressed = v; }
 
-// 🎮 VOLANTE
+// 🎮 VOLANTE 900°
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
+  const wheelImg = wheel.querySelector("img");
 
   let dragging = false;
   let lastX = 0;
@@ -93,7 +87,7 @@ function setupControls() {
 
     steeringInput = steeringAngle / 450;
 
-    wheel.style.transform = `rotate(${steeringAngle}deg)`;
+    wheelImg.style.transform = `rotate(${steeringAngle}deg)`;
   }
 
   function end(){
@@ -154,23 +148,21 @@ function checkBorders(){
     car.x > canvas.width ||
     car.y < 0 ||
     car.y > canvas.height
-  ){
-    gameOver();
-  }
+  ) gameOver();
 }
 
-// 🅿️ CHECK PARCHEGGIO PRECISO
+// 🅿️ PARCHEGGIO PRECISO
 function checkParkingWin(){
 
-  let centerX = parking.x + parking.width / 2;
-  let centerY = parking.y + parking.height / 2;
+  let cx = parking.x + parking.width / 2;
+  let cy = parking.y + parking.height / 2;
 
-  let dx = car.x - centerX;
-  let dy = car.y - centerY;
+  let dx = car.x - cx;
+  let dy = car.y - cy;
 
   let distance = Math.sqrt(dx*dx + dy*dy);
 
-  let angleOk = Math.abs(car.angle % Math.PI) < 0.25; // quasi dritta
+  let angleOk = Math.abs(car.angle % Math.PI) < 0.25;
   let speedOk = Math.abs(car.speed) < 0.4;
   let positionOk = distance < 22;
 
@@ -190,18 +182,14 @@ function update(){
 
   if (isGameOver) return;
 
-  // accelerazione
   if (gasPressed || keys["ArrowUp"]) car.speed += 0.2;
   if (brakePressed || keys["ArrowDown"]) car.speed -= 0.3;
 
-  // sterzo reale
   car.angle += steeringInput * 0.04;
 
-  // ritorno volante
   steeringAngle *= 0.97;
   steeringInput = steeringAngle / 450;
 
-  // fisica
   car.speed *= 0.98;
 
   car.x += Math.sin(car.angle) * car.speed;
@@ -224,9 +212,7 @@ function draw(){
   ctx.save();
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
-
   ctx.drawImage(carImg, -15, -25, car.width, car.height);
-
   ctx.restore();
 
   if (isGameOver){
