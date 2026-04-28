@@ -4,8 +4,6 @@
   --nav-bg: #000000;
   --nav-text: #ffffff;
   --accent-color: #00f7ff;
-  --accent-hover: #00c2cc;
-  --text-light: #fff;
   --transition-speed: 0.3s;
 }
 
@@ -27,7 +25,7 @@ body {
   color: var(--text-color);
 }
 
-/* NAVIGATION */
+/* ================= NAV ================= */
 nav {
   display: flex;
   justify-content: space-between;
@@ -36,84 +34,16 @@ nav {
   color: var(--nav-text);
   padding: 0 20px;
   height: 60px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.7);
   position: sticky;
   top: 0;
   z-index: 10;
 }
 
 nav h1 {
-  font-weight: 700;
   font-size: 1.5rem;
 }
 
-#overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0,0,0,0.5);
-  z-index: 15;
-  display: none;
-}
-
-#overlay.visible {
-  display: block;
-}
-
-/* USER MENU */
-.user-menu {
-  position: relative;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  user-select: none;
-}
-
-.user-icon {
-  width: 40px;
-  height: 40px;
-  background: var(--bg-color);
-  border-radius: 50%;
-  color: var(--text-color);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-}
-
-/* DROPDOWN */
-.dropdown {
-  position: absolute;
-  right: 0;
-  top: 50px;
-  background: #333;
-  border-radius: 8px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  display: none;
-  flex-direction: column;
-  min-width: 180px;
-  z-index: 20;
-}
-
-.user-menu.open .dropdown {
-  display: flex;
-}
-
-.dropdown a {
-  color: var(--text-light);
-  padding: 12px 16px;
-  text-decoration: none;
-}
-
-.dropdown a:hover {
-  background: var(--accent-color);
-  color: #000;
-}
-
-/* CANVAS */
+/* ================= CANVAS ================= */
 canvas {
   display: block;
   margin: 20px auto;
@@ -121,12 +51,11 @@ canvas {
   border: 3px solid white;
   border-radius: 10px;
   max-width: 90%;
+  position: relative;
+  z-index: 1;
 }
 
-/* =========================
-   🎮 GAME CONTROLS (UPDATED)
-   ========================= */
-
+/* ================= CONTROLLI ================= */
 .controls {
   position: fixed;
   bottom: 20px;
@@ -136,7 +65,7 @@ canvas {
   justify-content: space-between;
   align-items: flex-end;
   padding: 0 20px;
-  z-index: 50;
+  z-index: 9999;
   pointer-events: none;
 }
 
@@ -144,7 +73,7 @@ canvas {
   pointer-events: auto;
 }
 
-/* 🚗 VOLANTE */
+/* ================= VOLANTE ================= */
 .steering-wheel {
   width: 95px;
   height: 95px;
@@ -157,11 +86,11 @@ canvas {
   align-items: center;
   user-select: none;
   touch-action: none;
+  border: 3px solid var(--accent-color);
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
-  border: 3px solid #00f7ff;
 }
 
-/* PEDALI */
+/* ================= PEDALI ================= */
 .pedals {
   display: flex;
   flex-direction: column;
@@ -176,7 +105,8 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+  cursor: pointer;
 }
 
 .gas:active {
@@ -191,14 +121,15 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+  cursor: pointer;
 }
 
 .brake:active {
   transform: scale(0.95);
 }
 
-/* 📱 MOBILE */
+/* ================= MOBILE ================= */
 @media (max-width: 600px) {
   .steering-wheel {
     width: 80px;
@@ -212,20 +143,26 @@ canvas {
   }
 }
 
-/* FORM RESPONSIVE (FIXED) */
-@media (max-width: 600px) {
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    width: 100%;
-  }
+/* ================= DROPDOWN MENU (tuo sito) ================= */
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 50px;
+  background: #333;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+  min-width: 180px;
+  z-index: 20;
 }
 
-/* LANDSCAPE FIX (CORRETTO) */
-@media (min-width: 601px) and (orientation: landscape) {
-  html, body {
-    height: 90vh;
-    overflow: auto;
-  }
+.dropdown a {
+  color: white;
+  padding: 12px;
+  text-decoration: none;
+}
+
+.dropdown a:hover {
+  background: var(--accent-color);
+  color: black;
 }
