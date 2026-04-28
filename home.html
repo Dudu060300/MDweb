@@ -11,8 +11,6 @@
 
 <body>
 
-<div id="overlay" class="hidden"></div>
-
 <nav>
   <h1>MDweb</h1>
 </nav>
@@ -36,54 +34,43 @@ let car = {
   speed: 0
 };
 
-// ⌨️ KEYBOARD
+// ⌨️ INPUT
 let keys = {};
-window.addEventListener("keydown", (e) => keys[e.key] = true);
-window.addEventListener("keyup", (e) => keys[e.key] = false);
+window.addEventListener("keydown", e => keys[e.key] = true);
+window.addEventListener("keyup", e => keys[e.key] = false);
 
 // 🖼️ CAR IMAGE
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
 // 🅿️ PARKING
-let parking = {
-  x: 160,
-  y: 50,
-  width: 80,
-  height: 120
-};
+let parking = { x: 160, y: 50, width: 80, height: 120 };
 
-// 🎮 CONTROLS
+// 🎮 CONTROLLI
 let steering = 0;
 let gasPressed = false;
 let brakePressed = false;
-
 let isGameOver = false;
 
-// 🔧 CONTROLLI
-function setGas(state) {
-  gasPressed = state;
-}
-
-function setBrake(state) {
-  brakePressed = state;
-}
+function setGas(v){ gasPressed = v; }
+function setBrake(v){ brakePressed = v; }
 
 // 🎮 SETUP CONTROLLI
 function setupControls() {
+
   const wheel = document.getElementById("wheel");
 
   let dragging = false;
   let lastX = 0;
 
-  wheel.addEventListener("mousedown", (e) => {
+  wheel.addEventListener("mousedown", e => {
     dragging = true;
     lastX = e.clientX;
   });
 
   window.addEventListener("mouseup", () => dragging = false);
 
-  window.addEventListener("mousemove", (e) => {
+  window.addEventListener("mousemove", e => {
     if (!dragging) return;
 
     let delta = e.clientX - lastX;
@@ -95,23 +82,30 @@ function setupControls() {
     wheel.style.transform = `rotate(${steering * 120}deg)`;
   });
 
-  // GAS
   const gas = document.getElementById("gas");
+  const brake = document.getElementById("brake");
+
   gas.addEventListener("mousedown", () => setGas(true));
   gas.addEventListener("mouseup", () => setGas(false));
   gas.addEventListener("touchstart", () => setGas(true));
   gas.addEventListener("touchend", () => setGas(false));
 
-  // BRAKE
-  const brake = document.getElementById("brake");
   brake.addEventListener("mousedown", () => setBrake(true));
   brake.addEventListener("mouseup", () => setBrake(false));
   brake.addEventListener("touchstart", () => setBrake(true));
   brake.addEventListener("touchend", () => setBrake(false));
 }
 
-// 🚗 RESET
-function reset() {
+// 💥 GAME OVER
+function gameOver(){
+  if (isGameOver) return;
+  isGameOver = true;
+  alert("💥 HAI PERSO!");
+  reset();
+}
+
+// 🔄 RESET
+function reset(){
   car.x = 200;
   car.y = 500;
   car.speed = 0;
@@ -120,38 +114,23 @@ function reset() {
   isGameOver = false;
 }
 
-// 💥 GAME OVER
-function gameOver() {
-  if (isGameOver) return;
-  isGameOver = true;
-
-  alert("💥 HAI PERSO!");
-  reset();
-}
-
-// 🧱 BORDERS CHECK
-function checkBorders() {
+// 🧱 BORDERS
+function checkBorders(){
   if (
     car.x < 0 ||
     car.x > canvas.width ||
     car.y < 0 ||
     car.y > canvas.height
-  ) {
-    gameOver();
-  }
+  ) gameOver();
 }
 
 // 🚗 UPDATE
-function update() {
+function update(){
+
   if (isGameOver) return;
 
-  if (gasPressed || keys["ArrowUp"]) {
-    car.speed += 0.2;
-  }
-
-  if (brakePressed || keys["ArrowDown"]) {
-    car.speed -= 0.3;
-  }
+  if (gasPressed || keys["ArrowUp"]) car.speed += 0.2;
+  if (brakePressed || keys["ArrowDown"]) car.speed -= 0.3;
 
   car.angle += steering * 0.03;
   steering *= 0.9;
@@ -163,21 +142,21 @@ function update() {
 
   checkBorders();
 
-  // 🅿️ PARKING WIN
+  // 🅿️ WIN
   if (
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
     car.y > parking.y &&
     car.y < parking.y + parking.height
-  ) {
+  ){
     alert("🎉 PARCHEGGIATO!");
     reset();
   }
 }
 
 // 🎨 DRAW
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
   // parcheggio
   ctx.fillStyle = "green";
@@ -187,28 +166,24 @@ function draw() {
   ctx.save();
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
-
   ctx.drawImage(carImg, -15, -25, car.width, car.height);
-
   ctx.restore();
 
-  // GAME OVER TEXT
-  if (isGameOver) {
+  if (isGameOver){
     ctx.fillStyle = "red";
     ctx.font = "30px Arial";
-    ctx.fillText("GAME OVER", 100, 300);
+    ctx.fillText("GAME OVER", 90, 300);
   }
 }
 
-// 🔁 LOOP
-function loop() {
+// LOOP
+function loop(){
   update();
   draw();
   requestAnimationFrame(loop);
 }
 
-// 🚀 START
-carImg.onload = function () {
+carImg.onload = () => {
   setupControls();
   loop();
 };
