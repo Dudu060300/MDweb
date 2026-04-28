@@ -1,3 +1,4 @@
+/* ================= ROOT ================= */
 :root {
   --bg: #ffffff;
   --text: #000000;
@@ -25,7 +26,7 @@ nav {
   color: #fff;
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 50;
 }
 
 /* ================= USER MENU ================= */
@@ -53,7 +54,7 @@ nav {
   font-size: 14px;
 }
 
-/* DROPDOWN */
+/* ================= DROPDOWN ================= */
 .dropdown {
   position: absolute;
   top: 50px;
@@ -63,7 +64,7 @@ nav {
   min-width: 180px;
   display: none;
   flex-direction: column;
-  z-index: 30;
+  z-index: 100;
 }
 
 .user-menu.open .dropdown {
@@ -85,17 +86,10 @@ nav {
 /* ================= OVERLAY ================= */
 #overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: rgba(0,0,0,0.5);
   display: none;
-  z-index: 10;
-}
-
-#overlay.visible {
-  display: block;
+  z-index: 20;
 }
 
 /* ================= CANVAS ================= */
@@ -106,8 +100,6 @@ canvas {
   border: 3px solid #fff;
   border-radius: 12px;
   max-width: 95%;
-  z-index: 1;
-  position: relative;
 }
 
 /* ================= CONTROLS ================= */
@@ -135,6 +127,8 @@ canvas {
   user-select: none;
   touch-action: none;
   cursor: grab;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .steering-wheel:active {
@@ -147,6 +141,7 @@ canvas {
   object-fit: contain;
   pointer-events: none;
   transform-origin: center;
+  -webkit-user-drag: none;
 }
 
 /* ================= PEDALI ================= */
@@ -164,6 +159,10 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* FRENO */
@@ -174,14 +173,18 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* ================= MOBILE ================= */
 @media (max-width: 600px) {
 
   .steering-wheel {
-    width: 110px;
-    height: 110px;
+    width: 120px;
+    height: 120px;
   }
 
   .gas, .brake {
