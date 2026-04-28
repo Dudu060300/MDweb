@@ -17,14 +17,22 @@
 
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
+<!-- 🎮 CONTROLLI -->
+<div class="controls">
+
+  <div class="steering-wheel" id="wheel">🚗</div>
+
+  <div class="pedals">
+    <button class="gas" id="gas">ACCELERA</button>
+    <button class="brake" id="brake">FRENO</button>
+  </div>
+
+</div>
+
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-canvas.tabIndex = 1;
-canvas.focus();
-
-// 🚗 CAR
 let car = {
   x: 200,
   y: 500,
@@ -34,7 +42,6 @@ let car = {
   speed: 0
 };
 
-// ⌨️ INPUT
 let keys = {};
 window.addEventListener("keydown", e => keys[e.key] = true);
 window.addEventListener("keyup", e => keys[e.key] = false);
@@ -46,16 +53,17 @@ carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 // 🅿️ PARKING
 let parking = { x: 160, y: 50, width: 80, height: 120 };
 
-// 🎮 CONTROLLI
+// 🎮 CONTROLS
 let steering = 0;
 let gasPressed = false;
 let brakePressed = false;
 let isGameOver = false;
 
+// 🔧 INPUT
 function setGas(v){ gasPressed = v; }
 function setBrake(v){ brakePressed = v; }
 
-// 🎮 SETUP CONTROLLI
+// 🎮 VOLANTE FIXED
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
@@ -63,33 +71,46 @@ function setupControls() {
   let dragging = false;
   let lastX = 0;
 
-  wheel.addEventListener("mousedown", e => {
+  function start(x){
     dragging = true;
-    lastX = e.clientX;
-  });
+    lastX = x;
+  }
 
-  window.addEventListener("mouseup", () => dragging = false);
-
-  window.addEventListener("mousemove", e => {
+  function move(x){
     if (!dragging) return;
 
-    let delta = e.clientX - lastX;
-    lastX = e.clientX;
+    let delta = x - lastX;
+    lastX = x;
 
-    steering += delta * 0.002;
+    steering += delta * 0.01;
     steering = Math.max(-1, Math.min(1, steering));
 
-    wheel.style.transform = `rotate(${steering * 120}deg)`;
-  });
+    wheel.style.transform = `rotate(${steering * 180}deg)`;
+  }
 
+  function end(){
+    dragging = false;
+  }
+
+  // 🖱️ mouse
+  wheel.addEventListener("mousedown", e => start(e.clientX));
+  window.addEventListener("mousemove", e => move(e.clientX));
+  window.addEventListener("mouseup", end);
+
+  // 📱 touch
+  wheel.addEventListener("touchstart", e => start(e.touches[0].clientX));
+  window.addEventListener("touchmove", e => move(e.touches[0].clientX));
+  window.addEventListener("touchend", end);
+
+  // gas
   const gas = document.getElementById("gas");
-  const brake = document.getElementById("brake");
-
   gas.addEventListener("mousedown", () => setGas(true));
   gas.addEventListener("mouseup", () => setGas(false));
   gas.addEventListener("touchstart", () => setGas(true));
   gas.addEventListener("touchend", () => setGas(false));
 
+  // brake
+  const brake = document.getElementById("brake");
   brake.addEventListener("mousedown", () => setBrake(true));
   brake.addEventListener("mouseup", () => setBrake(false));
   brake.addEventListener("touchstart", () => setBrake(true));
@@ -114,7 +135,7 @@ function reset(){
   isGameOver = false;
 }
 
-// 🧱 BORDERS
+// 🧱 BORDI
 function checkBorders(){
   if (
     car.x < 0 ||
@@ -156,6 +177,7 @@ function update(){
 
 // 🎨 DRAW
 function draw(){
+
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
   // parcheggio
@@ -166,7 +188,9 @@ function draw(){
   ctx.save();
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
+
   ctx.drawImage(carImg, -15, -25, car.width, car.height);
+
   ctx.restore();
 
   if (isGameOver){
@@ -176,30 +200,19 @@ function draw(){
   }
 }
 
-// LOOP
+// 🔁 LOOP
 function loop(){
   update();
   draw();
   requestAnimationFrame(loop);
 }
 
+// 🚀 START
 carImg.onload = () => {
   setupControls();
   loop();
 };
 </script>
-
-<!-- 🎮 CONTROLLI -->
-<div class="controls">
-
-  <div class="steering-wheel" id="wheel">🚗</div>
-
-  <div class="pedals">
-    <button class="gas" id="gas">ACCELERA</button>
-    <button class="brake" id="brake">FRENO</button>
-  </div>
-
-</div>
 
 </body>
 </html>
