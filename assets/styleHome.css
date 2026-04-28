@@ -165,14 +165,14 @@ main h2 {
 }
 
 canvas {
-
-      display: block;
-
-      margin: auto;
-
-      background: #555;
-
-    }
+  display: block;
+  margin: 20px auto;
+  background: #555;
+  border: 3px solid white;
+  border-radius: 10px;
+  max-width: 90%;
+  height: auto;
+}
 
 @media (max-width: 600px) {
   /* Layout form */
