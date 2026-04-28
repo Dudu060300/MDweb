@@ -74,6 +74,10 @@ window.addEventListener("keydown", (e) => keys[e.key] = true);
 
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
+let carImg = new Image();
+
+carImg.src = "assets/auto.png";
+
 // 🅿️ parcheggio
 
 let parking = {
@@ -180,7 +184,7 @@ function draw() {
 
   ctx.rotate(car.angle);
 
-  ctx.fillStyle = "blue";
+  ctx.drawImage(carImg, -15, -25, car.width, car.height);
 
   ctx.fillRect(-15, -25, car.width, car.height);
 
