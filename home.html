@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDweb - Parking Simulator</title>
+  <title>MDweb - Driving Simulator</title>
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
@@ -12,7 +12,7 @@
 
 <body>
 
-<!-- ================= NAVBAR ================= -->
+<!-- ================= NAV ================= -->
 <nav>
   <h1>MDweb</h1>
 
@@ -32,7 +32,7 @@
 <!-- ================= GAME ================= -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ================= CONTROLLI ================= -->
+<!-- ================= CONTROLS ================= -->
 <div class="controls">
 
   <!-- 🛞 VOLANTE -->
@@ -46,9 +46,16 @@
     <button id="brake" class="brake">FRENO</button>
   </div>
 
+  <!-- ⚙️ CAMBIO -->
+  <div class="gear-box">
+    <button onclick="setGear('P')">P</button>
+    <button onclick="setGear('D')">D</button>
+    <button onclick="setGear('R')">R</button>
+  </div>
+
 </div>
 
-<!-- ================= GAME SCRIPT ================= -->
+<!-- ================= SCRIPT ================= -->
 <script>
 
 const canvas = document.getElementById("gameCanvas");
@@ -58,10 +65,9 @@ const ctx = canvas.getContext("2d");
 let car = {
   x: 200,
   y: 500,
-  width: 80,
-  height: 120,
   angle: 0,
-  speed: 0
+  speed: 0,
+  wheelBase: 40
 };
 
 // 🅿️ PARCHEGGIO
@@ -78,11 +84,27 @@ let brakePressed = false;
 
 let steeringAngle = 0;
 let steeringInput = 0;
-let gameOver = false;
 
-// 🖼️ AUTO IMG
-let carImg = new Image();
-carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
+let gear = "D"; // P D R
+
+// ================= CAMBIO =================
+function setGear(g) {
+
+  if (g === "P") {
+    let inside =
+      car.x > parking.x &&
+      car.x < parking.x + parking.width &&
+      car.y > parking.y &&
+      car.y < parking.y + parking.height;
+
+    if (!inside) {
+      alert("⚠️ Devi essere nel parcheggio per mettere P!");
+      return;
+    }
+  }
+
+  gear = g;
+}
 
 // ================= CONTROLLI =================
 function setupControls() {
@@ -91,47 +113,39 @@ function setupControls() {
   const wheelImg = wheel.querySelector("img");
 
   let dragging = false;
-
   let centerX = 0;
   let centerY = 0;
   let lastAngle = 0;
 
   function getAngle(e) {
-    const x = e.clientX - centerX;
-    const y = e.clientY - centerY;
-    return Math.atan2(y, x) * (180 / Math.PI);
+    return Math.atan2(
+      e.clientY - centerY,
+      e.clientX - centerX
+    ) * 180 / Math.PI;
   }
 
   wheel.addEventListener("pointerdown", (e) => {
     dragging = true;
     wheel.setPointerCapture(e.pointerId);
 
-    const rect = wheel.getBoundingClientRect();
-    centerX = rect.left + rect.width / 2;
-    centerY = rect.top + rect.height / 2;
+    const r = wheel.getBoundingClientRect();
+    centerX = r.left + r.width / 2;
+    centerY = r.top + r.height / 2;
 
     lastAngle = getAngle(e);
   });
 
   wheel.addEventListener("pointermove", (e) => {
-
     if (!dragging) return;
 
-    let currentAngle = getAngle(e);
+    let current = getAngle(e);
 
-    let delta = currentAngle - lastAngle;
+    let delta = current - lastAngle;
 
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    // 🔥 controllo preciso (NO scatti)
-    let maxSpeed = 5;
-    let target = steeringAngle + delta * 2;
-
-    let diff = target - steeringAngle;
-    diff = Math.max(-maxSpeed, Math.min(maxSpeed, diff));
-
-    steeringAngle += diff;
+    steeringAngle += delta * 2.2;
 
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
 
@@ -139,7 +153,7 @@ function setupControls() {
 
     wheelImg.style.transform = `rotate(${steeringAngle}deg)`;
 
-    lastAngle = currentAngle;
+    lastAngle = current;
   });
 
   wheel.addEventListener("pointerup", () => dragging = false);
@@ -157,41 +171,49 @@ function setupControls() {
 // ================= UPDATE =================
 function update() {
 
-  if (gameOver) return;
+  if (gear !== "P") {
 
-  if (gasPressed) car.speed += 0.18;
-  if (brakePressed) car.speed -= 0.25;
+    if (gasPressed) {
+      if (gear === "D") car.speed += 0.18;
+      if (gear === "R") car.speed -= 0.18;
+    }
 
-  // 🔥 rallenta quando sterzi
-  car.speed *= (1 - Math.abs(steeringInput) * 0.5);
+    if (brakePressed) {
+      car.speed *= 0.9;
+    }
+
+  } else {
+    car.speed *= 0.8;
+  }
+
+  car.speed *= 0.97;
+
+  let direction = (gear === "R") ? -1 : 1;
 
   if (Math.abs(car.speed) > 0.1) {
     car.angle += steeringInput * 0.04;
   }
 
-  car.speed *= 0.97;
+  car.x += Math.cos(car.angle) * car.speed * direction;
+  car.y += Math.sin(car.angle) * car.speed * direction;
 
-  car.x += Math.sin(car.angle) * car.speed;
-  car.y -= Math.cos(car.angle) * car.speed;
-
-  // collisione bordi
+  // bordi
   if (
     car.x < 0 || car.x > canvas.width ||
     car.y < 0 || car.y > canvas.height
   ) {
-    alert("💥 HAI PERSO!");
     reset();
   }
 
-  // win
+  // WIN SOLO IN P
   let inside =
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
     car.y > parking.y &&
     car.y < parking.y + parking.height;
 
-  if (inside && Math.abs(car.speed) < 0.25) {
-    alert("🎉 PARCHEGGIO PERFETTO!");
+  if (inside && gear === "P" && Math.abs(car.speed) < 0.2) {
+    alert("🎉 PARCHEGGIO PERFETTO IN P!");
     reset();
   }
 }
@@ -205,6 +227,8 @@ function reset() {
 
   steeringAngle = 0;
   steeringInput = 0;
+
+  gear = "D";
 }
 
 // ================= DRAW =================
@@ -218,7 +242,8 @@ function draw() {
   ctx.save();
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
-  ctx.drawImage(carImg, -car.width/2, -car.height/2, car.width, car.height);
+  ctx.fillStyle = "blue";
+  ctx.fillRect(-40, -60, 80, 120);
   ctx.restore();
 }
 
@@ -229,10 +254,8 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-carImg.onload = () => {
-  setupControls();
-  loop();
-};
+setupControls();
+loop();
 
 </script>
 
