@@ -264,3 +264,13 @@ main h2 {
     height: 90vh;
     overflow: auto;
   }
+
+canvas {
+
+      display: block;
+
+      margin: auto;
+
+      background: #555;
+
+    }
