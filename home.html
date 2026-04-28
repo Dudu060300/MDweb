@@ -13,12 +13,10 @@
 
 <div id="overlay" class="hidden"></div>
 
-<!-- NAV -->
 <nav>
   <h1>MDweb</h1>
 </nav>
 
-<!-- GAME -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
 <script>
@@ -27,8 +25,6 @@ const ctx = canvas.getContext("2d");
 
 canvas.tabIndex = 1;
 canvas.focus();
-
-canvas.addEventListener("click", () => canvas.focus());
 
 // 🚗 CAR
 let car = {
@@ -45,7 +41,7 @@ let keys = {};
 window.addEventListener("keydown", (e) => keys[e.key] = true);
 window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-// 🖼️ IMAGE CAR
+// 🖼️ CAR IMAGE
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
@@ -62,7 +58,9 @@ let steering = 0;
 let gasPressed = false;
 let brakePressed = false;
 
-// 🔧 SET CONTROLS
+let isGameOver = false;
+
+// 🔧 CONTROLLI
 function setGas(state) {
   gasPressed = state;
 }
@@ -71,14 +69,13 @@ function setBrake(state) {
   brakePressed = state;
 }
 
-// 🎮 SETUP CONTROLS
+// 🎮 SETUP CONTROLLI
 function setupControls() {
   const wheel = document.getElementById("wheel");
 
   let dragging = false;
   let lastX = 0;
 
-  // volante
   wheel.addEventListener("mousedown", (e) => {
     dragging = true;
     lastX = e.clientX;
@@ -98,14 +95,14 @@ function setupControls() {
     wheel.style.transform = `rotate(${steering * 120}deg)`;
   });
 
-  // gas
+  // GAS
   const gas = document.getElementById("gas");
   gas.addEventListener("mousedown", () => setGas(true));
   gas.addEventListener("mouseup", () => setGas(false));
   gas.addEventListener("touchstart", () => setGas(true));
   gas.addEventListener("touchend", () => setGas(false));
 
-  // brake
+  // BRAKE
   const brake = document.getElementById("brake");
   brake.addEventListener("mousedown", () => setBrake(true));
   brake.addEventListener("mouseup", () => setBrake(false));
@@ -113,8 +110,40 @@ function setupControls() {
   brake.addEventListener("touchend", () => setBrake(false));
 }
 
+// 🚗 RESET
+function reset() {
+  car.x = 200;
+  car.y = 500;
+  car.speed = 0;
+  car.angle = 0;
+  steering = 0;
+  isGameOver = false;
+}
+
+// 💥 GAME OVER
+function gameOver() {
+  if (isGameOver) return;
+  isGameOver = true;
+
+  alert("💥 HAI PERSO!");
+  reset();
+}
+
+// 🧱 BORDERS CHECK
+function checkBorders() {
+  if (
+    car.x < 0 ||
+    car.x > canvas.width ||
+    car.y < 0 ||
+    car.y > canvas.height
+  ) {
+    gameOver();
+  }
+}
+
 // 🚗 UPDATE
 function update() {
+  if (isGameOver) return;
 
   if (gasPressed || keys["ArrowUp"]) {
     car.speed += 0.2;
@@ -132,7 +161,9 @@ function update() {
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
-  // 🅿️ collisione parcheggio
+  checkBorders();
+
+  // 🅿️ PARKING WIN
   if (
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
@@ -142,13 +173,6 @@ function update() {
     alert("🎉 PARCHEGGIATO!");
     reset();
   }
-}
-
-function reset() {
-  car.x = 200;
-  car.y = 500;
-  car.speed = 0;
-  car.angle = 0;
 }
 
 // 🎨 DRAW
@@ -167,6 +191,13 @@ function draw() {
   ctx.drawImage(carImg, -15, -25, car.width, car.height);
 
   ctx.restore();
+
+  // GAME OVER TEXT
+  if (isGameOver) {
+    ctx.fillStyle = "red";
+    ctx.font = "30px Arial";
+    ctx.fillText("GAME OVER", 100, 300);
+  }
 }
 
 // 🔁 LOOP
@@ -183,7 +214,7 @@ carImg.onload = function () {
 };
 </script>
 
-<!-- 🎮 CONTROLLI UI -->
+<!-- 🎮 CONTROLLI -->
 <div class="controls">
 
   <div class="steering-wheel" id="wheel">🚗</div>
