@@ -11,60 +11,46 @@
 
 <body>
 
-<div id="overlay"></div>
-
-<!-- ================= NAVBAR ================= -->
 <nav>
   <h1>MDweb</h1>
 
-  <div class="user-menu" id="userMenu" aria-expanded="false">
-
+  <div class="user-menu" id="userMenu">
     <div class="user-icon" id="userIcon">U</div>
-    <span class="arrow">&#9662;</span>
+    <span class="arrow">▼</span>
 
-    <div class="dropdown" id="dropdownMenu">
-      <span class="dropdown-item username-display" id="userName">Utente</span>
-      <a href="profilo.html" id="editProfile">Modifica profilo</a>
+    <div class="dropdown">
+      <span id="userName">Utente</span>
+      <a href="profilo.html">Profilo</a>
       <a href="impostazioni.html">Impostazioni</a>
       <a href="#" id="logout">Logout</a>
     </div>
-
   </div>
 </nav>
 
-<!-- ================= GAME ================= -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ================= CONTROLLI ================= -->
 <div class="controls">
 
-  <!-- 🛞 VOLANTE -->
   <div class="steering-wheel" id="wheel">
-    <img src="assets/Steering-Wheel.png" draggable="false" />
+    <img src="assets/Steering-Wheel.png" draggable="false">
   </div>
 
-  <!-- 🎮 PEDALI -->
   <div class="pedals">
-    <button class="gas" id="gas" draggable="false">ACCELERA</button>
-    <button class="brake" id="brake" draggable="false">FRENO</button>
+    <button id="gas" class="gas">GAS</button>
+    <button id="brake" class="brake">FRENO</button>
   </div>
 
 </div>
 
-<!-- ================= FIREBASE ================= -->
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
-<!-- ================= SCRIPT ================= -->
 <script src="assets/scriptHome.js"></script>
 
-<!-- ================= GIOCO ================= -->
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// 🚗 AUTO
 let car = {
   x: 200,
   y: 500,
@@ -74,7 +60,6 @@ let car = {
   speed: 0
 };
 
-// 🅿️ PARCHEGGIO
 let parking = {
   x: 160,
   y: 50,
@@ -82,22 +67,17 @@ let parking = {
   height: 120
 };
 
-// INPUT
 let gasPressed = false;
 let brakePressed = false;
+
 let steeringAngle = 0;
 let steeringInput = 0;
-let isGameOver = false;
+let gameOverFlag = false;
 
-// 🖼️ CAR IMAGE
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
-// ================= INPUT =================
-function setGas(v){ gasPressed = v; }
-function setBrake(v){ brakePressed = v; }
-
-// ================= VOLANTE =================
+// ================= CONTROLLI =================
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
@@ -107,17 +87,18 @@ function setupControls() {
   let startX = 0;
   let startAngle = 0;
 
-  function start(e){
+  wheel.addEventListener("pointerdown", (e) => {
     dragging = true;
-    startX = e.touches ? e.touches[0].clientX : e.clientX;
-    startAngle = steeringAngle;
-  }
+    wheel.setPointerCapture(e.pointerId);
 
-  function move(e){
+    startX = e.clientX;
+    startAngle = steeringAngle;
+  });
+
+  wheel.addEventListener("pointermove", (e) => {
     if (!dragging) return;
 
-    const x = e.touches ? e.touches[0].clientX : e.clientX;
-    let delta = x - startX;
+    let delta = e.clientX - startX;
 
     steeringAngle = startAngle + delta * 0.8;
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
@@ -125,78 +106,28 @@ function setupControls() {
     steeringInput = steeringAngle / 450;
 
     wheelImg.style.transform = `rotate(${steeringAngle}deg)`;
-  }
+  });
 
-  function end(){
-    dragging = false;
-  }
+  wheel.addEventListener("pointerup", () => dragging = false);
+  wheel.addEventListener("pointercancel", () => dragging = false);
 
-  wheel.addEventListener("mousedown", start);
-  window.addEventListener("mousemove", move);
-  window.addEventListener("mouseup", end);
-
-  wheel.addEventListener("touchstart", start, { passive: true });
-  window.addEventListener("touchmove", move, { passive: true });
-  window.addEventListener("touchend", end);
-
-  // gas
+  // GAS
   const gas = document.getElementById("gas");
-  gas.addEventListener("touchstart", () => setGas(true), { passive: true });
-  gas.addEventListener("touchend", () => setGas(false));
+  gas.addEventListener("pointerdown", () => gasPressed = true);
+  gas.addEventListener("pointerup", () => gasPressed = false);
+  gas.addEventListener("pointercancel", () => gasPressed = false);
 
-  // brake
+  // FRENO
   const brake = document.getElementById("brake");
-  brake.addEventListener("touchstart", () => setBrake(true), { passive: true });
-  brake.addEventListener("touchend", () => setBrake(false));
+  brake.addEventListener("pointerdown", () => brakePressed = true);
+  brake.addEventListener("pointerup", () => brakePressed = false);
+  brake.addEventListener("pointercancel", () => brakePressed = false);
 }
 
-// ================= GAME =================
-function gameOver(){
-  if (isGameOver) return;
-  isGameOver = true;
-  alert("💥 HAI PERSO!");
-  reset();
-}
+// ================= LOGICA =================
+function update() {
 
-function reset(){
-  car.x = 200;
-  car.y = 500;
-  car.speed = 0;
-  car.angle = 0;
-  steeringAngle = 0;
-  steeringInput = 0;
-  isGameOver = false;
-}
-
-function checkBorders(){
-  if (
-    car.x < 0 ||
-    car.x > canvas.width ||
-    car.y < 0 ||
-    car.y > canvas.height
-  ) gameOver();
-}
-
-function checkWin(){
-
-  let inside =
-    car.x > parking.x &&
-    car.x < parking.x + parking.width &&
-    car.y > parking.y &&
-    car.y < parking.y + parking.height;
-
-  let angleOk = Math.abs(car.angle % Math.PI) < 0.2;
-  let speedOk = Math.abs(car.speed) < 0.3;
-
-  if (inside && angleOk && speedOk){
-    alert("🎉 PARCHEGGIO PERFETTO!");
-    reset();
-  }
-}
-
-function update(){
-
-  if (isGameOver) return;
+  if (gameOverFlag) return;
 
   if (gasPressed) car.speed += 0.2;
   if (brakePressed) car.speed -= 0.3;
@@ -205,19 +136,52 @@ function update(){
     car.angle += steeringInput * 0.04;
   }
 
-  steeringAngle *= 0.97;
-  steeringInput = steeringAngle / 450;
-
   car.speed *= 0.98;
 
   car.x += Math.sin(car.angle) * car.speed;
   car.y -= Math.cos(car.angle) * car.speed;
 
-  checkBorders();
+  // bordi
+  if (car.x < 0 || car.x > canvas.width || car.y < 0 || car.y > canvas.height) {
+    gameOver();
+  }
+
+  // win
   checkWin();
 }
 
-function draw(){
+function checkWin() {
+
+  let inside =
+    car.x > parking.x &&
+    car.x < parking.x + parking.width &&
+    car.y > parking.y &&
+    car.y < parking.y + parking.height;
+
+  if (inside && Math.abs(car.speed) < 0.3) {
+    alert("🎉 PARCHEGGIATO!");
+    reset();
+  }
+}
+
+function gameOver() {
+  gameOverFlag = true;
+  alert("💥 PERSO!");
+  reset();
+}
+
+function reset() {
+  car.x = 200;
+  car.y = 500;
+  car.speed = 0;
+  car.angle = 0;
+  steeringAngle = 0;
+  steeringInput = 0;
+  gameOverFlag = false;
+}
+
+// ================= DRAW =================
+function draw() {
 
   ctx.clearRect(0,0,canvas.width,canvas.height);
 
@@ -231,7 +195,7 @@ function draw(){
   ctx.restore();
 }
 
-function loop(){
+function loop() {
   update();
   draw();
   requestAnimationFrame(loop);
