@@ -4,12 +4,98 @@
   --accent: #00f7ff;
 }
 
+/* ================= BASE ================= */
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
+  height: 100vh;
+}
+
+/* ================= NAVBAR ================= */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+  padding: 0 20px;
+  background: #000;
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* ================= USER MENU ================= */
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.user-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  color: #000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.arrow {
+  font-size: 14px;
+}
+
+/* DROPDOWN */
+.dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #222;
+  border-radius: 8px;
+  min-width: 180px;
+  display: none;
+  flex-direction: column;
+  z-index: 30;
+}
+
+.user-menu.open .dropdown {
+  display: flex;
+}
+
+.dropdown a,
+.dropdown span {
+  padding: 12px;
+  color: #fff;
+  text-decoration: none;
+}
+
+.dropdown a:hover {
+  background: var(--accent);
+  color: #000;
+}
+
+/* ================= OVERLAY ================= */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  z-index: 10;
+}
+
+#overlay.visible {
+  display: block;
 }
 
 /* ================= CANVAS ================= */
@@ -19,11 +105,12 @@ canvas {
   background: #555;
   border: 3px solid #fff;
   border-radius: 12px;
-  position: relative;
+  max-width: 95%;
   z-index: 1;
+  position: relative;
 }
 
-/* ================= CONTROLLI ================= */
+/* ================= CONTROLS ================= */
 .controls {
   position: fixed;
   bottom: 20px;
@@ -41,13 +128,10 @@ canvas {
   pointer-events: auto;
 }
 
-/* ================= VOLANTE (PNG) ================= */
+/* ================= VOLANTE ================= */
 .steering-wheel {
-  width: 110px;
-  height: 110px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  width: 150px;
+  height: 150px;
   user-select: none;
   touch-action: none;
   cursor: grab;
@@ -63,7 +147,6 @@ canvas {
   object-fit: contain;
   pointer-events: none;
   transform-origin: center;
-  transition: transform 0.03s linear;
 }
 
 /* ================= PEDALI ================= */
@@ -73,7 +156,7 @@ canvas {
   gap: 12px;
 }
 
-/* 🟢 GAS */
+/* GAS */
 .gas {
   background: linear-gradient(145deg, #00c853, #007e33);
   color: white;
@@ -81,15 +164,9 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-  cursor: pointer;
 }
 
-.gas:active {
-  transform: scale(0.95);
-}
-
-/* 🔴 FRENO */
+/* FRENO */
 .brake {
   background: linear-gradient(145deg, #ff1744, #b00020);
   color: white;
@@ -97,23 +174,22 @@ canvas {
   border: none;
   border-radius: 12px;
   font-weight: bold;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.3);
-  cursor: pointer;
-}
-
-.brake:active {
-  transform: scale(0.95);
 }
 
 /* ================= MOBILE ================= */
 @media (max-width: 600px) {
+
   .steering-wheel {
-    width: 85px;
-    height: 85px;
+    width: 110px;
+    height: 110px;
   }
 
   .gas, .brake {
-    padding: 14px 16px;
+    padding: 14px;
     font-size: 14px;
+  }
+
+  canvas {
+    height: 70vh;
   }
 }
