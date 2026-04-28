@@ -1,145 +1,199 @@
 <!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home</title>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/styleHome.css">
-    <link rel="stylesheet" href="assets/css.css">
-  </head>
+  <link rel="stylesheet" href="assets/styleHome.css">
+  <link rel="stylesheet" href="assets/css.css">
+</head>
 
-  <body>
+<body>
 
-    <div id="overlay" class="hidden"></div>
+<div id="overlay" class="hidden"></div>
 
-    <!-- NAV -->
-    <nav>
-      <h1>MDweb</h1>
+<!-- NAV -->
+<nav>
+  <h1>MDweb</h1>
+</nav>
 
-      <div class="user-menu" id="userMenu">
-        <div class="user-icon">U</div>
-        <span class="arrow">&#9662;</span>
+<!-- GAME -->
+<canvas id="gameCanvas" width="400" height="600"></canvas>
 
-        <div class="dropdown" id="dropdownMenu">
-          <span class="dropdown-item username-display" id="userName">Utente</span>
-          <a href="profilo.html">Modifica profilo</a>
-          <a href="impostazioni.html">Impostazioni</a>
-          <a href="" id="logout">Logout</a>
-        </div>
-      </div>
-    </nav>
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-    <!-- CANVAS GAME -->
-    <canvas id="gameCanvas" width="400" height="600"></canvas>
+canvas.tabIndex = 1;
+canvas.focus();
 
-    <script>
-      const canvas = document.getElementById("gameCanvas");
-      const ctx = canvas.getContext("2d");
+canvas.addEventListener("click", () => canvas.focus());
 
-      canvas.tabIndex = 1;
-      canvas.focus();
+// 🚗 CAR
+let car = {
+  x: 200,
+  y: 500,
+  width: 30,
+  height: 50,
+  angle: 0,
+  speed: 0
+};
 
-      canvas.addEventListener("click", () => canvas.focus());
+// ⌨️ KEYBOARD
+let keys = {};
+window.addEventListener("keydown", (e) => keys[e.key] = true);
+window.addEventListener("keyup", (e) => keys[e.key] = false);
 
-      // 🚗 AUTO
-      let car = {
-        x: 200,
-        y: 500,
-        width: 30,
-        height: 50,
-        angle: 0,
-        speed: 0
-      };
+// 🖼️ IMAGE CAR
+let carImg = new Image();
+carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
-      let keys = {};
+// 🅿️ PARKING
+let parking = {
+  x: 160,
+  y: 50,
+  width: 80,
+  height: 120
+};
 
-      window.addEventListener("keydown", (e) => keys[e.key] = true);
-      window.addEventListener("keyup", (e) => keys[e.key] = false);
+// 🎮 CONTROLS
+let steering = 0;
+let gasPressed = false;
+let brakePressed = false;
 
-      // 🖼️ IMMAGINE AUTO
-      let carImg = new Image();
-      carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
+// 🔧 SET CONTROLS
+function setGas(state) {
+  gasPressed = state;
+}
 
-      // 🅿️ PARCHEGGIO
-      let parking = {
-        x: 160,
-        y: 50,
-        width: 80,
-        height: 120
-      };
+function setBrake(state) {
+  brakePressed = state;
+}
 
-      function update() {
+// 🎮 SETUP CONTROLS
+function setupControls() {
+  const wheel = document.getElementById("wheel");
 
-        if (keys["ArrowUp"]) car.speed += 0.2;
-        if (keys["ArrowDown"]) car.speed -= 0.2;
+  let dragging = false;
+  let lastX = 0;
 
-        if (keys["ArrowLeft"]) car.angle -= 0.05;
-        if (keys["ArrowRight"]) car.angle += 0.05;
+  // volante
+  wheel.addEventListener("mousedown", (e) => {
+    dragging = true;
+    lastX = e.clientX;
+  });
 
-        car.speed *= 0.98;
+  window.addEventListener("mouseup", () => dragging = false);
 
-        car.x += Math.sin(car.angle) * car.speed;
-        car.y -= Math.cos(car.angle) * car.speed;
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
 
-        // collisione parcheggio
-        if (
-          car.x > parking.x &&
-          car.x < parking.x + parking.width &&
-          car.y > parking.y &&
-          car.y < parking.y + parking.height
-        ) {
-          alert("🎉 PARCHEGGIATO!");
-          reset();
-        }
-      }
+    let delta = e.clientX - lastX;
+    lastX = e.clientX;
 
-      function reset() {
-        car.x = 200;
-        car.y = 500;
-        car.speed = 0;
-        car.angle = 0;
-      }
+    steering += delta * 0.002;
+    steering = Math.max(-1, Math.min(1, steering));
 
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    wheel.style.transform = `rotate(${steering * 120}deg)`;
+  });
 
-        // parcheggio
-        ctx.fillStyle = "green";
-        ctx.fillRect(parking.x, parking.y, parking.width, parking.height);
+  // gas
+  const gas = document.getElementById("gas");
+  gas.addEventListener("mousedown", () => setGas(true));
+  gas.addEventListener("mouseup", () => setGas(false));
+  gas.addEventListener("touchstart", () => setGas(true));
+  gas.addEventListener("touchend", () => setGas(false));
 
-        // macchina (immagine)
-        ctx.save();
-        ctx.translate(car.x, car.y);
-        ctx.rotate(car.angle);
+  // brake
+  const brake = document.getElementById("brake");
+  brake.addEventListener("mousedown", () => setBrake(true));
+  brake.addEventListener("mouseup", () => setBrake(false));
+  brake.addEventListener("touchstart", () => setBrake(true));
+  brake.addEventListener("touchend", () => setBrake(false));
+}
 
-        ctx.drawImage(carImg, -15, -25, car.width, car.height);
+// 🚗 UPDATE
+function update() {
 
-        ctx.restore();
-      }
+  if (gasPressed || keys["ArrowUp"]) {
+    car.speed += 0.2;
+  }
 
-      function loop() {
-        update();
-        draw();
-        requestAnimationFrame(loop);
-      }
+  if (brakePressed || keys["ArrowDown"]) {
+    car.speed -= 0.3;
+  }
 
-      // 🚀 parte solo quando l'immagine è pronta
-      carImg.onload = function () {
-        loop();
-      };
-    </script>
+  car.angle += steering * 0.03;
+  steering *= 0.9;
 
-    <!-- CONTROLLI MOBILE -->
-    <div class="controls">
-      <button onclick="keys['ArrowUp']=true; setTimeout(()=>keys['ArrowUp']=false,100)">⬆️</button>
-      <div>
-        <button onclick="keys['ArrowLeft']=true; setTimeout(()=>keys['ArrowLeft']=false,100)">⬅️</button>
-        <button onclick="keys['ArrowDown']=true; setTimeout(()=>keys['ArrowDown']=false,100)">⬇️</button>
-        <button onclick="keys['ArrowRight']=true; setTimeout(()=>keys['ArrowRight']=false,100)">➡️</button>
-      </div>
-    </div>
+  car.speed *= 0.98;
 
-  </body>
+  car.x += Math.sin(car.angle) * car.speed;
+  car.y -= Math.cos(car.angle) * car.speed;
+
+  // 🅿️ collisione parcheggio
+  if (
+    car.x > parking.x &&
+    car.x < parking.x + parking.width &&
+    car.y > parking.y &&
+    car.y < parking.y + parking.height
+  ) {
+    alert("🎉 PARCHEGGIATO!");
+    reset();
+  }
+}
+
+function reset() {
+  car.x = 200;
+  car.y = 500;
+  car.speed = 0;
+  car.angle = 0;
+}
+
+// 🎨 DRAW
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // parcheggio
+  ctx.fillStyle = "green";
+  ctx.fillRect(parking.x, parking.y, parking.width, parking.height);
+
+  // auto
+  ctx.save();
+  ctx.translate(car.x, car.y);
+  ctx.rotate(car.angle);
+
+  ctx.drawImage(carImg, -15, -25, car.width, car.height);
+
+  ctx.restore();
+}
+
+// 🔁 LOOP
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// 🚀 START
+carImg.onload = function () {
+  setupControls();
+  loop();
+};
+</script>
+
+<!-- 🎮 CONTROLLI UI -->
+<div class="controls">
+
+  <div class="steering-wheel" id="wheel">🚗</div>
+
+  <div class="pedals">
+    <button class="gas" id="gas">ACCELERA</button>
+    <button class="brake" id="brake">FRENO</button>
+  </div>
+
+</div>
+
+</body>
 </html>
