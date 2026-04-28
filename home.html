@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Home</title>
+  <title>MDweb - Parking Game</title>
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
@@ -13,7 +13,7 @@
 
 <div id="overlay" class="hidden"></div>
 
-<!-- ================= NAV BAR (TUO CODICE) ================= -->
+<!-- ================= NAVBAR (TUO) ================= -->
 <nav>
   <h1>MDweb</h1>
 
@@ -30,10 +30,10 @@
   </div>
 </nav>
 
-<!-- ================= CANVAS GIOCO ================= -->
+<!-- ================= GAME ================= -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ================= CONTROLLI GIOCO ================= -->
+<!-- ================= CONTROLLI ================= -->
 <div class="controls">
 
   <div class="steering-wheel" id="wheel">
@@ -47,7 +47,7 @@
 
 </div>
 
-<!-- ================= FIREBASE (TUO CODICE) ================= -->
+<!-- ================= FIREBASE ================= -->
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
@@ -55,7 +55,7 @@
 <script src="assets/tema.js"></script>
 <script src="assets/scriptHome.js"></script>
 
-<!-- ================= GIOCO ================= -->
+<!-- ================= GAME ================= -->
 <script>
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
@@ -76,12 +76,11 @@ let parking = { x: 160, y: 50, width: 80, height: 120 };
 // INPUT
 let gasPressed = false;
 let brakePressed = false;
-
 let steeringAngle = 0;
 let steeringInput = 0;
 let isGameOver = false;
 
-// 🖼️ AUTO
+// 🖼️ CAR IMAGE
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
@@ -89,26 +88,29 @@ carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 function setGas(v){ gasPressed = v; }
 function setBrake(v){ brakePressed = v; }
 
+// 🎮 VOLANTE FIXATO (TOUCH + MOUSE PRECISO)
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
   const wheelImg = wheel.querySelector("img");
 
   let dragging = false;
-  let lastX = 0;
+  let startX = 0;
+  let startAngle = 0;
 
-  function start(x){
+  function start(e){
     dragging = true;
-    lastX = x;
+    startX = e.touches ? e.touches[0].clientX : e.clientX;
+    startAngle = steeringAngle;
   }
 
-  function move(x){
+  function move(e){
     if (!dragging) return;
 
-    let delta = x - lastX;
-    lastX = x;
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    let delta = x - startX;
 
-    steeringAngle += delta * 1.2;
+    steeringAngle = startAngle + delta * 0.8;
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
 
     steeringInput = steeringAngle / 450;
@@ -120,29 +122,32 @@ function setupControls() {
     dragging = false;
   }
 
-  wheel.addEventListener("mousedown", e => start(e.clientX));
-  window.addEventListener("mousemove", e => move(e.clientX));
+  // mouse
+  wheel.addEventListener("mousedown", start);
+  window.addEventListener("mousemove", move);
   window.addEventListener("mouseup", end);
 
-  wheel.addEventListener("touchstart", e => start(e.touches[0].clientX));
-  window.addEventListener("touchmove", e => move(e.touches[0].clientX));
+  // touch
+  wheel.addEventListener("touchstart", start, { passive: true });
+  window.addEventListener("touchmove", move, { passive: true });
   window.addEventListener("touchend", end);
 
+  // gas
   const gas = document.getElementById("gas");
-  const brake = document.getElementById("brake");
-
   gas.addEventListener("mousedown", () => setGas(true));
   gas.addEventListener("mouseup", () => setGas(false));
   gas.addEventListener("touchstart", () => setGas(true));
   gas.addEventListener("touchend", () => setGas(false));
 
+  // brake
+  const brake = document.getElementById("brake");
   brake.addEventListener("mousedown", () => setBrake(true));
   brake.addEventListener("mouseup", () => setBrake(false));
   brake.addEventListener("touchstart", () => setBrake(true));
   brake.addEventListener("touchend", () => setBrake(false));
 }
 
-// ================= GAME =================
+// ================= GAME LOGIC =================
 function gameOver(){
   if (isGameOver) return;
   isGameOver = true;
@@ -155,6 +160,7 @@ function reset(){
   car.y = 500;
   car.speed = 0;
   car.angle = 0;
+
   steeringAngle = 0;
   steeringInput = 0;
   isGameOver = false;
