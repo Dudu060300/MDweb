@@ -2,9 +2,9 @@
 <html lang="it">
 
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDweb - Driving Simulator</title>
+  <title>MDweb</title>
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
@@ -12,13 +12,15 @@
 
 <body>
 
-<!-- ================= NAV ================= -->
+<div id="overlay" class="hidden"></div>
+
+<!-- NAV -->
 <nav>
   <h1>MDweb</h1>
 
   <div class="user-menu" id="userMenu">
     <div class="user-icon" id="userIcon">U</div>
-    <span class="arrow">▼</span>
+    <span class="arrow">&#9662;</span>
 
     <div class="dropdown">
       <span id="userName">Utente</span>
@@ -29,24 +31,21 @@
   </div>
 </nav>
 
-<!-- ================= GAME ================= -->
+<!-- GAME -->
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ================= CONTROLS ================= -->
+<!-- CONTROLLI -->
 <div class="controls">
 
-  <!-- 🛞 VOLANTE -->
   <div class="steering-wheel" id="wheel">
     <img src="assets/Steering-Wheel.png" draggable="false">
   </div>
 
-  <!-- 🎮 PEDALI -->
   <div class="pedals">
-    <button id="gas" class="gas">GAS</button>
-    <button id="brake" class="brake">FRENO</button>
+    <button id="gas">GAS</button>
+    <button id="brake">FRENO</button>
   </div>
 
-  <!-- ⚙️ CAMBIO -->
   <div class="gear-box">
     <button onclick="setGear('P')">P</button>
     <button onclick="setGear('D')">D</button>
@@ -55,7 +54,6 @@
 
 </div>
 
-<!-- ================= SCRIPT ================= -->
 <script>
 
 const canvas = document.getElementById("gameCanvas");
@@ -85,7 +83,11 @@ let brakePressed = false;
 let steeringAngle = 0;
 let steeringInput = 0;
 
-let gear = "D"; // P D R
+let gear = "D";
+
+// 🚗 IMMAGINE AUTO
+let carImg = new Image();
+carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
 // ================= CAMBIO =================
 function setGear(g) {
@@ -110,65 +112,59 @@ function setGear(g) {
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
-  const wheelImg = wheel.querySelector("img");
+  const img = wheel.querySelector("img");
 
   let dragging = false;
-  let centerX = 0;
-  let centerY = 0;
-  let lastAngle = 0;
+  let cx = 0, cy = 0;
+  let last = 0;
 
   function getAngle(e) {
-    return Math.atan2(
-      e.clientY - centerY,
-      e.clientX - centerX
-    ) * 180 / Math.PI;
+    return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
   }
 
   wheel.addEventListener("pointerdown", (e) => {
+
     dragging = true;
     wheel.setPointerCapture(e.pointerId);
 
     const r = wheel.getBoundingClientRect();
-    centerX = r.left + r.width / 2;
-    centerY = r.top + r.height / 2;
+    cx = r.left + r.width / 2;
+    cy = r.top + r.height / 2;
 
-    lastAngle = getAngle(e);
+    last = getAngle(e);
   });
 
   wheel.addEventListener("pointermove", (e) => {
+
     if (!dragging) return;
 
     let current = getAngle(e);
-
-    let delta = current - lastAngle;
+    let delta = current - last;
 
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    steeringAngle += delta * 2.2;
+    steeringAngle += delta * 2;
 
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
-
     steeringInput = steeringAngle / 450;
 
-    wheelImg.style.transform = `rotate(${steeringAngle}deg)`;
+    img.style.transform = `rotate(${steeringAngle}deg)`;
 
-    lastAngle = current;
+    last = current;
   });
 
   wheel.addEventListener("pointerup", () => dragging = false);
   wheel.addEventListener("pointercancel", () => dragging = false);
 
-  // GAS
   document.getElementById("gas").addEventListener("pointerdown", () => gasPressed = true);
   document.getElementById("gas").addEventListener("pointerup", () => gasPressed = false);
 
-  // FRENO
   document.getElementById("brake").addEventListener("pointerdown", () => brakePressed = true);
   document.getElementById("brake").addEventListener("pointerup", () => brakePressed = false);
 }
 
-// ================= UPDATE =================
+// ================= FISICA =================
 function update() {
 
   if (gear !== "P") {
@@ -188,24 +184,16 @@ function update() {
 
   car.speed *= 0.97;
 
-  let direction = (gear === "R") ? -1 : 1;
+  let dir = (gear === "R") ? -1 : 1;
 
   if (Math.abs(car.speed) > 0.1) {
     car.angle += steeringInput * 0.04;
   }
 
-  car.x += Math.cos(car.angle) * car.speed * direction;
-  car.y += Math.sin(car.angle) * car.speed * direction;
+  car.x += Math.cos(car.angle) * car.speed * dir;
+  car.y += Math.sin(car.angle) * car.speed * dir;
 
-  // bordi
-  if (
-    car.x < 0 || car.x > canvas.width ||
-    car.y < 0 || car.y > canvas.height
-  ) {
-    reset();
-  }
-
-  // WIN SOLO IN P
+  // 🅿️ WIN
   let inside =
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
@@ -213,7 +201,16 @@ function update() {
     car.y < parking.y + parking.height;
 
   if (inside && gear === "P" && Math.abs(car.speed) < 0.2) {
-    alert("🎉 PARCHEGGIO PERFETTO IN P!");
+    alert("🎉 PARCHEGGIO PERFETTO!");
+    reset();
+  }
+
+  // 💥 bordi
+  if (
+    car.x < 0 || car.x > canvas.width ||
+    car.y < 0 || car.y > canvas.height
+  ) {
+    alert("💥 HAI SBAGLIATO!");
     reset();
   }
 }
@@ -234,16 +231,23 @@ function reset() {
 // ================= DRAW =================
 function draw() {
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // parcheggio
   ctx.fillStyle = "green";
   ctx.fillRect(parking.x, parking.y, parking.width, parking.height);
 
   ctx.save();
   ctx.translate(car.x, car.y);
   ctx.rotate(car.angle);
-  ctx.fillStyle = "blue";
-  ctx.fillRect(-40, -60, 80, 120);
+
+  if (carImg.complete) {
+    ctx.drawImage(carImg, -40, -60, 80, 120);
+  } else {
+    ctx.fillStyle = "red"; // fallback
+    ctx.fillRect(-40, -60, 80, 120);
+  }
+
   ctx.restore();
 }
 
