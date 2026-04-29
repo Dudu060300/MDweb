@@ -8,29 +8,26 @@
 
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
-
-  <style>
-    .gear-box button {
-      background: #333;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      margin: 5px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    .gear-box button.active {
-      background: #00ff88;
-      color: black;
-    }
-  </style>
 </head>
 
 <body>
 
+<div id="overlay" class="hidden"></div>
+
 <nav>
   <h1>MDweb</h1>
+
+  <div class="user-menu" id="userMenu">
+    <div class="user-icon" id="userIcon">U</div>
+    <span class="arrow">&#9662;</span>
+
+    <div class="dropdown">
+      <span id="userName">Utente</span>
+      <a href="profilo.html">Profilo</a>
+      <a href="impostazioni.html">Impostazioni</a>
+      <a href="#" id="logout">Logout</a>
+    </div>
+  </div>
 </nav>
 
 <canvas id="gameCanvas" width="400" height="600"></canvas>
@@ -46,10 +43,25 @@
     <button id="brake">FRENO</button>
   </div>
 
-  <div class="gear-box">
-    <button id="gearP" onclick="setGear('P')">P</button>
-    <button id="gearD" onclick="setGear('D')">D</button>
-    <button id="gearR" onclick="setGear('R')">R</button>
+  <!-- CAMBIO P D R -->
+  <div class="gear-selector">
+
+    <div class="gear-track"></div>
+
+    <div class="gear-item" onclick="setGear('P')" id="gearPBox">
+      <span class="gear-label">P</span>
+    </div>
+
+    <div class="gear-item" onclick="setGear('D')" id="gearDBox">
+      <span class="gear-label">D</span>
+    </div>
+
+    <div class="gear-item" onclick="setGear('R')" id="gearRBox">
+      <span class="gear-label">R</span>
+    </div>
+
+    <div class="gear-indicator" id="gearIndicator"></div>
+
   </div>
 
 </div>
@@ -59,7 +71,7 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// AUTO
+// 🚗 AUTO
 let car = {
   x: 200,
   y: 500,
@@ -67,7 +79,7 @@ let car = {
   speed: 0
 };
 
-// PARCHEGGIO
+// 🅿️ PARCHEGGIO
 let parking = {
   x: 160,
   y: 50,
@@ -75,7 +87,7 @@ let parking = {
   height: 120
 };
 
-// INPUT
+// 🎮 INPUT
 let gasPressed = false;
 let brakePressed = false;
 
@@ -84,17 +96,12 @@ let steeringInput = 0;
 
 let gear = "D";
 
-// IMMAGINE AUTO
+// 🚗 IMMAGINE AUTO
 let carImg = new Image();
 carImg.src = "assets/Top-Down-Car-Conceptual-Model-Display-PNG.png";
 
-// CAMBIO
+/* ================= CAMBIO ================= */
 function setGear(g) {
-
-  if (Math.abs(car.speed) > 0.5) {
-    alert("⚠️ Fermati prima di cambiare marcia!");
-    return;
-  }
 
   if (g === "P") {
     let inside =
@@ -111,14 +118,13 @@ function setGear(g) {
 
   gear = g;
 
-  document.getElementById("gearP").classList.remove("active");
-  document.getElementById("gearD").classList.remove("active");
-  document.getElementById("gearR").classList.remove("active");
+  const indicator = document.getElementById("gearIndicator");
+  const target = document.getElementById("gear" + g + "Box");
 
-  document.getElementById("gear" + g).classList.add("active");
+  indicator.style.top = target.offsetTop + "px";
 }
 
-// CONTROLLI
+/* ================= CONTROLLI ================= */
 function setupControls() {
 
   const wheel = document.getElementById("wheel");
@@ -128,7 +134,7 @@ function setupControls() {
   let cx = 0, cy = 0;
   let last = 0;
 
-  function angle(e) {
+  function getAngle(e) {
     return Math.atan2(e.clientY - cy, e.clientX - cx) * 180 / Math.PI;
   }
 
@@ -140,22 +146,21 @@ function setupControls() {
     cx = r.left + r.width / 2;
     cy = r.top + r.height / 2;
 
-    last = angle(e);
+    last = getAngle(e);
   });
 
   wheel.addEventListener("pointermove", (e) => {
-
     if (!dragging) return;
 
-    let current = angle(e);
+    let current = getAngle(e);
     let delta = current - last;
 
     if (delta > 180) delta -= 360;
     if (delta < -180) delta += 360;
 
-    steeringAngle += delta * 1.5; // 🔥 più preciso
-
+    steeringAngle += delta * 2;
     steeringAngle = Math.max(-450, Math.min(450, steeringAngle));
+
     steeringInput = steeringAngle / 450;
 
     img.style.transform = `rotate(${steeringAngle}deg)`;
@@ -173,36 +178,42 @@ function setupControls() {
   document.getElementById("brake").addEventListener("pointerup", () => brakePressed = false);
 }
 
-// UPDATE
+/* ================= FISICA (🔥 MIGLIORATA) ================= */
 function update() {
 
   if (gear !== "P") {
 
+    // 🔥 ACCELERAZIONE PRECISA
     if (gasPressed) {
-      car.speed += 0.18;
+      if (gear === "D") car.speed += 0.12;
+      if (gear === "R") car.speed -= 0.12;
+    } else {
+      // 🔥 stop immediato + rolling realistico
+      car.speed *= 0.85;
     }
 
+    // freno
     if (brakePressed) {
-      car.speed *= 0.85;
+      car.speed *= 0.80;
     }
 
   } else {
     car.speed *= 0.8;
   }
 
-  car.speed *= 0.97;
+  // attrito strada
+  car.speed *= 0.92;
 
   let dir = (gear === "R") ? -1 : 1;
 
-  if (Math.abs(car.speed) > 0.05) {
+  if (Math.abs(car.speed) > 0.1) {
     car.angle += steeringInput * 0.04;
   }
 
-  // 🔥 MOVIMENTO CORRETTO
-  car.x += Math.sin(car.angle) * car.speed * dir;
-  car.y -= Math.cos(car.angle) * car.speed * dir;
+  car.x += Math.cos(car.angle) * car.speed * dir;
+  car.y += Math.sin(car.angle) * car.speed * dir;
 
-  // WIN
+  // 🅿️ WIN
   let inside =
     car.x > parking.x &&
     car.x < parking.x + parking.width &&
@@ -214,17 +225,17 @@ function update() {
     reset();
   }
 
-  // BORDI
+  // 💥 BORDI
   if (
     car.x < 0 || car.x > canvas.width ||
     car.y < 0 || car.y > canvas.height
   ) {
-    alert("💥 FUORI!");
+    alert("💥 HAI SBAGLIATO!");
     reset();
   }
 }
 
-// RESET
+/* ================= RESET ================= */
 function reset() {
   car.x = 200;
   car.y = 500;
@@ -237,7 +248,7 @@ function reset() {
   setGear("D");
 }
 
-// DRAW
+/* ================= DRAW ================= */
 function draw() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -259,7 +270,7 @@ function draw() {
   ctx.restore();
 }
 
-// LOOP
+/* ================= LOOP ================= */
 function loop() {
   update();
   draw();
