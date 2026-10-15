@@ -29,25 +29,7 @@
   </nav>
 
   <!-- Script per aprire/chiudere il menu a tendina -->
-  <script>
-    const userMenu = document.getElementById('userMenu');
-    const overlay = document.getElementById('overlay');
-
-    userMenu.addEventListener('click', function(event) {
-      event.stopPropagation();
-      userMenu.classList.toggle('open');
-      if (overlay) {
-        overlay.style.display = userMenu.classList.contains('open') ? 'block' : 'none';
-      }
-    });
-
-    document.addEventListener('click', function() {
-      userMenu.classList.remove('open');
-      if (overlay) {
-        overlay.style.display = 'none';
-      }
-    });
-  </script>
+  <script src="assets/scriptHome.js"></script>
 
 </body>
 </html>
