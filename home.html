@@ -6,29 +6,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MDweb</title>
   <link rel="stylesheet" href="assets/styleHome.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
 
-  <div id="overlay" class="hidden"></div>
+  <div id="overlay"></div>
 
   <nav>
     <h1>MDweb</h1>
 
-    <div class="user-menu" id="userMenu">
+    <!-- Aggiunto aria-expanded="false" -->
+    <div class="user-menu" id="userMenu" aria-expanded="false">
       <div class="user-icon" id="userIcon">U</div>
       <span class="arrow">&#9662;</span>
 
       <div class="dropdown">
         <span id="userName">Utente</span>
-        <a href="profilo.html">Profilo</a>
+        <a href="profilo.html" id="editProfile">Profilo</a>
         <a href="impostazioni.html">Impostazioni</a>
         <a href="#" id="logout">Logout</a>
       </div>
     </div>
   </nav>
 
-  <!-- Script per aprire/chiudere il menu a tendina -->
+  <!-- Script principale -->
   <script src="assets/scriptHome.js"></script>
 
 </body>
