@@ -5,30 +5,49 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MDweb</title>
-
   <link rel="stylesheet" href="assets/styleHome.css">
-  <link rel="stylesheet" href="assets/css.css">
 </head>
 
 <body>
 
-<div id="overlay" class="hidden"></div>
+  <div id="overlay" class="hidden"></div>
 
-<nav>
-  <h1>MDweb</h1>
+  <nav>
+    <h1>MDweb</h1>
 
-  <div class="user-menu" id="userMenu">
-    <div class="user-icon" id="userIcon">U</div>
-    <span class="arrow">&#9662;</span>
+    <div class="user-menu" id="userMenu">
+      <div class="user-icon" id="userIcon">U</div>
+      <span class="arrow">&#9662;</span>
 
-    <div class="dropdown">
-      <span id="userName">Utente</span>
-      <a href="profilo.html">Profilo</a>
-      <a href="impostazioni.html">Impostazioni</a>
-      <a href="#" id="logout">Logout</a>
+      <div class="dropdown">
+        <span id="userName">Utente</span>
+        <a href="profilo.html">Profilo</a>
+        <a href="impostazioni.html">Impostazioni</a>
+        <a href="#" id="logout">Logout</a>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+
+  <!-- Script per aprire/chiudere il menu a tendina -->
+  <script>
+    const userMenu = document.getElementById('userMenu');
+    const overlay = document.getElementById('overlay');
+
+    userMenu.addEventListener('click', function(event) {
+      event.stopPropagation();
+      userMenu.classList.toggle('open');
+      if (overlay) {
+        overlay.style.display = userMenu.classList.contains('open') ? 'block' : 'none';
+      }
+    });
+
+    document.addEventListener('click', function() {
+      userMenu.classList.remove('open');
+      if (overlay) {
+        overlay.style.display = 'none';
+      }
+    });
+  </script>
 
 </body>
 </html>
