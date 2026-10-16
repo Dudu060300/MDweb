@@ -1,38 +1,41 @@
 <!DOCTYPE html>
 <html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Home</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MDweb</title>
-  <link rel="stylesheet" href="assets/styleHome.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/styleHome.css">
+<link rel="stylesheet" href="assets/css.css">
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-</head>
-
-<body>
-
-<!-- NAV BAR -->
+  </head>
+  <body>
+<div id="overlay" class="hidden"></div>
+    <!-- NAV BAR -->
     <nav>
-      <h1><a href="home.html">MDweb</a></h1>
+      <h1>MDweb</h1>
       <div class="user-menu" id="userMenu" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Menu utente">
         <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
         <span class="arrow" aria-hidden="true">&#9662;</span>
         <div class="dropdown" id="dropdownMenu" role="menu" aria-label="Menu opzioni utente">
           <span class="dropdown-item username-display" id="userName">Utente</span>
-          <a href="home.html" id="home" role="menuitem" tabindex="-1">Home</a>
           <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
           <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
           <a href="" id="logout" role="menuitem" tabindex="-1">Logout</a>
         </div>
       </div>
     </nav>
+    
+    
+    <!-- SCRIPT -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="assets/tema.js"></script>
+    <script src="assets/scriptHome.js"></script>
 
-  <!-- Script principale -->
-  <script src="assets/scriptHome.js"></script>
-
-</body>
+    
+  </body>
 </html>
