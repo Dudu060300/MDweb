@@ -17,9 +17,9 @@
   --success-color: #4cff6b;
 
   --text-light: #ffffff;
-  --text-muted: #bbb;
+  --text-muted: #bbbbbb;
 
-  --input-bg-readonly: #444;
+  --input-bg-readonly: #444444;
 
   --transition-speed: 0.3s;
 
@@ -27,9 +27,9 @@
 }
 
 
-/* =========================
+/* =========================================================
    TEMA SCURO
-   ========================= */
+   ========================================================= */
 
 body.dark {
   --popup-bg: #ffffff;
@@ -38,9 +38,10 @@ body.dark {
   --bg-color: #000000;
 
   --nav-bg: #ffffff;
+  --nav-text: #000000;
+
   --barra-bg: #00f7ff;
   --barra-color: #000000;
-  --nav-text: #000000;
 
   --text-color: #ffffff;
 
@@ -48,16 +49,23 @@ body.dark {
 }
 
 
-/* =========================
+/* =========================================================
    RESET
-   ========================= */
+   ========================================================= */
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+body {
+  min-height: 100vh;
 
   font-family:
     'Segoe UI',
@@ -71,9 +79,19 @@ body {
 }
 
 
-/* =========================
+/* =========================================================
+   LINK GENERICI
+   ========================================================= */
+
+a {
+  text-decoration: none;
+  color: var(--nav-text);
+}
+
+
+/* =========================================================
    NAVBAR
-   ========================= */
+   ========================================================= */
 
 nav {
   position: sticky;
@@ -86,7 +104,12 @@ nav {
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
+
+  /*
+    Non usiamo justify-content: space-between
+    perché MDweb è posizionato indipendentemente.
+  */
+  justify-content: flex-start;
 
   padding: 0 20px;
 
@@ -96,17 +119,16 @@ nav {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
 
   /*
-    IMPORTANTE:
-    permette al dropdown di uscire
-    dalla navbar senza essere tagliato
+    Il dropdown deve poter uscire
+    dalla navbar.
   */
   overflow: visible;
 }
 
 
-/* =========================
+/* =========================================================
    PULSANTE INDIETRO
-   ========================= */
+   ========================================================= */
 
 .back-btn {
   width: 40px;
@@ -116,7 +138,10 @@ nav {
   align-items: center;
   justify-content: center;
 
-  background: none;
+  margin: 0;
+  padding: 0;
+
+  background: transparent;
   border: none;
 
   color: var(--nav-text);
@@ -126,8 +151,7 @@ nav {
 
   cursor: pointer;
 
-  padding: 0;
-  margin: 0;
+  flex-shrink: 0;
 }
 
 .back-btn:hover {
@@ -135,19 +159,9 @@ nav {
 }
 
 
-/* =========================
-   LINK
-   ========================= */
-
-a {
-  text-decoration: none;
-  color: var(--nav-text);
-}
-
-
-/* =========================
+/* =========================================================
    LOGO MDWEB
-   ========================= */
+   ========================================================= */
 
 nav h1 {
   position: absolute;
@@ -155,34 +169,49 @@ nav h1 {
   left: 50%;
   top: 50%;
 
-  transform: translate(-50%, -50%);
+  width: max-content;
 
   margin: 0;
 
-  font-weight: 700;
+  transform: translate(-50%, -50%);
+
+  color: var(--nav-text);
+
   font-size: 1.5rem;
+  font-weight: 700;
 
   line-height: 1;
 
   white-space: nowrap;
 
-  color: var(--nav-text);
+  z-index: 1;
 }
 
 
-/* =========================
+/* =========================================================
    MENU UTENTE
-   ========================= */
+   ========================================================= */
 
-.user-menu {
+nav .user-menu {
   position: relative;
 
   /*
-    QUESTA È LA CORREZIONE PRINCIPALE:
-    spinge il menu utente completamente
-    verso destra della navbar.
+    QUESTE DUE REGOLE SONO QUELLE
+    CHE LO PORTANO A DESTRA.
   */
   margin-left: auto;
+  margin-inline-start: auto;
+
+  margin-right: 0;
+  margin-inline-end: 0;
+
+  /*
+    Impedisce al flex container
+    di spostarlo o comprimerlo.
+  */
+  flex-shrink: 0;
+
+  width: auto;
 
   display: flex;
   align-items: center;
@@ -193,46 +222,59 @@ nav h1 {
   cursor: pointer;
 
   user-select: none;
+
+  z-index: 2;
 }
 
 
-/* =========================
+/* =========================================================
    ICONA UTENTE
-   ========================= */
+   ========================================================= */
 
-.user-icon {
+nav .user-icon {
   width: 40px;
   height: 40px;
 
-  flex-shrink: 0;
+  flex: 0 0 40px;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   background: var(--bg-color);
-
   color: var(--text-color);
 
   border-radius: 50%;
 
-  font-weight: bold;
   font-size: 1.2rem;
+  font-weight: bold;
+
+  text-align: center;
 }
 
 
-/* =========================
+/* =========================================================
    FRECCIA
-   ========================= */
+   ========================================================= */
 
-.arrow {
-  display: inline-block;
+nav .arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-  margin-left: 0;
+  width: 18px;
+  height: 40px;
+
+  margin: 0;
+  padding: 0;
+
+  color: var(--nav-text);
 
   font-size: 1.1rem;
 
-  color: var(--nav-text);
+  line-height: 1;
+
+  flex-shrink: 0;
 
   user-select: none;
 
@@ -240,22 +282,21 @@ nav h1 {
     transform var(--transition-speed) ease;
 }
 
-.user-menu.open .arrow {
+nav .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
 
-/* =========================
+/* =========================================================
    DROPDOWN
-   ========================= */
+   ========================================================= */
 
-.dropdown {
+nav .user-menu .dropdown {
   position: absolute;
 
   /*
-    Il menu rimane agganciato
-    al lato destro dell'icona.
-    Quindi si apre verso SINISTRA.
+    ATTACCATO AL LATO DESTRO
+    DEL MENU UTENTE.
   */
   right: 0;
   left: auto;
@@ -263,12 +304,19 @@ nav h1 {
   top: calc(100% + 10px);
 
   width: 250px;
+  min-width: 180px;
 
   /*
-    Evita che il menu esca
+    Non permette al menu di uscire
     dai bordi dello schermo.
   */
   max-width: calc(100vw - 20px);
+
+  display: none;
+  flex-direction: column;
+
+  padding: 0;
+  margin: 0;
 
   background: #333333;
 
@@ -277,34 +325,27 @@ nav h1 {
   box-shadow:
     0 5px 15px rgba(0, 0, 0, 0.5);
 
-  display: none;
+  overflow: hidden;
 
-  flex-direction: column;
-
-  /*
-    Deve stare sopra agli altri elementi.
-  */
   z-index: 9999;
 
   opacity: 0;
 
   transform: translateY(-10px);
 
+  pointer-events: none;
+
   transition:
     opacity var(--transition-speed) ease,
     transform var(--transition-speed) ease;
-
-  pointer-events: none;
-
-  overflow: hidden;
 }
 
 
-/* =========================
+/* =========================================================
    DROPDOWN APERTO
-   ========================= */
+   ========================================================= */
 
-.user-menu.open .dropdown {
+nav .user-menu.open .dropdown {
   display: flex;
 
   opacity: 1;
@@ -315,61 +356,61 @@ nav h1 {
 }
 
 
-/* =========================
+/* =========================================================
    NOME UTENTE
-   ========================= */
+   ========================================================= */
 
-.dropdown-item.username-display {
+nav .dropdown .username-display {
   display: block;
 
   width: 100%;
 
+  margin: 0;
   padding: 12px 16px;
 
   background: var(--accent-color);
-
   color: #000000;
 
   font-weight: 600;
+
+  line-height: 1.4;
 
   cursor: default;
 
   user-select: none;
 }
 
-
-/*
-  Non cambiare il colore dell'username
-  quando ci passi sopra.
-*/
-.dropdown-item.username-display:hover,
-.dropdown-item.username-display:focus {
+nav .dropdown .username-display:hover,
+nav .dropdown .username-display:focus {
   background: var(--accent-color);
-
   color: #000000;
 
   outline: none;
 }
 
 
-/* =========================
-   VOCI DROPDOWN
-   ========================= */
+/* =========================================================
+   LINK DEL DROPDOWN
+   ========================================================= */
 
-.dropdown a {
+nav .dropdown a {
   display: block;
 
   width: 100%;
 
+  margin: 0;
   padding: 12px 16px;
+
+  background: transparent;
 
   color: var(--text-light);
 
   text-decoration: none;
 
+  font-size: 1rem;
   font-weight: 600;
 
-  font-size: 1rem;
+  line-height: 1.4;
 
   transition:
     background var(--transition-speed) ease,
@@ -377,41 +418,38 @@ nav h1 {
 }
 
 
-/* =========================
+/* =========================================================
    HOVER DROPDOWN
-   ========================= */
+   ========================================================= */
 
-.dropdown a:hover,
-.dropdown a:focus {
+nav .dropdown a:hover,
+nav .dropdown a:focus {
   background: var(--accent-color);
-
   color: #000000;
 
   outline: none;
 }
 
 
-/* =========================
+/* =========================================================
    FORM
-   ========================= */
+   ========================================================= */
 
 #profileForm {
   margin: 20px;
 }
 
-
 #barra {
   margin-bottom: 20px;
 
-  border-radius: 20px;
-
   padding: 10px;
+
+  border-radius: 20px;
 
   text-align: center;
 
   background: var(--barra-bg);
 }
-
 
 #barra h3 {
   margin: 0;
@@ -423,6 +461,10 @@ nav h1 {
   user-select: none;
 }
 
+
+/* =========================================================
+   FORM GROUP
+   ========================================================= */
 
 .form-group,
 .username-group,
@@ -436,7 +478,6 @@ nav h1 {
   width: 100%;
 }
 
-
 label {
   font-weight: 600;
 
@@ -445,6 +486,10 @@ label {
   text-align: left;
 }
 
+
+/* =========================================================
+   INPUT
+   ========================================================= */
 
 input {
   width: 100%;
@@ -455,6 +500,7 @@ input {
   font-size: 1rem;
 
   border-radius: 6px;
+  border: 1px solid #444444;
 
   outline: none;
 
@@ -462,20 +508,16 @@ input {
 
   color: var(--text-light);
 
-  border: 1px solid #444;
-
   transition:
     box-shadow var(--transition-speed);
 }
 
-
 input:focus {
+  background: #111111;
+
   box-shadow:
     0 0 6px var(--accent-color);
-
-  background: #111;
 }
-
 
 input[readonly] {
   background: var(--input-bg-readonly);
@@ -486,9 +528,9 @@ input[readonly] {
 }
 
 
-/* =========================
+/* =========================================================
    PULSANTI
-   ========================= */
+   ========================================================= */
 
 button {
   margin-top: 15px;
@@ -498,21 +540,18 @@ button {
   background: var(--barra-bg);
 
   border: none;
-
   border-radius: 8px;
-
-  font-weight: 700;
 
   color: var(--barra-color);
 
   font-size: 1.1rem;
+  font-weight: 700;
 
   cursor: pointer;
 
   transition:
     background var(--transition-speed);
 }
-
 
 button:hover,
 button:focus {
@@ -522,28 +561,30 @@ button:focus {
 }
 
 
+/* =========================================================
+   PULSANTI USERNAME / PASSWORD
+   ========================================================= */
+
 #changeUsernameBtn,
 #verifyPasswordBtn {
+  width: auto;
   height: 40px;
-
-  padding: 0 16px;
 
   margin-top: 0;
 
+  padding: 0 16px;
+
   border-radius: 8px;
 
-  font-size: 1.1rem;
-
-  font-weight: 700;
-
   background: var(--barra-bg);
-
   color: var(--barra-color);
+
+  font-size: 1.1rem;
+  font-weight: 700;
 
   transition:
     background var(--transition-speed);
 }
-
 
 #changeUsernameBtn:hover,
 #verifyPasswordBtn:hover,
@@ -555,9 +596,9 @@ button:focus {
 }
 
 
-/* =========================
-   GRUPPI INPUT + PULSANTI
-   ========================= */
+/* =========================================================
+   GRUPPI CON INPUT + PULSANTE
+   ========================================================= */
 
 .username-group,
 .old-password-group {
@@ -567,18 +608,18 @@ button:focus {
 }
 
 
-/* =========================
+/* =========================================================
    HIDDEN
-   ========================= */
+   ========================================================= */
 
 .hidden {
   display: none !important;
 }
 
 
-/* =========================
+/* =========================================================
    MESSAGGI
-   ========================= */
+   ========================================================= */
 
 #errorMsg,
 #successMsg {
@@ -586,53 +627,48 @@ button:focus {
 
   min-height: 20px;
 
-  padding-left: 4px;
-
   margin-top: 6px;
-
-  font-size: 0.9rem;
-
-  font-weight: 700;
+  padding-left: 4px;
 
   border-radius: 4px;
 
+  font-size: 0.9rem;
+  font-weight: 700;
+
   user-select: none;
 }
-
 
 #errorMsg.visible {
   display: block;
 
   color: var(--error-color);
-
   background: var(--msg-bg);
 
   transition:
     opacity var(--transition-speed);
 }
-
 
 #successMsg.visible {
   display: block;
 
   color: var(--success-color);
+  background: var(--msg-bg);
 
   text-align: center;
-
-  background: var(--msg-bg);
 
   transition:
     opacity var(--transition-speed);
 }
 
 
-/* =========================
+/* =========================================================
    MOBILE
-   ========================= */
+   ========================================================= */
 
 @media (max-width: 600px) {
 
   nav {
+    width: 100%;
     height: 60px;
 
     padding: 0 15px;
@@ -642,40 +678,64 @@ button:focus {
 
 
   nav h1 {
+    left: 50%;
+    top: 50%;
+
     font-size: 1.5rem;
   }
 
 
-  .user-menu {
+  /*
+    UTENTE SEMPRE A DESTRA
+  */
+  nav .user-menu {
     margin-left: auto;
+    margin-inline-start: auto;
+
+    margin-right: 0;
+    margin-inline-end: 0;
+
+    flex-shrink: 0;
 
     gap: 8px;
   }
 
 
-  .user-icon {
+  nav .user-icon {
     width: 40px;
     height: 40px;
+
+    flex-basis: 40px;
   }
 
 
-  .dropdown {
+  nav .arrow {
+    width: 18px;
+  }
+
+
+  /*
+    DROPDOWN MOBILE
+  */
+  nav .user-menu .dropdown {
     right: 0;
     left: auto;
 
     top: calc(100% + 10px);
 
     width: 250px;
-
     max-width: calc(100vw - 20px);
   }
 
+
+  /* -------------------------
+     BARRA
+     ------------------------- */
 
   #barra {
     display: flex;
 
     justify-content: center;
-
     align-items: center;
 
     position: relative;
@@ -698,6 +758,10 @@ button:focus {
   }
 
 
+  /* -------------------------
+     FORM
+     ------------------------- */
+
   .form-group {
     display: flex;
 
@@ -712,9 +776,9 @@ button:focus {
   .form-group label {
     width: 100%;
 
-    text-align: left;
-
     margin-bottom: 5px;
+
+    text-align: left;
 
     font-weight: 600;
   }
@@ -745,9 +809,9 @@ button:focus {
   .old-password-group label {
     width: 100%;
 
-    text-align: left;
-
     margin-bottom: 5px;
+
+    text-align: left;
 
     font-weight: 600;
   }
@@ -769,14 +833,16 @@ button:focus {
 
 
   .username-group button {
+    width: 100%;
+
     margin-bottom: 10px;
   }
 }
 
 
-/* =========================
-   LANDSCAPE
-   ========================= */
+/* =========================================================
+   TABLET / DESKTOP LANDSCAPE
+   ========================================================= */
 
 @media (min-width: 601px) and (orientation: landscape) {
 
@@ -837,7 +903,7 @@ button:focus {
 
   html,
   body {
-    height: 90vh;
+    min-height: 90vh;
 
     overflow: auto;
   }
