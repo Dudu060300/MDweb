@@ -1,41 +1,106 @@
 <!DOCTYPE html>
 <html lang="it">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Home</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/styleHome.css">
+  <link rel="stylesheet" href="assets/css.css">
+</head>
+
+<body>
+
+  <div id="overlay" class="hidden"></div>
+
+  <!-- NAV BAR -->
+  <nav>
     
-    <title>Home</title>
+    <!-- Logo centrale -->
+    <h1>MDweb</h1>
 
-    <!-- CSS -->
-    <link rel="stylesheet" href="assets/styleHome.css">
-<link rel="stylesheet" href="assets/css.css">
-
-  </head>
-  <body>
-<div id="overlay" class="hidden"></div>
-    <!-- NAV BAR -->
-    <nav>
-      <h1>MDweb</h1>
-      <div class="user-menu" id="userMenu" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Menu utente">
-        <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
-        <span class="arrow" aria-hidden="true">&#9662;</span>
-        <div class="dropdown" id="dropdownMenu" role="menu" aria-label="Menu opzioni utente">
-          <span class="dropdown-item username-display" id="userName">Utente</span>
-          <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
-          <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
-          <a href="" id="logout" role="menuitem" tabindex="-1">Logout</a>
-        </div>
+    <!-- Menu utente a destra -->
+    <div
+      class="user-menu"
+      id="userMenu"
+      tabindex="0"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-label="Menu utente"
+    >
+      
+      <div
+        class="user-icon"
+        id="userIcon"
+        aria-hidden="true"
+      >
+        U
       </div>
-    </nav>
-    
-    
-    <!-- SCRIPT -->
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-    <script src="assets/tema.js"></script>
-    <script src="assets/scriptHome.js"></script>
 
-    
-  </body>
+      <span
+        class="arrow"
+        aria-hidden="true"
+      >
+        &#9662;
+      </span>
+
+      <!-- Menu a tendina -->
+      <div
+        class="dropdown"
+        id="dropdownMenu"
+        role="menu"
+        aria-label="Menu opzioni utente"
+      >
+
+        <span
+          class="dropdown-item username-display"
+          id="userName"
+        >
+          Utente
+        </span>
+
+        <a
+          href="profilo.html"
+          id="editProfile"
+          role="menuitem"
+          tabindex="-1"
+        >
+          Modifica profilo
+        </a>
+
+        <a
+          href="impostazioni.html"
+          id="openSettings"
+          role="menuitem"
+          tabindex="-1"
+        >
+          Impostazioni
+        </a>
+
+        <a
+          href=""
+          id="logout"
+          role="menuitem"
+          tabindex="-1"
+        >
+          Logout
+        </a>
+
+      </div>
+    </div>
+
+  </nav>
+
+  <!-- SCRIPT FIREBASE -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <!-- SCRIPT DEL SITO -->
+  <script src="assets/tema.js"></script>
+  <script src="assets/scriptHome.js"></script>
+
+</body>
 </html>
