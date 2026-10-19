@@ -75,12 +75,18 @@
     }
 
     /* =========================================================
-       RESET E BLOCCO ZOOM
+       RESET E BLOCCO TOTALE DELLO ZOOM
        ========================================================= */
     * {
       box-sizing: border-box;
       touch-action: manipulation;
       -webkit-text-size-adjust: 100%;
+      user-select: none;
+    }
+
+    /* Permetti la selezione del testo solo all'interno dell'input */
+    input {
+      user-select: text;
     }
 
     html, body {
@@ -92,6 +98,8 @@
       background: var(--bg-color);
       color: var(--text-color);
       background-attachment: fixed;
+      /* Impedisce il rimbalzo di zoom su iOS */
+      overflow-x: hidden;
     }
 
     a {
@@ -481,6 +489,24 @@
     
     .hidden { display: none !important; }
   </style>
+
+  <!-- Script JavaScript per bloccare definitivamente qualsiasi gesto di zoom -->
+  <script>
+    // Blocca il pinch-to-zoom (zoom a due dita)
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+
+    // Blocca lo zoom tramite doppio tocco rapido
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
 
   <!-- Firebase SDK (compatibile) -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
