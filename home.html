@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -13,30 +13,85 @@
   <link rel="stylesheet" href="assets/css.css">
 
   <style>
-    /* Stili ad alto contrasto e gestione tema scuro/chiaro nativo */
-    :root {
+    /* ==========================================================
+       BLOCCO ZOOM E GESTIONE TOcco RAPIDO (touch-action)
+       ================================================---------- */
+    * {
+      touch-action: manipulation;
+    }
+
+    /* ==========================================================
+       GESTIONE FORZATA COLORI: TEMA CHIARO (Sfondo bianco, scritte nere)
+       ================================================---------- */
+    :root, 
+    :root[data-theme="light"],
+    html:not([data-theme="dark"]) {
+      --bg: #ffffff !important;
+      --surface: #f8f9fa !important;
+      --text: #000000 !important;
+      --muted: #555555 !important;
+      --line: #cccccc !important;
+      
       --pos: #047857; --pos-bg: #d1fae5; --pos-card: #ecfdf5;
       --neg: #be123c; --neg-bg: #ffe4e6; --neg-card: #fff1f2;
       --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
     }
 
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --pos: #34d399; --pos-bg: #064e3b; --pos-card: #022c22;
-        --neg: #fb7185; --neg-bg: #4c0519; --neg-card: #3f030f;
-        --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
-      }
-    }
-
-    :root[data-theme="dark"] {
+    /* ==========================================================
+       GESTIONE FORZATA COLORI: TEMA SCURO (Inversione completa)
+       ================================================---------- */
+    :root[data-theme="dark"],
+    html[data-theme="dark"] {
+      --bg: #000000 !important;
+      --surface: #121212 !important;
+      --text: #ffffff !important;
+      --muted: #aaaaaa !important;
+      --line: #333333 !important;
+      
       --pos: #34d399; --pos-bg: #064e3b; --pos-card: #022c22;
       --neg: #fb7185; --neg-bg: #4c0519; --neg-card: #3f030f;
       --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
     }
 
+    /* Fallback per prefers-color-scheme se non c'è data-theme esplicito */
+    @media (prefers-color-scheme: dark) {
+      html:not([data-theme="light"]) {
+        --bg: #000000 !important;
+        --surface: #121212 !important;
+        --text: #ffffff !important;
+        --muted: #aaaaaa !important;
+        --line: #333333 !important;
+      }
+    }
+
+    /* Applicazione globale dei colori a Body e Navbar */
     body {
-      background: var(--bg);
+      background-color: var(--bg) !important;
+      color: var(--text) !important;
       background-attachment: fixed;
+      margin: 0;
+      font-family: inherit;
+    }
+
+    nav {
+      background-color: var(--bg) !important;
+      color: var(--text) !important;
+      border-bottom: 1px solid var(--line);
+    }
+
+    nav h1, nav .user-icon, nav .arrow, nav span, nav a {
+      color: var(--text) !important;
+    }
+
+    /* Menu a tendina coerente col tema */
+    .dropdown {
+      background-color: var(--surface) !important;
+      border: 1px solid var(--line) !important;
+      color: var(--text) !important;
+    }
+
+    .dropdown a, .dropdown span {
+      color: var(--text) !important;
     }
 
     main.cristian-main {
@@ -60,7 +115,7 @@
       font-weight: 500;
     }
 
-    /* Card del saldo con alto contrasto */
+    /* Card del saldo */
     .balance {
       background: var(--surface);
       border: 2px solid var(--line);
@@ -79,7 +134,7 @@
 
     .balance .lbl {
       color: var(--text);
-      opacity: 0.8;
+      opacity: 0.9;
       margin-top: 8px;
       font-weight: 700;
       font-size: 1rem;
@@ -103,7 +158,7 @@
     .bar .p { background: var(--pos); }
     .bar .n { background: var(--neg); }
 
-    /* Input motivo ad alto contrasto */
+    /* Input motivo */
     .note-container {
       margin: 18px 0;
     }
@@ -172,7 +227,7 @@
     #plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
     #minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
 
-    /* Pulsanti strumenti (Annulla / Azzera) spostati SOPRA lo storico */
+    /* Pulsanti strumenti (Annulla / Azzera) */
     .tools {
       display: flex;
       gap: 12px;
@@ -348,7 +403,7 @@
       </button>
     </div>
 
-    <!-- STRUMENTI SPOSTATI SOPRA LO STORICO -->
+    <!-- STRUMENTI -->
     <div class="tools">
       <button id="undo" type="button">Annulla ultimo</button>
       <button id="reset" type="button">Azzera tutto</button>
@@ -469,7 +524,6 @@
         });
       }
       
-      /* Avviso di conferma per Annulla ultimo */
       if ($("undo")) {
         $("undo").onclick = function() {
           if (items.length) {
@@ -484,7 +538,6 @@
         };
       }
       
-      /* Avviso di conferma per Azzera tutto */
       if ($("reset")) {
         $("reset").onclick = function() {
           if (items.length) {
