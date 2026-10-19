@@ -21,6 +21,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const userName = document.getElementById("userName");
   const overlay = document.getElementById("overlay");
 
+  // Riferimenti per la Modale Anteprima Foto
+  const photoModal = document.getElementById("photoModal");
+  const modalImage = document.getElementById("modalImage");
+  const modalCaption = document.getElementById("modalCaption");
+  const closePhotoModal = document.getElementById("closePhotoModal");
+
   // =====================================================================
   // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
   // =====================================================================
@@ -36,7 +42,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
-    // Chiude il menu se si clicca al di fuori di esso
     document.addEventListener("click", (e) => {
       if (!userMenu.contains(e.target)) {
         userMenu.classList.remove("open");
@@ -59,7 +64,35 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================================
-  // STATO DELL'UTENTE E INTERfACCIA NAVBAR
+  // GESTIONE DELLA MODALE ANTEPRIMA FOTO A TUTTO SCHERMO
+  // =====================================================================
+  if (closePhotoModal) {
+    closePhotoModal.onclick = function() {
+      this.blur();
+      if (photoModal) photoModal.classList.add("hidden");
+    };
+  }
+
+  if (photoModal) {
+    photoModal.onclick = function(e) {
+      if (e.target === photoModal) {
+        photoModal.classList.add("hidden");
+      }
+    };
+  }
+
+  window.openPhotoPreview = function(imgSrc, captionText) {
+    if (modalImage && photoModal) {
+      modalImage.src = imgSrc;
+      if (modalCaption) {
+        modalCaption.textContent = captionText || "";
+      }
+      photoModal.classList.remove("hidden");
+    }
+  };
+
+  // =====================================================================
+  // STATO DELL'UTENTE E INTERFACCIA NAVBAR
   // =====================================================================
   auth.onAuthStateChanged((user) => {
     if (!user) return;
@@ -77,20 +110,18 @@ document.addEventListener("DOMContentLoaded", () => {
       editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
     }
 
-    // Avvia il caricamento dei dati di Cristian legati all'ID univoco dell'utente
     initFirestore(user.uid);
   });
 
   // =====================================================================
   // LOGICA DEL CONTATORE "PIÙ E MENO" (CRISTIAN)
   // =====================================================================
-  let items = []; // Array per memorizzare lo storico dei movimenti
+  let items = [];
   let dbInstance, currentUserId;
-  let currentPhotoBase64 = ""; // Memorizza la foto corrente in formato Base64
+  let currentPhotoBase64 = "";
 
   const $ = function(id) { return document.getElementById(id); };
 
-  // Riferimenti per la gestione delle foto
   const photoInput = $("photoInput");
   const photoName = $("photoName");
   const removePhotoBtn = $("removePhotoBtn");
@@ -100,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
     photoInput.addEventListener("change", function(e) {
       const file = e.target.files[0];
       if (file) {
-        if (file.size > 2 * 1024 * 1024) { // Limite di sicurezza 2MB
+        if (file.size > 2 * 1024 * 1024) {
           alert("La foto è troppo grande. Scegli un'immagine sotto i 2MB.");
           return;
         }
@@ -115,9 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Pulsante per rimuovere la foto selezionata prima dell'invio
+  // Pulsante per rimuovere la foto prima dell'invio
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener("click", function() {
+      this.blur();
       currentPhotoBase64 = "";
       if (photoInput) photoInput.value = "";
       if (photoName) photoName.textContent = "";
@@ -125,41 +157,34 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Funzione di utilità per sanificare il testo inserito (prevenzione XSS)
   function esc(t) { 
     var d = document.createElement("div"); 
     d.textContent = t; 
     return d.innerHTML; 
   }
 
-  // Funzione principale per aggiornare la grafica e lo storico
   function render() {
     var p = items.filter(function(i) { return i.t === "p"; }).length,
         n = items.length - p,
         b = p - n;
     
-    // Aggiornamento saldo totale
     if ($("bal")) {
       $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
       $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text-color)";
     }
     
-    // Giudizio testuale in base al punteggio
     if ($("verdict")) {
       $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
     }
     
-    // Contatori testuali sui pulsanti principali
     if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
     if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
     
-    // Aggiornamento della barra visiva proporzionale
     var tot = items.length || 1;
     if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
     if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
     if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
     
-    // Generazione dello storico raggruppato per giorni (dal più recente al più vecchio)
     if ($("log")) {
       let lastDayStr = "";
       let html = "";
@@ -168,20 +193,23 @@ document.addEventListener("DOMContentLoaded", () => {
         var d = new Date(i.d);
         var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
         
-        // Inserisce l'intestazione della data se cambia il giorno
         if (dayStr !== lastDayStr) {
           lastDayStr = dayStr;
           html += '<li class="day-header">' + dayStr + '</li>';
         }
         
         var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-        // Genera il tag immagine se è presente una foto salvata nell'elemento
-        var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo" alt="Foto allegata" />' : '';
+        var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+        var escapedCaption = i.n ? esc(i.n).replace(/'/g, "\\'") : '';
+
+        var photoHtml = i.img 
+          ? '<img src="' + i.img + '" class="entry-photo" alt="Foto allegata" style="cursor:pointer;" onclick="openPhotoPreview(\'' + i.img + '\', \'' + escapedCaption + '\')" />' 
+          : '';
         
         html += '<li class="' + i.t + '">' +
                   '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
                   '<div class="txt">' +
-                    (i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>') +
+                    noteText +
                     photoHtml +
                   '</div>' +
                   '<span class="time">' + h + '</span>' +
@@ -192,7 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Salvataggio dei dati su Firebase Firestore in tempo reale
   async function saveToFirestore() {
     if (!dbInstance || !currentUserId) return;
     try {
@@ -202,7 +229,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Inizializzazione e recupero dati da Firestore basato sull'utente loggato
   async function initFirestore(uid) {
     currentUserId = uid;
     try {
@@ -212,7 +238,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (docRef.exists) {
         items = docRef.data().items || [];
       } else {
-        // Fallback di migrazione dal vecchio localStorage se presente
         const oldData = localStorage.getItem("cristian-score");
         if (oldData) {
           items = JSON.parse(oldData) || [];
@@ -225,7 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Funzione per aggiungere un punto (+) o (-) con motivo e foto opzionali
   function add(t) {
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
@@ -237,7 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
       d: Date.now() 
     });
 
-    // Reset dei campi di input e della foto dopo l'aggiunta
     if (noteEl) noteEl.value = "";
     currentPhotoBase64 = "";
     if (photoInput) photoInput.value = "";
@@ -247,22 +270,18 @@ document.addEventListener("DOMContentLoaded", () => {
     saveToFirestore();
     render();
     
-    // Leggero feedback aptico per dispositivi mobili supportati
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
-  // Collegamento eventi ai pulsanti principali (+) e (-) con blocco della selezione visiva (.blur())
   if ($("plus")) $("plus").onclick = function() { this.blur(); add("p"); };
   if ($("minus")) $("minus").onclick = function() { this.blur(); add("n"); };
   
-  // Invio rapido con il tasto "Invio" nel campo motivo
   if ($("note")) {
     $("note").addEventListener("keydown", function(e) { 
       if (e.key === "Enter") { add("p"); } 
     });
   }
   
-  // Pulsante "Annulla ultimo" con avviso di conferma e rimozione del focus (.blur())
   if ($("undo")) {
     $("undo").onclick = function() {
       this.blur();
@@ -278,7 +297,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
   
-  // Pulsante "Azzera tutto" con avviso di sicurezza e rimozione del focus (.blur())
   if ($("reset")) {
     $("reset").onclick = function() {
       this.blur();
