@@ -13,29 +13,29 @@
   <link rel="stylesheet" href="assets/css.css">
 
   <style>
-    /* Stili specifici ed estetica avanzata per il sistema Più e Meno */
+    /* Stili ad alto contrasto e gestione tema scuro/chiaro nativo */
     :root {
-      --pos: #10b981; --pos-bg: #ecfdf5; --pos-bg-card: rgba(16, 185, 129, 0.08);
-      --neg: #f43f5e; --neg-bg: #fff1f2; --neg-bg-card: rgba(244, 63, 94, 0.08);
-      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+      --pos: #047857; --pos-bg: #d1fae5; --pos-card: #ecfdf5;
+      --neg: #be123c; --neg-bg: #ffe4e6; --neg-card: #fff1f2;
+      --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
     }
+
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --pos: #34d399; --pos-bg: #064e3b; --pos-bg-card: rgba(52, 211, 153, 0.12);
-        --neg: #fb7185; --neg-bg: #4c0519; --neg-bg-card: rgba(251, 113, 133, 0.12);
-        --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+        --pos: #34d399; --pos-bg: #064e3b; --pos-card: #022c22;
+        --neg: #fb7185; --neg-bg: #4c0519; --neg-card: #3f030f;
+        --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
       }
     }
+
     :root[data-theme="dark"] {
-      --pos: #34d399; --pos-bg: #064e3b; --pos-bg-card: rgba(52, 211, 153, 0.12);
-      --neg: #fb7185; --neg-bg: #4c0519; --neg-bg-card: rgba(251, 113, 133, 0.12);
-      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+      --pos: #34d399; --pos-bg: #064e3b; --pos-card: #022c22;
+      --neg: #fb7185; --neg-bg: #4c0519; --neg-card: #3f030f;
+      --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
     }
 
     body {
       background: var(--bg);
-      background-image: radial-gradient(circle at top right, var(--pos-bg-card), transparent 40%),
-                        radial-gradient(circle at bottom left, var(--neg-bg-card), transparent 40%);
       background-attachment: fixed;
     }
 
@@ -50,24 +50,24 @@
       margin: 4px 0 2px;
       letter-spacing: -.7px;
       font-weight: 800;
+      color: var(--text);
     }
 
     .sub {
       color: var(--muted);
       margin: 0 0 20px;
       font-size: 0.95rem;
+      font-weight: 500;
     }
 
-    /* Card del saldo con effetto vetro/sfondo pulito */
+    /* Card del saldo con alto contrasto */
     .balance {
       background: var(--surface);
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 24px;
       padding: 24px;
       text-align: center;
       box-shadow: var(--card-shadow);
-      backdrop-filter: blur(10px);
-      transition: transform 0.2s ease;
     }
 
     .balance .num {
@@ -78,32 +78,33 @@
     }
 
     .balance .lbl {
-      color: var(--muted);
+      color: var(--text);
+      opacity: 0.8;
       margin-top: 8px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 1rem;
     }
 
     .bar {
       display: flex;
-      height: 10px;
-      border-radius: 5px;
+      height: 12px;
+      border-radius: 6px;
       overflow: hidden;
       background: var(--line);
       margin-top: 18px;
+      border: 1px solid var(--line);
     }
 
     .bar i {
       display: block;
-      transition: width .4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width .4s ease;
     }
 
     .bar .p { background: var(--pos); }
     .bar .n { background: var(--neg); }
 
-    /* Input motivo elegante */
+    /* Input motivo ad alto contrasto */
     .note-container {
-      position: relative;
       margin: 18px 0;
     }
 
@@ -111,23 +112,24 @@
       width: 100%;
       padding: 16px 18px;
       border-radius: 16px;
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       background-color: var(--surface) !important;
       color: var(--text) !important;
       font: inherit;
       font-size: 1rem;
+      font-weight: 600;
       outline: none;
       box-shadow: var(--card-shadow);
-      transition: all 0.2s ease;
+      transition: border-color 0.2s ease;
     }
 
     .note:focus {
-      border-color: var(--pos);
-      box-shadow: 0 0 0 4px var(--pos-bg-card);
+      border-color: var(--text);
     }
 
     .note::placeholder {
       color: var(--muted);
+      font-weight: 400;
     }
 
     /* Pulsanti principali Più e Meno */
@@ -135,11 +137,11 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 14px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .btns button {
-      border: 0;
+      border: 2px solid transparent;
       border-radius: 20px;
       padding: 22px 12px;
       font: inherit;
@@ -149,7 +151,7 @@
       align-items: center;
       gap: 4px;
       box-shadow: var(--card-shadow);
-      transition: transform 0.15s ease, filter 0.15s ease;
+      transition: transform 0.15s ease;
     }
 
     .btns button:active {
@@ -163,18 +165,44 @@
     }
 
     .btns .cnt {
-      font-size: 1rem;
-      font-weight: 700;
-      opacity: 0.9;
+      font-size: 1.05rem;
+      font-weight: 800;
     }
 
-    #plus { background: var(--pos-bg); color: var(--pos); border: 1px solid rgba(16, 185, 129, 0.2); }
-    #minus { background: var(--neg-bg); color: var(--neg); border: 1px solid rgba(244, 63, 94, 0.2); }
+    #plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+    #minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
+
+    /* Pulsanti strumenti (Annulla / Azzera) spostati SOPRA lo storico */
+    .tools {
+      display: flex;
+      gap: 12px;
+      margin: 16px 0 24px 0;
+    }
+
+    .tools button {
+      flex: 1;
+      padding: 14px;
+      border-radius: 16px;
+      border: 2px solid var(--line) !important;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--card-shadow);
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .tools button:hover {
+      background: var(--line);
+      border-color: var(--text) !important;
+    }
 
     main.cristian-main h2 {
       font-size: 1.2rem;
-      margin: 28px 0 12px;
-      font-weight: 700;
+      margin: 16px 0 12px;
+      font-weight: 800;
+      color: var(--text);
     }
 
     main.cristian-main ul {
@@ -188,17 +216,11 @@
       align-items: center;
       gap: 12px;
       background: var(--surface);
-      border: 1px solid var(--line);
+      border: 2px solid var(--line);
       border-radius: 16px;
       padding: 12px 14px;
       margin-bottom: 10px;
       box-shadow: var(--card-shadow);
-      animation: fadeIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Intestazione del giorno nello storico */
@@ -206,9 +228,9 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--muted);
-      font-size: 0.85rem;
+      font-size: 0.9rem;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 20px;
@@ -227,22 +249,23 @@
       font-size: 1.1rem;
     }
 
-    li.p .tag { background: var(--pos-bg); color: var(--pos); }
-    li.n .tag { background: var(--neg-bg); color: var(--neg); }
+    li.p .tag { background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); }
+    li.n .tag { background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); }
 
     li .txt {
       flex: 1;
       min-width: 0;
       overflow-wrap: anywhere;
-      font-size: 0.95rem;
-      font-weight: 500;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
     }
 
     li .time {
       color: var(--muted);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       flex: none;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .empty {
@@ -250,32 +273,7 @@
       padding: 16px 0;
       text-align: center;
       font-style: italic;
-    }
-    
-    /* Pulsanti strumenti inferiori */
-    .tools {
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .tools button {
-      flex: 1;
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--line) !important;
-      background: var(--surface);
-      color: var(--text);
-      font: inherit;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: var(--card-shadow);
-      transition: background 0.2s ease, border-color 0.2s ease;
-    }
-
-    .tools button:hover {
-      background: var(--line);
-      border-color: var(--muted) !important;
+      font-weight: 500;
     }
   </style>
 
@@ -350,21 +348,22 @@
       </button>
     </div>
 
-    <h2>Storico</h2>
-    <ul id="log"></ul>
-    <p class="empty" id="empty">Niente da mostrare. Premi + o − per iniziare.</p>
-
+    <!-- STRUMENTI SPOSTATI SOPRA LO STORICO -->
     <div class="tools">
       <button id="undo" type="button">Annulla ultimo</button>
       <button id="reset" type="button">Azzera tutto</button>
     </div>
+
+    <h2>Storico</h2>
+    <ul id="log"></ul>
+    <p class="empty" id="empty">Niente da mostrare. Premi + o − per iniziare.</p>
   </main>
 
   <!-- SCRIPT DEL SITO -->
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
 
-  <!-- LOGICA DEL SISTEMA PIÙ E MENO CON GESTIONE FIRESTORE E GIORNI -->
+  <!-- LOGICA DEL SISTEMA PIÙ E MENO -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       let items = [];
@@ -470,22 +469,32 @@
         });
       }
       
+      /* Avviso di conferma per Annulla ultimo */
       if ($("undo")) {
         $("undo").onclick = function() {
           if (items.length) {
-            items.pop();
-            saveToFirestore();
-            render();
+            if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
+              items.pop();
+              saveToFirestore();
+              render();
+            }
+          } else {
+            alert("Non ci sono elementi da annullare.");
           }
         };
       }
       
+      /* Avviso di conferma per Azzera tutto */
       if ($("reset")) {
         $("reset").onclick = function() {
-          if (items.length && confirm("Azzerare tutti i punti di Cristian?")) {
-            items = [];
-            saveToFirestore();
-            render();
+          if (items.length) {
+            if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
+              items = [];
+              saveToFirestore();
+              render();
+            }
+          } else {
+            alert("Il registro è già vuoto.");
           }
         };
       }
