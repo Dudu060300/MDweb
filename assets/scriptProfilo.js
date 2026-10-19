@@ -1,4 +1,18 @@
-// Riferimenti agli elementi del DOM
+const firebaseConfig = {
+  apiKey: "AIzaSyA1U8IL5gdwoKmsdZgANGR_646ZDbjU50c",
+  authDomain: "proghtml-2e571.firebaseapp.com",
+  projectId: "proghtml-2e571",
+  storageBucket: "proghtml-2e571.appspot.com",
+  messagingSenderId: "771370443646",
+  appId: "1:771370443646:web:5dd712f9e03448ebda2463"
+};
+
+// Configura Firebase
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
 const emailInput = document.getElementById("emailInput");
 const usernameInput = document.getElementById("usernameInput");
 const oldPasswordInput = document.getElementById("oldPasswordInput");
@@ -17,6 +31,7 @@ const profileForm = document.getElementById("profileForm");
 const userNameDisplay = document.getElementById("userName");
 const userMenu = document.getElementById("userMenu");
 const logoutBtn = document.getElementById('logout');
+const editProfileBtn = document.getElementById('editProfile');
 
 // Stato di verifica password
 let passwordVerified = false;
@@ -41,26 +56,29 @@ if (userMenu) {
   });
 }
 
-// Gestione dati utente tramite l'evento protetto di auth-guard.js
-document.addEventListener('auth-ready', async (event) => {
-  const user = event.detail;
-  emailInput.value = user.email;
+// Recupera dati utente all'avvio
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    emailInput.value = user.email;
 
-  try {
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    if (userDoc.exists) {
-      const username = userDoc.data().username || "Utente";
-      usernameInput.value = username;
-      if (userNameDisplay) userNameDisplay.textContent = username;
+    try {
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      if (userDoc.exists) {
+        const username = userDoc.data().username || "Utente";
+        usernameInput.value = username;
+        if (userNameDisplay) userNameDisplay.textContent = username;
 
-      // Mostra l'iniziale nello userIcon
-      const userIcon = document.getElementById("userIcon");
-      if (userIcon) {
-        userIcon.textContent = username.charAt(0).toUpperCase();
+        // Mostra l'iniziale nello userIcon
+        const userIcon = document.getElementById("userIcon");
+        if (userIcon) {
+          userIcon.textContent = username.charAt(0).toUpperCase();
+        }
       }
+    } catch (error) {
+      console.error("Errore nel recupero dati utente:", error);
     }
-  } catch (error) {
-    console.error("Errore nel recupero dati utente:", error);
+  } else {
+    window.location.href = "index.html";
   }
 });
 
@@ -80,6 +98,7 @@ changeUsernameBtn.addEventListener("click", async () => {
       .get();
 
     if (!existing.empty) {
+      // Verifica se appartiene allo stesso utente
       const isSelf = existing.docs.some(doc => doc.id === user.uid);
       if (!isSelf) {
         showError("Questo username è già in uso.");
@@ -114,7 +133,7 @@ verifyPasswordBtn.addEventListener("click", async () => {
 
   try {
     await user.reauthenticateWithCredential(credential);
-    showSuccess("Password verificata. Ora puoi inserire una nuova password e salvarla.");
+    showSuccess("Password verificata. Ora puoi inserirne una nuova.");
     passwordVerified = true;
 
     setTimeout(() => {
@@ -135,7 +154,7 @@ verifyPasswordBtn.addEventListener("click", async () => {
   }
 });
 
-// Salva modifiche (Aggiornamento nuova password tramite submit del form)
+// Salva modifiche (Nuova password tramite submit del form)
 profileForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearMessages();
@@ -149,7 +168,7 @@ profileForm.addEventListener("submit", async (e) => {
   const passwordChangeRequested = !newPasswordInput.classList.contains("hidden");
 
   if (!passwordChangeRequested) {
-    showError("Nessuna modifica alla password richiesta.");
+    showError("Nessuna modifica alla password richiesta (usa il pulsante per lo username).");
     return;
   }
 
@@ -185,4 +204,44 @@ profileForm.addEventListener("submit", async (e) => {
   }
 });
 
-//
+// Funzioni per la gestione dei messaggi
+function showError(message) {
+  if (!errorMsg) return;
+  errorMsg.textContent = message;
+  errorMsg.classList.add('visible');
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+function showSuccess(message) {
+  if (!successMsg) return;
+  successMsg.textContent = message;
+  successMsg.classList.add('visible');
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+}
+
+function clearMessages() {
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+// Gestione Logout
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    auth.signOut().then(() => {
+      location.href = 'index.html';
+    });
+  });
+}
