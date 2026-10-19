@@ -3,15 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <title>Home</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
-    <link rel="manifest" href="package.json">
+
+  <!-- Firebase SDK (una sola versione) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <!-- Configurazione + protezione della pagina -->
+  <script src="firebase-init.js"></script>
+  <script src="auth-guard.js"></script>
 </head>
 
 <body>
@@ -20,7 +28,7 @@
 
   <!-- NAV BAR -->
   <nav>
-    
+
     <!-- Logo centrale -->
     <h1>MDweb</h1>
 
@@ -33,21 +41,10 @@
       aria-expanded="false"
       aria-label="Menu utente"
     >
-      
-      <div
-        class="user-icon"
-        id="userIcon"
-        aria-hidden="true"
-      >
-        U
-      </div>
 
-      <span
-        class="arrow"
-        aria-hidden="true"
-      >
-        &#9662;
-      </span>
+      <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
+
+      <span class="arrow" aria-hidden="true">&#9662;</span>
 
       <!-- Menu a tendina -->
       <div
@@ -57,37 +54,18 @@
         aria-label="Menu opzioni utente"
       >
 
-        <span
-          class="dropdown-item username-display"
-          id="userName"
-        >
-          Utente
-        </span>
+        <span class="dropdown-item username-display" id="userName">Utente</span>
 
-        <a
-          href="profilo.html"
-          id="editProfile"
-          role="menuitem"
-          tabindex="-1"
-        >
+        <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">
           Modifica profilo
         </a>
 
-        <a
-          href="impostazioni.html"
-          id="openSettings"
-          role="menuitem"
-          tabindex="-1"
-        >
+        <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">
           Impostazioni
         </a>
 
-        <a
-          href=""
-          id="logout"
-          role="menuitem"
-          tabindex="-1"
-        >
+        <a href="#" id="logout" role="menuitem" tabindex="-1"
+           onclick="logout(); return false;">
           Logout
         </a>
 
@@ -96,21 +74,9 @@
 
   </nav>
 
-  <!-- SCRIPT FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-
   <!-- SCRIPT DEL SITO -->
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase-init.js"></script>
-<script src="auth-guard.js"></script>
-
 
 </body>
 </html>
