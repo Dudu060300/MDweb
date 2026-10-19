@@ -2,65 +2,54 @@
 <html lang="it">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    
-     <title>MDweb</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>MDweb</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="assets/style.css" />
-    <link rel="manifest" href="package.json">
 
-    
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (una sola versione) -->
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-
   </head>
 
   <body>
-
     <div class="container">
-      
       <div class="form-container" id="formContainer">
-        
+
         <!-- LOGIN -->
         <div class="card front">
           <h2>Accedi</h2>
-          <input type="email" id="loginEmail" placeholder="Username/Email" />
-          <input type="password" id="loginPassword" placeholder="Password" />
+          <input type="text" id="loginEmail" placeholder="Username/Email"
+                 autocapitalize="none" autocorrect="off" autocomplete="username" />
+          <input type="password" id="loginPassword" placeholder="Password"
+                 autocomplete="current-password" />
           <button onclick="login()">Login</button>
           <button class="google" onclick="googleLogin()">Accedi con Google</button>
           <button class="apple" onclick="appleLogin()">Accedi con Apple</button>
-          <p>Non hai un account? <a href="#" onclick="flipCard()">Registrati</a></p>
+          <p>Non hai un account? <a href="#" onclick="flipCard(); return false;">Registrati</a></p>
         </div>
 
         <!-- REGISTRAZIONE -->
         <div class="card back">
           <h2>Registrati</h2>
-          <input type="text" id="regName" placeholder="Username" />
-          <input type="email" id="regEmail" placeholder="Email" />
-          <input type="password" id="regPassword" placeholder="Password" />
+          <input type="text" id="regName" placeholder="Username"
+                 autocapitalize="none" autocorrect="off" autocomplete="username" />
+          <input type="email" id="regEmail" placeholder="Email" autocomplete="email" />
+          <input type="password" id="regPassword" placeholder="Password (min. 8 caratteri)"
+                 autocomplete="new-password" />
           <button onclick="register()">Registrati</button>
-          <p>Hai già un account? <a href="#" onclick="flipCard()">Accedi</a></p>
+          <p>Hai già un account? <a href="#" onclick="flipCard(); return false;">Accedi</a></p>
         </div>
+
       </div>
     </div>
 
-
-    <!-- SCRIPT -->
-    <script src="assets/script.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script src="firebase-init.js"></script>
-<script src="auth-guard.js"></script>
-
-
+    <!-- SCRIPT: l'ordine è importante -->
+    <script src="firebase-init.js"></script>
+    <script src="auth.js"></script>
   </body>
 </html>
