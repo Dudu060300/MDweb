@@ -4,7 +4,7 @@
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
- 
+
   --nav-bg: #000000;
   --barra-bg: #000000;
   --barra-color: #00f7ff;
@@ -383,8 +383,12 @@ main.cristian-main h1 {
 }
 
 /* =========================================================
-   STILI PER IL CARICAMENTO DELLE FOTO
+   STILI PER IL CARICAMENTO FOTO E NASCONDIMENTO INPUT NATIVO
    ========================================================= */
+#photoInput {
+  display: none !important;
+}
+
 .photo-upload-container {
   display: flex;
   align-items: center;
@@ -396,12 +400,12 @@ main.cristian-main h1 {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   border-radius: 12px;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--text-color);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s ease;
@@ -414,7 +418,7 @@ main.cristian-main h1 {
 .photo-name {
   font-size: 0.85rem;
   color: var(--text-muted);
-  max-width: 180px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -431,7 +435,7 @@ main.cristian-main h1 {
   margin-top: 0;
 }
 
-/* Foto all'interno delle voci dello storico */
+/* Foto all'interno dello storico */
 main.cristian-main li .entry-photo {
   display: block;
   max-width: 100%;
@@ -440,6 +444,80 @@ main.cristian-main li .entry-photo {
   margin-top: 8px;
   border: 1px solid var(--line);
   object-fit: cover;
+}
+
+/* =========================================================
+   MODALE ANTEPRIMA FOTO A TUTTO SCHERMO
+   ========================================================= */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.92);
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.modal-back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s ease, transform 0.1s ease;
+  z-index: 10001;
+  margin-top: 0;
+}
+
+.modal-back-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.photo-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 90vw;
+  max-height: 80vh;
+  text-align: center;
+}
+
+.photo-modal-content img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.photo-modal-caption {
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 16px;
+  word-break: break-word;
+}
+
+.hidden {
+  display: none !important;
 }
 
 .btns {
