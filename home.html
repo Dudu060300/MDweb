@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <title>Criweb</title>
+  <title>Cristian: più e meno - MDweb</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="assets/styleHome.css">
@@ -153,7 +153,7 @@
     }
   </style>
 
-  <!-- Firebase SDK (una sola versione) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
@@ -169,10 +169,7 @@
 
   <!-- NAV BAR -->
   <nav>
-    <!-- Logo centrale -->
-    <h1>CRIweb</h1>
-
-    <!-- Menu utente a destra -->
+    <h1>MDweb</h1>
     <div
       class="user-menu"
       id="userMenu"
@@ -184,7 +181,6 @@
       <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
       <span class="arrow" aria-hidden="true">&#9662;</span>
 
-      <!-- Menu a tendina -->
       <div
         class="dropdown"
         id="dropdownMenu"
@@ -192,27 +188,17 @@
         aria-label="Menu opzioni utente"
       >
         <span class="dropdown-item username-display" id="userName">Utente</span>
-
-        <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">
-          Modifica profilo
-        </a>
-
-        <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">
-          Impostazioni
-        </a>
-
-        <a href="#" id="logout" role="menuitem" tabindex="-1"
-           onclick="logout(); return false;">
-          Logout
-        </a>
+        <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
+        <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
+        <a href="#" id="logout" role="menuitem" tabindex="-1" onclick="logout(); return false;">Logout</a>
       </div>
     </div>
   </nav>
 
   <!-- CONTENUTO PRINCIPALE -->
   <main class="cristian-main">
-    <h1>Conteggio errori</h1>
-    <p class="sub">Tocca + o − ogni volta.</p>
+    <h1>Cristian</h1>
+    <p class="sub">Tocca + o − ogni volta. Se vuoi, scrivi il motivo.</p>
 
     <section class="balance" aria-live="polite">
       <div class="num" id="bal">0</div>
@@ -226,8 +212,8 @@
     <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (facoltativo)" aria-label="Motivo">
 
     <div class="btns">
-      <button id="plus" aria-label="Aggiungi un più"><span class="sym">+</span><span class="cnt" id="cp">0 positivi</span></button>
-      <button id="minus" aria-label="Aggiungi un meno"><span class="sym">−</span><span class="cnt" id="cn">0 negativi</span></button>
+      <button id="plus" type="button" aria-label="Aggiungi un più"><span class="sym">+</span><span class="cnt" id="cp">0 positivi</span></button>
+      <button id="minus" type="button" aria-label="Aggiungi un meno"><span class="sym">−</span><span class="cnt" id="cn">0 negativi</span></button>
     </div>
 
     <h2>Storico</h2>
@@ -235,8 +221,8 @@
     <p class="empty" id="empty">Niente da mostrare. Premi + o − per iniziare.</p>
 
     <div class="tools">
-      <button id="undo">Annulla ultimo</button>
-      <button id="reset">Azzera tutto</button>
+      <button id="undo" type="button">Annulla ultimo</button>
+      <button id="reset" type="button">Azzera tutto</button>
     </div>
   </main>
 
@@ -244,99 +230,125 @@
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
 
-  <!-- LOGICA DEL SISTEMA PIÙ E MENO CON FIRESTORE -->
+  <!-- LOGICA DEL SISTEMA PIÙ E MENO -->
   <script>
-    let items = [];
-    let db, userId;
+    document.addEventListener("DOMContentLoaded", function() {
+      let items = [];
+      let db, userId;
 
-    const $ = function(id) { return document.getElementById(id); };
-    function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+      const $ = function(id) { return document.getElementById(id); };
+      function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
 
-    function render() {
-      var p = items.filter(function(i) { return i.t === "p"; }).length,
-          n = items.length - p,
-          b = p - n;
-      
-      $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
-      $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text)";
-      $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
-      $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
-      $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
-      
-      var tot = items.length || 1;
-      $("bp").style.width = (p / tot * 100) + "%";
-      $("bn").style.width = (n / tot * 100) + "%";
-      $("empty").style.display = items.length ? "none" : "block";
-      
-      $("log").innerHTML = items.slice().reverse().map(function(i) {
-        var d = new Date(i.d),
-            h = d.toLocaleDateString("it-IT", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"});
-        return '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
-      }).join("");
-    }
-
-    async function saveToFirestore() {
-      if (!db || !userId) return;
-      try {
-        await db.collection("users").doc(userId).collection("data").doc("cristian_score").set({ items });
-      } catch (e) {
-        console.error("Errore salvataggio Firestore:", e);
+      function render() {
+        var p = items.filter(function(i) { return i.t === "p"; }).length,
+            n = items.length - p,
+            b = p - n;
+        
+        if ($("bal")) {
+          $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
+          $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text)";
+        }
+        if ($("verdict")) {
+          $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
+        }
+        if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
+        if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
+        
+        var tot = items.length || 1;
+        if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
+        if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
+        if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
+        
+        if ($("log")) {
+          $("log").innerHTML = items.slice().reverse().map(function(i) {
+            var d = new Date(i.d),
+                h = d.toLocaleDateString("it-IT", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"});
+            return '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
+          }).join("");
+        }
       }
-    }
 
-    async function initFirestore() {
-      try {
-        db = firebase.firestore();
-        firebase.auth().onAuthStateChanged(async (user) => {
-          if (user) {
-            userId = user.uid;
-            const docRef = await db.collection("users").doc(userId).collection("data").doc("cristian_score").get();
-            if (docRef.exists) {
-              items = docRef.data().items || [];
-            } else {
-              const oldData = localStorage.getItem("cristian-score");
-              if (oldData) {
-                items = JSON.parse(oldData) || [];
-                await saveToFirestore();
+      async function saveToFirestore() {
+        if (!db || !userId) return;
+        try {
+          await db.collection("users").doc(userId).collection("data").doc("cristian_score").set({ items });
+        } catch (e) {
+          console.error("Errore salvataggio Firestore:", e);
+        }
+      }
+
+      async function initFirestore() {
+        try {
+          db = firebase.firestore();
+          firebase.auth().onAuthStateChanged(async (user) => {
+            if (user) {
+              userId = user.uid;
+              try {
+                const docRef = await db.collection("users").doc(userId).collection("data").doc("cristian_score").get();
+                if (docRef.exists) {
+                  items = docRef.data().items || [];
+                } else {
+                  const oldData = localStorage.getItem("cristian-score");
+                  if (oldData) {
+                    items = JSON.parse(oldData) || [];
+                    await saveToFirestore();
+                  }
+                }
+              } catch (err) {
+                console.error("Errore lettura dati utente:", err);
               }
+              render();
             }
+          });
+        } catch (e) {
+          console.error("Errore Firebase:", e);
+        }
+      }
+
+      function add(t) {
+        const noteEl = $("note");
+        const val = noteEl ? noteEl.value.trim() : "";
+        items.push({ t: t, n: val, d: Date.now() });
+        if (noteEl) noteEl.value = "";
+        saveToFirestore();
+        render();
+        if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+      }
+
+      // Aggancio sicuro degli eventi ai pulsanti
+      if ($("plus")) $("plus").onclick = function() { add("p"); };
+      if ($("minus")) $("minus").onclick = function() { add("n"); };
+      
+      if ($("note")) {
+        $("note").addEventListener("keydown", function(e) { 
+          if (e.key === "Enter") { add("p"); } 
+        });
+      }
+      
+      if ($("undo")) {
+        $("undo").onclick = function() {
+          if (items.length) {
+            items.pop();
+            saveToFirestore();
             render();
           }
-        });
-      } catch (e) {
-        console.error("Errore Firebase:", e);
+        };
       }
-    }
+      
+      if ($("reset")) {
+        $("reset").onclick = function() {
+          if (items.length && confirm("Azzerare tutti i punti di Cristian?")) {
+            items = [];
+            saveToFirestore();
+            render();
+          }
+        };
+      }
 
-    function add(t) {
-      items.push({ t: t, n: $("note").value.trim(), d: Date.now() });
-      $("note").value = "";
-      saveToFirestore();
+      // Avvio iniziale
       render();
-      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
-    }
-
-    $("plus").onclick = function() { add("p"); };
-    $("minus").onclick = function() { add("n"); };
-    $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
-    
-    $("undo").onclick = function() {
-      if (items.length) {
-        items.pop();
-        saveToFirestore();
-        render();
-      }
-    };
-    
-    $("reset").onclick = function() {
-      if (items.length && confirm("Azzerare tutti i punti di Cristian?")) {
-        items = [];
-        saveToFirestore();
-        render();
-      }
-    };
-
-    initFirestore();
+      initFirestore();
+    });
   </script>
 
 </body>
