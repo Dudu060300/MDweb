@@ -1,5 +1,9 @@
+// =========================================================================
+// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
+// =========================================================================
+
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. Gestione del Tema
+  // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.body.classList.add("dark");
@@ -9,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("dark");
   }
 
-  // Elementi UI
+  // Riferimenti agli elementi della Navbar e Utente
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logout");
   const editProfileBtn = document.getElementById("editProfile");
@@ -17,12 +21,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const userName = document.getElementById("userName");
   const overlay = document.getElementById("overlay");
 
+  // Riferimenti per la Modale Anteprima Foto
   const photoModal = document.getElementById("photoModal");
   const modalImage = document.getElementById("modalImage");
   const modalCaption = document.getElementById("modalCaption");
   const closePhotoModal = document.getElementById("closePhotoModal");
 
-  // Menu Dropdown
+  // =====================================================================
+  // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
+  // =====================================================================
   if (userMenu) {
     userMenu.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -44,19 +51,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Logout
+  // =====================================================================
+  // GESTIONE DEL LOGOUT FIREBASE
+  // =====================================================================
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      if (window.auth) {
-        auth.signOut().then(() => {
-          location.href = "index.html";
-        }).catch(err => alert("Errore logout: " + err.message));
-      }
+      auth.signOut().then(() => {
+        location.href = "index.html";
+      }).catch(err => alert("Errore logout: " + err.message));
     });
   }
 
-  // Anteprima Foto
+  // =====================================================================
+  // GESTIONE DELLA MODALE ANTEPRIMA FOTO A TUTTO SCHERMO
+  // =====================================================================
   if (closePhotoModal) {
     closePhotoModal.onclick = function() {
       if (this.blur) this.blur();
@@ -82,29 +91,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Autenticazione Firebase
-  if (window.auth) {
-    auth.onAuthStateChanged((user) => {
-      if (!user) return;
+  // =====================================================================
+  // STATO DELL'UTENTE E INTERFACCIA NAVBAR (FIREBASE AUTH)
+  // =====================================================================
+  auth.onAuthStateChanged((user) => {
+    if (!user) return;
 
-      const name = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
-      const initial = name.charAt(0).toUpperCase();
+    const name = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
+    const initial = name.charAt(0).toUpperCase();
 
-      if (userName) userName.textContent = name;
-      if (userIcon) userIcon.textContent = initial;
+    if (userName) userName.textContent = name;
+    if (userIcon) userIcon.textContent = initial;
 
-      const providers = user.providerData.map(p => p.providerId);
-      const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
+    const providers = user.providerData.map(p => p.providerId);
+    const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
 
-      if (editProfileBtn) {
-        editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
-      }
+    if (editProfileBtn) {
+      editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
+    }
 
-      initFirestore(user.uid);
-    });
-  }
+    // Avvia il caricamento dei dati Firestore associati all'utente
+    initFirestore(user.uid);
+  });
 
-  // Logica Contatore
+  // =====================================================================
+  // LOGICA DEL CONTATORE "PIÙ E MENO" (CRISTIAN)
+  // =====================================================================
   let items = [];
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
@@ -115,6 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoName = $("photoName");
   const removePhotoBtn = $("removePhotoBtn");
 
+  // Gestione selezione file foto
   if (photoInput) {
     photoInput.addEventListener("change", function(e) {
       const file = e.target.files[0];
@@ -134,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Pulsante per rimuovere la foto prima dell'invio
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener("click", function() {
       if (this.blur) this.blur();
@@ -219,18 +233,16 @@ document.addEventListener("DOMContentLoaded", () => {
   async function initFirestore(uid) {
     currentUserId = uid;
     try {
-      if (window.firebase) {
-        dbInstance = firebase.firestore();
-        const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
-        
-        if (docRef.exists) {
-          items = docRef.data().items || [];
-        } else {
-          const oldData = localStorage.getItem("cristian-score");
-          if (oldData) {
-            items = JSON.parse(oldData) || [];
-            await saveToFirestore();
-          }
+      dbInstance = firebase.firestore();
+      const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
+      
+      if (docRef.exists) {
+        items = docRef.data().items || [];
+      } else {
+        const oldData = localStorage.getItem("cristian-score");
+        if (oldData) {
+          items = JSON.parse(oldData) || [];
+          await saveToFirestore();
         }
       }
       render();
