@@ -4,14 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <title>Home</title>
+    <title>Profilo - MDweb</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="assets/styleProfilo.css">
-<link rel="manifest" href="package.json">
+    
+    <!-- PWA Manifest corretto -->
+    <link rel="manifest" href="manifest.json">
 
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+    <!-- Inizializzazione e Protezione Auth Centralizzate -->
+    <script src="assets/firebase-init.js"></script>
+    <script src="assets/auth-guard.js"></script>
   </head>
   <body>
 
@@ -27,64 +37,61 @@
           <a href="home.html" id="home" role="menuitem" tabindex="-1">Home</a>
           <a href="#" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
           <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
-          <a href="" id="logout" role="menuitem" tabindex="-1">Logout</a>
+          <a href="#" id="logout" role="menuitem" tabindex="-1">Logout</a>
         </div>
       </div>
     </nav>
     
     <form id="profileForm">
-    <div id="barra">
+      <div id="barra">
         <h3 id="profilePopupTitle">Modifica Profilo</h3>
       </div>
 
       <!-- EMAIL -->
-        <div class="form-group">
+      <div class="form-group">
         <label for="emailInput">Email</label>
         <input type="email" id="emailInput" readonly aria-readonly="true" />
-        </div>
+      </div>
 
-        <!-- USERNAME + BOTTONE -->
-        <div class="form-group">
+      <!-- USERNAME + BOTTONE -->
+      <div class="form-group">
         <label for="usernameInput">Username</label>
         <div class="username-group">
           <input type="text" id="usernameInput" required class="full-width" />
           <button type="button" id="changeUsernameBtn">Cambia username</button>
         </div>
-        </div>
+      </div>
 
-        <!-- VECCHIA PASSWORD + BOTTONE -->
-        <div class="form-group">
+      <!-- VECCHIA PASSWORD + BOTTONE -->
+      <div class="form-group">
         <label for="oldPasswordInput" id="oldPasswordLabel">Vecchia Password</label>
         <div class="old-password-group">
           <input type="password" id="oldPasswordInput" placeholder="Inserisci vecchia password" autocomplete="current-password" />
           <button type="button" id="verifyPasswordBtn" aria-describedby="oldPasswordLabel">Verifica</button>
         </div>
-        </div>
+      </div>
 
-
-        <!-- NUOVA PASSWORD -->
-        <div class="form-group">
+      <!-- NUOVA PASSWORD -->
+      <div class="form-group">
         <label for="newPasswordInput" id="newPasswordLabel" class="hidden">Nuova Password</label>
         <input type="password" id="newPasswordInput" placeholder="Nuova password" class="hidden" autocomplete="new-password" />
-        </div>
+      </div>
 
-        <!-- CONFERMA NUOVA PASSWORD -->
-        <div class="form-group">
+      <!-- CONFERMA NUOVA PASSWORD -->
+      <div class="form-group">
         <label for="confirmPasswordInput" id="confirmPasswordLabel" class="hidden">Conferma Nuova Password</label>
         <input type="password" id="confirmPasswordInput" placeholder="Conferma nuova password" class="hidden" autocomplete="new-password" />
-        </div>
+      </div>
 
-        <!-- MESSAGGI DI SUCCESSO O ERRORE -->
-        <div id="errorMsg" role="alert" aria-live="assertive"></div>
-        <div id="successMsg" role="status" aria-live="polite"></div>
+      <!-- MESSAGGI DI SUCCESSO O ERRORE -->
+      <div id="errorMsg" role="alert" aria-live="assertive"></div>
+      <div id="successMsg" role="status" aria-live="polite"></div>
 
-        <!-- BOTTONE SALVA MODIFICHE -->
-        <button type="submit">Salva Modifiche</button>
+      <!-- BOTTONE SALVA MODIFICHE -->
+      <button type="submit">Salva Modifiche</button>
     </form>
     
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <!-- Script specifici della pagina -->
     <script src="assets/tema.js"></script>
     <script src="assets/scriptProfilo.js"></script>
   </body>
