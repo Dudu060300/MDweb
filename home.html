@@ -2,18 +2,17 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <!-- Meta viewport per bloccare completamente lo zoom e adattare l'app ai dispositivi mobili -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
- 
+
   <title>Cristian: più e meno - MDweb</title>
 
   <!-- Fogli di stile CSS globali del sito -->
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
 
-  <!-- Script di blocco gesti di zoom (pinch-to-zoom e doppio tocco) -->
+  <!-- Script di blocco gesti di zoom -->
   <script>
     document.addEventListener('gesturestart', function(e) {
       e.preventDefault();
@@ -29,7 +28,7 @@
     }, false);
   </script>
 
-  <!-- Firebase SDK (versione compatibile) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
@@ -57,7 +56,6 @@
       <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
       <span class="arrow" aria-hidden="true">&#9662;</span>
 
-      <!-- Menu a tendina delle opzioni utente -->
       <div
         class="dropdown"
         id="dropdownMenu"
@@ -89,4 +87,56 @@
 
     <!-- Casella di input per il motivo e selezione foto -->
     <div class="note-container">
-      <input class="note" id="note" type="text" maxlength="80" placeholder="
+      <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo" aria-label="Motivo">
+      
+      <!-- Contenitore per allegare la foto -->
+      <div class="photo-upload-container">
+        <label for="photoInput" class="photo-btn">📷 Aggiungi foto</label>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" style="display: none !important;">
+        <span id="photoName" class="photo-name"></span>
+        <button type="button" id="removePhotoBtn" class="remove-photo-btn hidden" aria-label="Rimuovi foto">✕</button>
+      </div>
+    </div>
+
+    <!-- Pulsanti principali (+) e (-) -->
+    <div class="btns">
+      <button id="plus" type="button" aria-label="Aggiungi un più">
+        <span class="sym">+</span>
+        <span class="cnt" id="cp">0 positivi</span>
+      </button>
+      <button id="minus" type="button" aria-label="Aggiungi un meno">
+        <span class="sym">−</span>
+        <span class="cnt" id="cn">0 negativi</span>
+      </button>
+    </div>
+
+    <!-- Strumenti posizionati sopra lo storico -->
+    <div class="tools">
+      <button id="undo" type="button">Annulla ultimo</button>
+      <button id="reset" type="button">Azzera tutto</button>
+    </div>
+
+    <!-- Sezione dello storico -->
+    <h2>Storico</h2>
+    <ul id="log"></ul>
+    <p class="empty" id="empty">Niente da mostrare.</p>
+  </main>
+
+  <!-- MODALE ANTEPRIMA FOTO A TUTTO SCHERMO -->
+  <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
+    <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
+      ← Indietro
+    </button>
+    <div class="photo-modal-content">
+      <img id="modalImage" src="" alt="Anteprima immagine">
+      <p id="modalCaption" class="photo-modal-caption"></p>
+    </div>
+  </div>
+
+  <!-- SCRIPT ESTERNI DEL SITO -->
+  <script src="assets/tema.js"></script>
+  <script src="assets/scriptHome.js"></script>
+  <script src="assets/scriptCristian.js"></script>
+
+</body>
+</html>
