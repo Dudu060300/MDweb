@@ -70,9 +70,17 @@
       </div>
     </section>
 
-    <!-- Casella di input per il motivo opzionale -->
+    <!-- Casella di input per il motivo e selezione foto -->
     <div class="note-container">
       <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo" aria-label="Motivo">
+      
+      <!-- Contenitore per allegare la foto -->
+      <div class="photo-upload-container">
+        <label for="photoInput" class="photo-btn">📷 Aggiungi foto</label>
+        <input type="file" id="photoInput" accept="image/*" class="hidden">
+        <span id="photoName" class="photo-name"></span>
+        <button type="button" id="removePhotoBtn" class="remove-photo-btn hidden" aria-label="Rimuovi foto">✕</button>
+      </div>
     </div>
 
     <!-- Pulsanti principali (+) e (-) -->
