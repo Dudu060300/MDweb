@@ -97,16 +97,27 @@
     #plus { background: var(--pos-bg); color: var(--pos); }
     #minus { background: var(--neg-bg); color: var(--neg); }
 
+    /* Correzione input motivo: sfondo corretto e testo leggibile ed esplicito */
     .note {
       width: 100%;
       padding: 14px;
       border-radius: 14px;
       border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--text);
+      background-color: var(--surface) !important;
+      color: var(--text) !important;
       font: inherit;
       font-size: 1rem;
+      outline: none;
     }
+    .note:focus {
+      border-color: var(--text);
+      background-color: var(--surface) !important;
+      color: var(--text) !important;
+    }
+    .note::placeholder {
+      color: var(--muted);
+    }
+
     main.cristian-main h2 {
       font-size: 1.1rem;
       margin: 24px 0 8px;
@@ -140,16 +151,25 @@
     li .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
     li .time { color: var(--muted); font-size: .8rem; flex: none; }
     .empty { color: var(--muted); padding: 8px 0; }
-    .tools { display: flex; gap: 10px; margin-top: 16px; }
+    
+    /* Gestione strumenti e bordi pulsanti in basso */
+    .tools { 
+      display: flex; 
+      gap: 10px; 
+      margin-top: 16px; 
+    }
     .tools button {
       flex: 1;
       padding: 12px;
       border-radius: 12px;
-      border: 1px solid var(--line);
+      border: 1px solid var(--line) !important;
       background: var(--surface);
       color: var(--text);
       font: inherit;
       cursor: pointer;
+    }
+    .tools button:hover {
+      border-color: var(--text) !important;
     }
   </style>
 
@@ -315,7 +335,6 @@
         if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
       }
 
-      // Aggancio sicuro degli eventi ai pulsanti
       if ($("plus")) $("plus").onclick = function() { add("p"); };
       if ($("minus")) $("minus").onclick = function() { add("n"); };
       
@@ -345,7 +364,6 @@
         };
       }
 
-      // Avvio iniziale
       render();
       initFirestore();
     });
