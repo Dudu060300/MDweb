@@ -27,6 +27,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalCaption = document.getElementById("modalCaption");
   const modalFadeOverlay = document.getElementById("modalFadeOverlay");
   const closePhotoModal = document.getElementById("closePhotoModal");
+  const zoomContainer = document.getElementById("zoomContainer");
+
+  let scale = 1;
+  let startDistance = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
 
   // =====================================================================
   // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
@@ -52,6 +58,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Aggiornamento pagina cliccando sul titolo MDweb
+  const navTitle = document.querySelector("nav h1");
+  if (navTitle) {
+    navTitle.style.cursor = "pointer";
+    navTitle.addEventListener("click", () => {
+      window.location.reload();
+    });
+  }
+
   // =====================================================================
   // GESTIONE DEL LOGOUT FIREBASE
   // =====================================================================
@@ -65,20 +80,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================================
-  // GESTIONE DELLA MODALE ANTEPRIMA FOTO A SCHERMO INTERO
+  // GESTIONE MODALE ANTEPRIMA FOTO (ZOOM, SWIPE & TOGGLE NOTA)
   // =====================================================================
+  function closePreview() {
+    if (photoModal) {
+      photoModal.classList.add("hidden");
+      document.body.style.overflow = "";
+      if (modalImage) {
+        modalImage.style.transform = "scale(1)";
+      }
+    }
+  }
+
   if (closePhotoModal) {
     closePhotoModal.onclick = function(e) {
       e.stopPropagation();
       if (this.blur) this.blur();
-      if (photoModal) photoModal.classList.add("hidden");
+      closePreview();
     };
   }
 
+  // Tap sullo schermo: attiva/disattiva la dissolvenza del motivo (senza chiudere)
   if (photoModal) {
     photoModal.onclick = function(e) {
-      if (e.target === photoModal || e.target === modalImage) {
-        photoModal.classList.add("hidden");
+      if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
+      
+      if (modalFadeOverlay) {
+        modalFadeOverlay.classList.toggle("hidden-fade");
       }
     };
   }
@@ -86,15 +114,68 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openPhotoPreview = function(imgSrc, captionText) {
     if (modalImage && photoModal) {
       modalImage.src = imgSrc;
+      scale = 1;
+      modalImage.style.transform = `scale(${scale})`;
+
       if (modalCaption) {
         modalCaption.textContent = captionText || "";
         if (modalFadeOverlay) {
           modalFadeOverlay.style.display = captionText ? "block" : "none";
+          modalFadeOverlay.classList.remove("hidden-fade");
         }
       }
       photoModal.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
     }
   };
+
+  // Gestione Swipe da sinistra a destra e Pinch-to-Zoom
+  if (zoomContainer && modalImage) {
+    zoomContainer.addEventListener("touchstart", (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        startDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    zoomContainer.addEventListener("touchmove", (e) => {
+      if (e.touches.length === 2) {
+        const currentDistance = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        if (startDistance > 0) {
+          const factor = currentDistance / startDistance;
+          scale = Math.min(Math.max(1, scale * factor), 4);
+          modalImage.style.transform = `scale(${scale})`;
+          startDistance = currentDistance;
+        }
+      }
+    }, { passive: true });
+
+    zoomContainer.addEventListener("touchend", (e) => {
+      if (e.changedTouches.length === 1 && scale === 1) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        
+        const diffX = touchEndX - touchStartX;
+        const diffY = Math.abs(touchEndY - touchStartY);
+
+        // Se lo swipe parte da sinistra (touchStartX < 120px) verso destra (diffX > 90px)
+        if (touchStartX < 120 && diffX > 90 && diffY < 60) {
+          closePreview();
+        }
+      }
+      if (e.touches.length < 2) {
+        startDistance = 0;
+      }
+    });
+  }
 
   // =====================================================================
   // STATO DELL'UTENTE E INTERFACCIA NAVBAR (FIREBASE AUTH & FIRESTORE)
@@ -146,7 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const removePhotoBtn = $("removePhotoBtn");
   const logContainer = $("log");
 
-  // Gestione selezione file foto
   if (photoInput) {
     photoInput.addEventListener("change", function(e) {
       const file = e.target.files[0];
@@ -166,7 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Pulsante per rimuovere la foto prima dell'invio
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener("click", function() {
       if (this.blur) this.blur();
@@ -177,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Gestione del click sulle foto all'interno dello storico
   if (logContainer) {
     logContainer.addEventListener("click", function(e) {
       if (e.target && e.target.classList.contains("clickable-photo")) {
