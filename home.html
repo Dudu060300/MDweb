@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
 
-  <!-- Script di blocco gesti di zoom -->
+  <!-- Script di blocco gesti di zoom generali della pagina -->
   <script>
     document.addEventListener('gesturestart', function(e) {
       e.preventDefault();
@@ -126,14 +126,20 @@
     <p class="empty" id="empty">Niente da mostrare.</p>
   </main>
 
-  <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO -->
+  <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO (FINO ALLA NOTCH) -->
   <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
+    
+    <!-- Contenitore zoomabile per il Pinch-to-Zoom -->
+    <div id="zoomContainer" class="photo-zoom-container">
+      <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
+    </div>
+
+    <!-- Freccia per tornare indietro in alto a sinistra (sopra la notch) -->
     <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
       &#8592;
     </button>
     
-    <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
-    
+    <!-- Dissolvenza sfumata in basso con il motivo -->
     <div id="modalFadeOverlay" class="photo-modal-fade">
       <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
