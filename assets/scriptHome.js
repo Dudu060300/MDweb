@@ -1,6 +1,19 @@
-// Usa `auth` e `db` definiti in firebase-init.js (caricato prima nella pagina)
+// =========================================================================
+// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
+// =========================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "dark") {
+    document.body.classList.add("dark");
+  } else if (savedTheme === "light") {
+    document.body.classList.remove("dark");
+  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.body.classList.add("dark");
+  }
+
+  // Riferimenti agli elementi della Navbar e Utente
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logout");
   const editProfileBtn = document.getElementById("editProfile");
@@ -8,7 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const userName = document.getElementById("userName");
   const overlay = document.getElementById("overlay");
 
-  // ================= DROPDOWN & MENU =================
+  // =====================================================================
+  // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
+  // =====================================================================
   if (userMenu) {
     userMenu.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -21,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
 
+    // Chiude il menu se si clicca al di fuori di esso
     document.addEventListener("click", (e) => {
       if (!userMenu.contains(e.target)) {
         userMenu.classList.remove("open");
@@ -30,7 +46,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= LOGOUT =================
+  // =====================================================================
+  // GESTIONE DEL LOGOUT FIREBASE
+  // =====================================================================
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
@@ -40,8 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= UI UTENTE =================
-  // Il reindirizzamento per chi non è loggato lo gestisce auth-guard.js
+  // =====================================================================
+  // STATO DELL'UTENTE E INTERfACCIA NAVBAR
+  // =====================================================================
+  // Nota: Il reindirizzamento per utenti non autenticati è gestito da auth-guard.js
   auth.onAuthStateChanged((user) => {
     if (!user) return;
 
@@ -57,5 +77,160 @@ document.addEventListener("DOMContentLoaded", () => {
     if (editProfileBtn) {
       editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
     }
+
+    // Avvia il caricamento dei dati di Cristian legati all'ID univoco dell'utente
+    initFirestore(user.uid);
   });
+
+  // =====================================================================
+  // LOGICA DEL CONTATORE "PIÙ E MENO" (CRISTIAN)
+  // =====================================================================
+  let items = []; // Array per memorizzare lo storico dei movimenti
+  let dbInstance, currentUserId;
+
+  const $ = function(id) { return document.getElementById(id); };
+
+  // Funzione di utilità per sanificare il testo inserito (prevenzione XSS)
+  function esc(t) { 
+    var d = document.createElement("div"); 
+    d.textContent = t; 
+    return d.innerHTML; 
+  }
+
+  // Funzione principale per aggiornare la grafica e lo storico
+  function render() {
+    var p = items.filter(function(i) { return i.t === "p"; }).length,
+        n = items.length - p,
+        b = p - n;
+    
+    // Aggiornamento saldo totale
+    if ($("bal")) {
+      $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
+      $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text-color)";
+    }
+    
+    // Giudizio testuale in base al punteggio
+    if ($("verdict")) {
+      $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
+    }
+    
+    // Contatori testuali sui pulsanti principali
+    if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
+    if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
+    
+    // Aggiornamento della barra visiva proporzionale
+    var tot = items.length || 1;
+    if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
+    if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
+    if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
+    
+    // Generazione dello storico raggruppato per giorni (dal più recente al più vecchio)
+    if ($("log")) {
+      let lastDayStr = "";
+      let html = "";
+      
+      items.slice().reverse().forEach(function(i) {
+        var d = new Date(i.d);
+        var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+        
+        // Inserisce l'intestazione della data se cambia il giorno
+        if (dayStr !== lastDayStr) {
+          lastDayStr = dayStr;
+          html += '<li class="day-header">' + dayStr + '</li>';
+        }
+        
+        var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+        html += '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
+      });
+      
+      $("log").innerHTML = html;
+    }
+  }
+
+  // Salvataggio dei dati su Firebase Firestore in tempo reale
+  async function saveToFirestore() {
+    if (!dbInstance || !currentUserId) return;
+    try {
+      await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").set({ items });
+    } catch (e) {
+      console.error("Errore salvataggio Firestore:", e);
+    }
+  }
+
+  // Inizializzazione e recupero dati da Firestore basato sull'utente loggato
+  async function initFirestore(uid) {
+    currentUserId = uid;
+    try {
+      dbInstance = firebase.firestore();
+      const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
+      
+      if (docRef.exists) {
+        items = docRef.data().items || [];
+      } else {
+        // Fallback di migrazione dal vecchio localStorage se presente
+        const oldData = localStorage.getItem("cristian-score");
+        if (oldData) {
+          items = JSON.parse(oldData) || [];
+          await saveToFirestore();
+        }
+      }
+      render();
+    } catch (err) {
+      console.error("Errore lettura dati utente:", err);
+    }
+  }
+
+  // Funzione per aggiungere un punto (+) o (-) con motivo opzionale
+  function add(t) {
+    const noteEl = $("note");
+    const val = noteEl ? noteEl.value.trim() : "";
+    items.push({ t: t, n: val, d: Date.now() });
+    if (noteEl) noteEl.value = ""; // Pulisce il campo di input
+    saveToFirestore();
+    render();
+    
+    // Leggero feedback aptico per dispositivi mobili supportati
+    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+  }
+
+  // Collegamento eventi ai pulsanti principali (+) e (-)
+  if ($("plus")) $("plus").onclick = function() { add("p"); };
+  if ($("minus")) $("minus").onclick = function() { add("n"); };
+  
+  // Invio rapido con il tasto "Invio" nel campo motivo
+  if ($("note")) {
+    $("note").addEventListener("keydown", function(e) { 
+      if (e.key === "Enter") { add("p"); } 
+    });
+  }
+  
+  // Pulsante "Annulla ultimo" con avviso di conferma
+  if ($("undo")) {
+    $("undo").onclick = function() {
+      if (items.length) {
+        if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
+          items.pop();
+          saveToFirestore();
+          render();
+        }
+      } else {
+        alert("Non ci sono elementi da annullare.");
+      }
+    };
+  }
+  
+  // Pulsante "Azzera tutto" con avviso di sicurezza
+  if ($("reset")) {
+    $("reset").onclick = function() {
+      if (items.length) {
+        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
+          items = [];
+          saveToFirestore();
+          render();
+        }
+      } else {
+        alert("Il registro è già vuoto.");
+      }
+    };
+  }
 });
