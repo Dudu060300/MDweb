@@ -30,6 +30,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const zoomContainer = document.getElementById("zoomContainer");
 
   // =====================================================================
+  // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
+  // =====================================================================
+  // Sovrascrive lo storico azzerando ogni riferimento a index.html per impedire l'uscita
+  window.history.replaceState({ page: "home" }, "", window.location.href);
+
+  window.addEventListener("popstate", (e) => {
+    // Se la modale foto è aperta, la chiudiamo
+    if (photoModal && !photoModal.classList.contains("hidden")) {
+      photoModal.classList.add("hidden");
+      document.body.style.overflow = "";
+      if (modalImage) modalImage.style.transform = "translateZ(0)";
+    }
+    // Mantiene lo stato bloccato impedendo qualsiasi uscita o cambio pagina
+    window.history.replaceState({ page: "home" }, "", window.location.href);
+  });
+
+  // =====================================================================
   // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
   // =====================================================================
   if (userMenu) {
@@ -75,15 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================================
-  // GESTIONE MODALE ANTEPRIMA FOTO (BLOCCO ASSOLUTO BACK DI NAVIGAZIONE)
+  // GESTIONE MODALE ANTEPRIMA FOTO
   // =====================================================================
   function closePreview() {
-    if (photoModal) {
+    if (photoModal && !photoModal.classList.contains("hidden")) {
       photoModal.classList.add("hidden");
       document.body.style.overflow = "";
-      if (modalImage) {
-        modalImage.style.transform = "translateZ(0)";
-      }
+      if (modalImage) modalImage.style.transform = "translateZ(0)";
     }
   }
 
@@ -95,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Tap sullo schermo: attiva/disattiva la dissolvenza del motivo (senza chiudere)
+  // Tap sullo schermo: attiva/disattiva la dissolvenza della didascalia
   if (photoModal) {
     photoModal.onclick = function(e) {
       if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
@@ -122,48 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       document.body.style.overflow = "hidden";
     }
   };
-
-  // Gestione rigorosa dello swipe per chiudere la foto e blocco assoluto del back di navigazione
-  if (zoomContainer && modalImage) {
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    zoomContainer.addEventListener("touchstart", (e) => {
-      if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }
-    }, { passive: true });
-
-    zoomContainer.addEventListener("touchmove", (e) => {
-      if (e.touches.length === 1) {
-        const currentX = e.touches[0].clientX;
-        const diffX = currentX - touchStartX;
-        
-        // Impedisce a Safari/Chrome di attivare il cambio pagina con lo swipe dal bordo
-        if (touchStartX < 140 && diffX > 0) {
-          if (e.cancelable) {
-            e.preventDefault();
-          }
-        }
-      }
-    }, { passive: false });
-
-    zoomContainer.addEventListener("touchend", (e) => {
-      if (e.changedTouches.length === 1) {
-        const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
-        
-        const diffX = touchEndX - touchStartX;
-        const diffY = Math.abs(touchEndY - touchStartY);
-
-        // Chiusura con swipe da sinistra verso destra
-        if (touchStartX < 140 && diffX > 70 && diffY < 60) {
-          closePreview();
-        }
-      }
-    });
-  }
 
   // =====================================================================
   // STATO DELL'UTENTE E INTERFACCIA NAVBAR (FIREBASE AUTH & FIRESTORE)
