@@ -447,7 +447,7 @@ main.cristian-main li .entry-photo {
 }
 
 /* =========================================================
-   MODALE ANTEPRIMA FOTO A TUTTO SCHERMO
+   MODALE ANTEPRIMA FOTO A SCHERMO INTERO (CON DISSOLVENZA)
    ========================================================= */
 .photo-modal {
   position: fixed;
@@ -455,65 +455,72 @@ main.cristian-main li .entry-photo {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.92);
+  background-color: #000000;
   z-index: 10000;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  backdrop-filter: blur(5px);
+  overflow: hidden;
 }
 
+/* Freccia a sinistra in alto per tornare indietro */
 .modal-back-btn {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: rgba(255, 255, 255, 0.15);
+  top: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.4);
   color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  padding: 10px 16px;
-  font-size: 1rem;
-  font-weight: 700;
-  cursor: pointer;
+  border: none;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  font-size: 1.6rem;
+  line-height: 1;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  cursor: pointer;
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   transition: background 0.2s ease, transform 0.1s ease;
-  z-index: 10001;
+  z-index: 10002;
   margin-top: 0;
 }
 
 .modal-back-btn:active {
-  transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.3);
+  transform: scale(0.9);
+  background: rgba(0, 0, 0, 0.7);
 }
 
-.photo-modal-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 90vw;
-  max-height: 80vh;
-  text-align: center;
-}
-
-.photo-modal-content img {
-  max-width: 100%;
-  max-height: 70vh;
+/* Immagine a tutto schermo */
+.photo-modal-img {
+  width: 100vw;
+  height: 100vh;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: block;
+}
+
+/* Fascia con dissolvenza sfumata in basso */
+.photo-modal-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 40px 20px 28px 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+  z-index: 10001;
 }
 
 .photo-modal-caption {
   color: #ffffff;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  margin-top: 16px;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
   word-break: break-word;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .hidden {
