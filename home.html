@@ -13,6 +13,22 @@
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
 
+  <!-- Script di blocco gesti di zoom (pinch-to-zoom e doppio tocco) -->
+  <script>
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+
   <!-- Firebase SDK (versione compatibile) -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
@@ -58,6 +74,7 @@
 
   <!-- CONTENUTO PRINCIPALE -->
   <main class="cristian-main">
+    <h1>Cristian</h1>
     <p class="sub">Tocca + o − ogni volta. Indica il motivo.</p>
 
     <!-- Sezione riepilogo del saldo -->
@@ -72,45 +89,4 @@
 
     <!-- Casella di input per il motivo e selezione foto -->
     <div class="note-container">
-      <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo" aria-label="Motivo">
-      
-      <!-- Contenitore per allegare la foto -->
-      <div class="photo-upload-container">
-        <label for="photoInput" class="photo-btn">📷 Aggiungi foto</label>
-        <input type="file" id="photoInput" accept="image/*" class="hidden">
-        <span id="photoName" class="photo-name"></span>
-        <button type="button" id="removePhotoBtn" class="remove-photo-btn hidden" aria-label="Rimuovi foto">✕</button>
-      </div>
-    </div>
-
-    <!-- Pulsanti principali (+) e (-) -->
-    <div class="btns">
-      <button id="plus" type="button" aria-label="Aggiungi un più">
-        <span class="sym">+</span>
-        <span class="cnt" id="cp">0 positivi</span>
-      </button>
-      <button id="minus" type="button" aria-label="Aggiungi un meno">
-        <span class="sym">−</span>
-        <span class="cnt" id="cn">0 negativi</span>
-      </button>
-    </div>
-
-    <!-- Strumenti posizionati sopra lo storico -->
-    <div class="tools">
-      <button id="undo" type="button">Annulla ultimo</button>
-      <button id="reset" type="button">Azzera tutto</button>
-    </div>
-
-    <!-- Sezione dello storico -->
-    <h2>Storico</h2>
-    <ul id="log"></ul>
-    <p class="empty" id="empty">Niente da mostrare.</p>
-  </main>
-
-  <!-- SCRIPT ESTERNI DEL SITO -->
-  <script src="assets/tema.js"></script>
-  <script src="assets/scriptHome.js"></script>
-  <script src="assets/scriptCristian.js"></script>
-
-</body>
-</html>
+      <input class="note" id="note" type="text" maxlength="80" placeholder="
