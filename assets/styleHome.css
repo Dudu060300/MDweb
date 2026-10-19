@@ -81,7 +81,6 @@ html {
   width: 100%;
   height: 100%;
   overscroll-behavior-y: auto;
-  /* Blocca il gesto nativo del browser di tornare alla pagina precedente con lo swipe orizzontale */
   overscroll-behavior-x: none;
 }
 
@@ -455,7 +454,7 @@ main.cristian-main li .entry-photo {
 }
 
 /* =========================================================
-   MODALE ANTEPRIMA FOTO (PROTEZIONE NOTCH PER L'IMMAGINE)
+   MODALE ANTEPRIMA FOTO (ACCELERATA VIA GPU E PROTETTA DA NOTCH)
    ========================================================= */
 .photo-modal {
   position: fixed;
@@ -471,15 +470,16 @@ main.cristian-main li .entry-photo {
   overflow: hidden;
 }
 
-/* Contenitore zoomabile con padding per evitare tagli dovuti alla Notch */
+/* Contenitore zoomabile nativo con accelerazione GPU */
 .photo-zoom-container {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  touch-action: none;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
   padding-top: env(safe-area-inset-top, 20px);
   padding-bottom: env(safe-area-inset-bottom, 20px);
   padding-left: env(safe-area-inset-left, 0px);
@@ -520,8 +520,9 @@ main.cristian-main li .entry-photo {
   max-height: 100%;
   object-fit: contain;
   display: block;
-  transition: transform 0.1s ease-out;
-  transform-origin: center center;
+  margin: auto;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Fascia di dissolvenza in basso */
