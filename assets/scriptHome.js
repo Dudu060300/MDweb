@@ -1,9 +1,5 @@
-// =========================================================================
-// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
-// =========================================================================
- 
 document.addEventListener("DOMContentLoaded", () => {
-  // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
+  // 1. Gestione del Tema
   const savedTheme = localStorage.getItem("theme");
   if (savedTheme === "dark") {
     document.body.classList.add("dark");
@@ -13,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("dark");
   }
 
-  // Riferimenti agli elementi della Navbar e Utente
+  // Elementi UI
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logout");
   const editProfileBtn = document.getElementById("editProfile");
@@ -21,15 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const userName = document.getElementById("userName");
   const overlay = document.getElementById("overlay");
 
-  // Riferimenti per la Modale Anteprima Foto
   const photoModal = document.getElementById("photoModal");
   const modalImage = document.getElementById("modalImage");
   const modalCaption = document.getElementById("modalCaption");
   const closePhotoModal = document.getElementById("closePhotoModal");
 
-  // =====================================================================
-  // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
-  // =====================================================================
+  // Menu Dropdown
   if (userMenu) {
     userMenu.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -51,24 +44,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // =====================================================================
-  // GESTIONE DEL LOGOUT FIREBASE
-  // =====================================================================
+  // Logout
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      auth.signOut().then(() => {
-        location.href = "index.html";
-      }).catch(err => alert("Errore logout: " + err.message));
+      if (window.auth) {
+        auth.signOut().then(() => {
+          location.href = "index.html";
+        }).catch(err => alert("Errore logout: " + err.message));
+      }
     });
   }
 
-  // =====================================================================
-  // GESTIONE DELLA MODALE ANTEPRIMA FOTO A TUTTO SCHERMO
-  // =====================================================================
+  // Anteprima Foto
   if (closePhotoModal) {
     closePhotoModal.onclick = function() {
-      this.blur();
+      if (this.blur) this.blur();
       if (photoModal) photoModal.classList.add("hidden");
     };
   }
@@ -91,31 +82,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // =====================================================================
-  // STATO DELL'UTENTE E INTERFACCIA NAVBAR
-  // =====================================================================
-  auth.onAuthStateChanged((user) => {
-    if (!user) return;
+  // Autenticazione Firebase
+  if (window.auth) {
+    auth.onAuthStateChanged((user) => {
+      if (!user) return;
 
-    const name = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
-    const initial = name.charAt(0).toUpperCase();
+      const name = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
+      const initial = name.charAt(0).toUpperCase();
 
-    if (userName) userName.textContent = name;
-    if (userIcon) userIcon.textContent = initial;
+      if (userName) userName.textContent = name;
+      if (userIcon) userIcon.textContent = initial;
 
-    const providers = user.providerData.map(p => p.providerId);
-    const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
+      const providers = user.providerData.map(p => p.providerId);
+      const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
 
-    if (editProfileBtn) {
-      editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
-    }
+      if (editProfileBtn) {
+        editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
+      }
 
-    initFirestore(user.uid);
-  });
+      initFirestore(user.uid);
+    });
+  }
 
-  // =====================================================================
-  // LOGICA DEL CONTATORE "PIÙ E MENO" (CRISTIAN)
-  // =====================================================================
+  // Logica Contatore
   let items = [];
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
@@ -126,7 +115,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoName = $("photoName");
   const removePhotoBtn = $("removePhotoBtn");
 
-  // Gestione selezione file foto
   if (photoInput) {
     photoInput.addEventListener("change", function(e) {
       const file = e.target.files[0];
@@ -146,10 +134,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Pulsante per rimuovere la foto prima dell'invio
   if (removePhotoBtn) {
     removePhotoBtn.addEventListener("click", function() {
-      this.blur();
+      if (this.blur) this.blur();
       currentPhotoBase64 = "";
       if (photoInput) photoInput.value = "";
       if (photoName) photoName.textContent = "";
@@ -232,16 +219,18 @@ document.addEventListener("DOMContentLoaded", () => {
   async function initFirestore(uid) {
     currentUserId = uid;
     try {
-      dbInstance = firebase.firestore();
-      const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
-      
-      if (docRef.exists) {
-        items = docRef.data().items || [];
-      } else {
-        const oldData = localStorage.getItem("cristian-score");
-        if (oldData) {
-          items = JSON.parse(oldData) || [];
-          await saveToFirestore();
+      if (window.firebase) {
+        dbInstance = firebase.firestore();
+        const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
+        
+        if (docRef.exists) {
+          items = docRef.data().items || [];
+        } else {
+          const oldData = localStorage.getItem("cristian-score");
+          if (oldData) {
+            items = JSON.parse(oldData) || [];
+            await saveToFirestore();
+          }
         }
       }
       render();
@@ -273,8 +262,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
-  if ($("plus")) $("plus").onclick = function() { this.blur(); add("p"); };
-  if ($("minus")) $("minus").onclick = function() { this.blur(); add("n"); };
+  if ($("plus")) $("plus").onclick = function() { if (this.blur) this.blur(); add("p"); };
+  if ($("minus")) $("minus").onclick = function() { if (this.blur) this.blur(); add("n"); };
   
   if ($("note")) {
     $("note").addEventListener("keydown", function(e) { 
@@ -284,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if ($("undo")) {
     $("undo").onclick = function() {
-      this.blur();
+      if (this.blur) this.blur();
       if (items.length) {
         if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
           items.pop();
@@ -299,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if ($("reset")) {
     $("reset").onclick = function() {
-      this.blur();
+      if (this.blur) this.blur();
       if (items.length) {
         if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
           items = [];
@@ -311,4 +300,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
   }
+
+  render();
 });
