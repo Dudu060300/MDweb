@@ -61,7 +61,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   // STATO DELL'UTENTE E INTERfACCIA NAVBAR
   // =====================================================================
-  // Nota: Il reindirizzamento per utenti non autenticati è gestito da auth-guard.js
   auth.onAuthStateChanged((user) => {
     if (!user) return;
 
@@ -87,8 +86,44 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   let items = []; // Array per memorizzare lo storico dei movimenti
   let dbInstance, currentUserId;
+  let currentPhotoBase64 = ""; // Memorizza la foto corrente in formato Base64
 
   const $ = function(id) { return document.getElementById(id); };
+
+  // Riferimenti per la gestione delle foto
+  const photoInput = $("photoInput");
+  const photoName = $("photoName");
+  const removePhotoBtn = $("removePhotoBtn");
+
+  // Gestione selezione file foto
+  if (photoInput) {
+    photoInput.addEventListener("change", function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) { // Limite di sicurezza 2MB
+          alert("La foto è troppo grande. Scegli un'immagine sotto i 2MB.");
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          currentPhotoBase64 = event.target.result;
+          if (photoName) photoName.textContent = file.name;
+          if (removePhotoBtn) removePhotoBtn.classList.remove("hidden");
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Pulsante per rimuovere la foto selezionata prima dell'invio
+  if (removePhotoBtn) {
+    removePhotoBtn.addEventListener("click", function() {
+      currentPhotoBase64 = "";
+      if (photoInput) photoInput.value = "";
+      if (photoName) photoName.textContent = "";
+      removePhotoBtn.classList.add("hidden");
+    });
+  }
 
   // Funzione di utilità per sanificare il testo inserito (prevenzione XSS)
   function esc(t) { 
@@ -140,7 +175,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         
         var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-        html += '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
+        // Genera il tag immagine se è presente una foto salvata nell'elemento
+        var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo" alt="Foto allegata" />' : '';
+        
+        html += '<li class="' + i.t + '">' +
+                  '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                  '<div class="txt">' +
+                    (i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>') +
+                    photoHtml +
+                  '</div>' +
+                  '<span class="time">' + h + '</span>' +
+                '</li>';
       });
       
       $("log").innerHTML = html;
@@ -180,12 +225,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Funzione per aggiungere un punto (+) o (-) con motivo opzionale
+  // Funzione per aggiungere un punto (+) o (-) con motivo e foto opzionali
   function add(t) {
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
-    items.push({ t: t, n: val, d: Date.now() });
-    if (noteEl) noteEl.value = ""; // Pulisce il campo di input
+    
+    items.push({ 
+      t: t, 
+      n: val, 
+      img: currentPhotoBase64, 
+      d: Date.now() 
+    });
+
+    // Reset dei campi di input e della foto dopo l'aggiunta
+    if (noteEl) noteEl.value = "";
+    currentPhotoBase64 = "";
+    if (photoInput) photoInput.value = "";
+    if (photoName) photoName.textContent = "";
+    if (removePhotoBtn) removePhotoBtn.classList.add("hidden");
+
     saveToFirestore();
     render();
     
@@ -193,9 +251,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
-  // Collegamento eventi ai pulsanti principali (+) e (-)
-  if ($("plus")) $("plus").onclick = function() { add("p"); };
-  if ($("minus")) $("minus").onclick = function() { add("n"); };
+  // Collegamento eventi ai pulsanti principali (+) e (-) con blocco della selezione visiva (.blur())
+  if ($("plus")) $("plus").onclick = function() { this.blur(); add("p"); };
+  if ($("minus")) $("minus").onclick = function() { this.blur(); add("n"); };
   
   // Invio rapido con il tasto "Invio" nel campo motivo
   if ($("note")) {
@@ -204,9 +262,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
-  // Pulsante "Annulla ultimo" con avviso di conferma
+  // Pulsante "Annulla ultimo" con avviso di conferma e rimozione del focus (.blur())
   if ($("undo")) {
     $("undo").onclick = function() {
+      this.blur();
       if (items.length) {
         if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
           items.pop();
@@ -219,9 +278,10 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
   
-  // Pulsante "Azzera tutto" con avviso di sicurezza
+  // Pulsante "Azzera tutto" con avviso di sicurezza e rimozione del focus (.blur())
   if ($("reset")) {
     $("reset").onclick = function() {
+      this.blur();
       if (items.length) {
         if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
           items = [];
