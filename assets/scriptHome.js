@@ -1,7 +1,7 @@
 // =========================================================================
 // SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
 // =========================================================================
-
+ 
 document.addEventListener("DOMContentLoaded", () => {
   // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
   const savedTheme = localStorage.getItem("theme");
