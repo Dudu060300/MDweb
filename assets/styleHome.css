@@ -70,28 +70,35 @@ body.dark {
 
 
 /* =========================================================
-   RESET E CONFIGURAZIONE TOUCH
+   RESET E CONFIGURAZIONE TOUCH & PULL-TO-REFRESH
    ========================================================= */
 * {
   box-sizing: border-box;
-  touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
 }
 
-html,
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  /* Abilita il trascinamento verso il basso per aggiornare la pagina */
+  overscroll-behavior-y: auto;
+}
+
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  overflow-x: hidden;
-}
-
-body {
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
   background-attachment: fixed;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 
@@ -105,14 +112,14 @@ a {
 
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE (NAVBAR) ADATTIVA
+   BARRA DI NAVIGAZIONE (NAVBAR) ADATTIVA (SAFE AREAS)
    ========================================================= */
 nav {
   position: sticky;
   top: 0;
   z-index: 1000;
   width: 100%;
-  /* Supporto alla Safe Area superiore per evitare la sovrapposizione con la barra di stato di iOS/Android */
+  /* Altezza dinamica che tiene conto della barra di stato/notch del telefono */
   height: calc(60px + env(safe-area-inset-top, 0px));
   padding-top: env(safe-area-inset-top, 0px);
   padding-left: 20px;
