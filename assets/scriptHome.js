@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const photoInput = $("photoInput");
   const photoName = $("photoName");
   const removePhotoBtn = $("removePhotoBtn");
+  const logContainer = $("log");
 
   // Gestione selezione file foto
   if (photoInput) {
@@ -176,6 +177,19 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // Gestione del click sulle foto all'interno dello storico
+  if (logContainer) {
+    logContainer.addEventListener("click", function(e) {
+      if (e.target && e.target.classList.contains("clickable-photo")) {
+        const imgSrc = e.target.getAttribute("data-img");
+        const caption = e.target.getAttribute("data-caption");
+        if (imgSrc && typeof window.openPhotoPreview === "function") {
+          window.openPhotoPreview(imgSrc, caption);
+        }
+      }
+    });
+  }
+
   function esc(t) { 
     var d = document.createElement("div"); 
     d.textContent = t; 
@@ -204,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
     if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
     
-    if ($("log")) {
+    if (logContainer) {
       let lastDayStr = "";
       let html = "";
       
@@ -219,10 +233,10 @@ document.addEventListener("DOMContentLoaded", () => {
         
         var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
         var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-        var escapedCaption = i.n ? esc(i.n).replace(/'/g, "\\'") : '';
+        var escapedCaption = i.n ? esc(i.n) : '';
 
         var photoHtml = i.img 
-          ? '<img src="' + i.img + '" class="entry-photo" alt="Foto allegata" style="cursor:pointer;" onclick="openPhotoPreview(\'' + i.img + '\', \'' + escapedCaption + '\')" />' 
+          ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + escapedCaption + '" />' 
           : '';
         
         html += '<li class="' + i.t + '">' +
@@ -235,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 '</li>';
       });
       
-      $("log").innerHTML = html;
+      logContainer.innerHTML = html;
     }
   }
 
