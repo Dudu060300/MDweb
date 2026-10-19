@@ -382,6 +382,66 @@ main.cristian-main h1 {
   font-weight: 400;
 }
 
+/* =========================================================
+   STILI PER IL CARICAMENTO DELLE FOTO
+   ========================================================= */
+.photo-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.photo-btn:hover {
+  background: var(--line);
+}
+
+.photo-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-photo-btn {
+  background: transparent;
+  border: none;
+  color: var(--error-color);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 6px;
+  margin-top: 0;
+}
+
+/* Foto all'interno delle voci dello storico */
+main.cristian-main li .entry-photo {
+  display: block;
+  max-width: 100%;
+  max-height: 180px;
+  border-radius: 10px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+
 .btns {
   display: grid;
   grid-template-columns: 1fr 1fr;
