@@ -7,14 +7,14 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
 
-
   <title>Cristian: più e meno - MDweb</title>
+
+  <!-- Collegamento Manifest PWA -->
+  <link rel="manifest" href="manifest.json" />
 
   <!-- Fogli di stile CSS globali del sito -->
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
-  <link rel="manifest" href="package.json">
-
 
   <!-- Script di blocco gesti di zoom -->
   <script>
@@ -128,15 +128,12 @@
 
   <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO -->
   <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
-    <!-- Freccia per tornare indietro in alto a sinistra -->
     <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
       &#8592;
     </button>
     
-    <!-- Immagine a schermo intero -->
     <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
     
-    <!-- Dissolvenza sfumata in basso con il motivo -->
     <div id="modalFadeOverlay" class="photo-modal-fade">
       <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
