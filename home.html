@@ -2,15 +2,156 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-  <title>Home</title>
+  <title>Cristian: più e meno - MDweb</title>
 
   <!-- CSS -->
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
+
+  <style>
+    /* Stili specifici per il sistema Più e Meno */
+    :root {
+      --pos: #1f9d6b; --pos-bg: #dcf4e8;
+      --neg: #d6405a; --neg-bg: #fbe0e5;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --pos: #4fd1a0; --pos-bg: #143a2c;
+        --neg: #ff7a90; --neg-bg: #41202a;
+      }
+    }
+    :root[data-theme="dark"] {
+      --pos: #4fd1a0; --pos-bg: #143a2c;
+      --neg: #ff7a90; --neg-bg: #41202a;
+    }
+
+    main.cristian-main {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px 16px 40px;
+    }
+    main.cristian-main h1 {
+      font-size: 2rem;
+      margin: 4px 0 2px;
+      letter-spacing: -.5px;
+    }
+    .sub {
+      color: var(--muted);
+      margin: 0 0 18px;
+    }
+    .balance {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+    }
+    .balance .num {
+      font-size: 3.6rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .balance .lbl {
+      color: var(--muted);
+      margin-top: 6px;
+    }
+    .bar {
+      display: flex;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--line);
+      margin-top: 14px;
+    }
+    .bar i {
+      display: block;
+      transition: width .3s;
+    }
+    .bar .p { background: var(--pos); }
+    .bar .n { background: var(--neg); }
+
+    .btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+    }
+    .btns button {
+      border: 0;
+      border-radius: 18px;
+      padding: 18px 8px;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .btns button:active { transform: scale(.96); }
+    .btns .sym { font-size: 3rem; font-weight: 800; line-height: 1; }
+    .btns .cnt { font-size: 1.1rem; font-weight: 700; }
+    #plus { background: var(--pos-bg); color: var(--pos); }
+    #minus { background: var(--neg-bg); color: var(--neg); }
+
+    .note {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      font-size: 1rem;
+    }
+    main.cristian-main h2 {
+      font-size: 1.1rem;
+      margin: 24px 0 8px;
+    }
+    main.cristian-main ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    main.cristian-main li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    main.cristian-main li .tag {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    li.p .tag { background: var(--pos-bg); color: var(--pos); }
+    li.n .tag { background: var(--neg-bg); color: var(--neg); }
+    li .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    li .time { color: var(--muted); font-size: .8rem; flex: none; }
+    .empty { color: var(--muted); padding: 8px 0; }
+    .tools { display: flex; gap: 10px; margin-top: 16px; }
+    .tools button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+  </style>
 
   <!-- Firebase SDK (una sola versione) -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -28,7 +169,6 @@
 
   <!-- NAV BAR -->
   <nav>
-
     <!-- Logo centrale -->
     <h1>MDweb</h1>
 
@@ -41,9 +181,7 @@
       aria-expanded="false"
       aria-label="Menu utente"
     >
-
       <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
-
       <span class="arrow" aria-hidden="true">&#9662;</span>
 
       <!-- Menu a tendina -->
@@ -53,7 +191,6 @@
         role="menu"
         aria-label="Menu opzioni utente"
       >
-
         <span class="dropdown-item username-display" id="userName">Utente</span>
 
         <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">
@@ -68,15 +205,139 @@
            onclick="logout(); return false;">
           Logout
         </a>
-
       </div>
     </div>
-
   </nav>
+
+  <!-- CONTENUTO PRINCIPALE -->
+  <main class="cristian-main">
+    <h1>Cristian</h1>
+    <p class="sub">Tocca + o − ogni volta. Se vuoi, scrivi il motivo.</p>
+
+    <section class="balance" aria-live="polite">
+      <div class="num" id="bal">0</div>
+      <div class="lbl" id="verdict">Ancora nessun punto</div>
+      <div class="bar">
+        <i class="p" id="bp" style="width:0"></i>
+        <i class="n" id="bn" style="width:0"></i>
+      </div>
+    </section>
+
+    <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (facoltativo)" aria-label="Motivo">
+
+    <div class="btns">
+      <button id="plus" aria-label="Aggiungi un più"><span class="sym">+</span><span class="cnt" id="cp">0 positivi</span></button>
+      <button id="minus" aria-label="Aggiungi un meno"><span class="sym">−</span><span class="cnt" id="cn">0 negativi</span></button>
+    </div>
+
+    <h2>Storico</h2>
+    <ul id="log"></ul>
+    <p class="empty" id="empty">Niente da mostrare. Premi + o − per iniziare.</p>
+
+    <div class="tools">
+      <button id="undo">Annulla ultimo</button>
+      <button id="reset">Azzera tutto</button>
+    </div>
+  </main>
 
   <!-- SCRIPT DEL SITO -->
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
+
+  <!-- LOGICA DEL SISTEMA PIÙ E MENO CON FIRESTORE -->
+  <script>
+    let items = [];
+    let db, userId;
+
+    const $ = function(id) { return document.getElementById(id); };
+    function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
+
+    function render() {
+      var p = items.filter(function(i) { return i.t === "p"; }).length,
+          n = items.length - p,
+          b = p - n;
+      
+      $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
+      $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text)";
+      $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
+      $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
+      $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
+      
+      var tot = items.length || 1;
+      $("bp").style.width = (p / tot * 100) + "%";
+      $("bn").style.width = (n / tot * 100) + "%";
+      $("empty").style.display = items.length ? "none" : "block";
+      
+      $("log").innerHTML = items.slice().reverse().map(function(i) {
+        var d = new Date(i.d),
+            h = d.toLocaleDateString("it-IT", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"});
+        return '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
+      }).join("");
+    }
+
+    async function saveToFirestore() {
+      if (!db || !userId) return;
+      try {
+        await db.collection("users").doc(userId).collection("data").doc("cristian_score").set({ items });
+      } catch (e) {
+        console.error("Errore salvataggio Firestore:", e);
+      }
+    }
+
+    async function initFirestore() {
+      try {
+        db = firebase.firestore();
+        firebase.auth().onAuthStateChanged(async (user) => {
+          if (user) {
+            userId = user.uid;
+            const docRef = await db.collection("users").doc(userId).collection("data").doc("cristian_score").get();
+            if (docRef.exists) {
+              items = docRef.data().items || [];
+            } else {
+              const oldData = localStorage.getItem("cristian-score");
+              if (oldData) {
+                items = JSON.parse(oldData) || [];
+                await saveToFirestore();
+              }
+            }
+            render();
+          }
+        });
+      } catch (e) {
+        console.error("Errore Firebase:", e);
+      }
+    }
+
+    function add(t) {
+      items.push({ t: t, n: $("note").value.trim(), d: Date.now() });
+      $("note").value = "";
+      saveToFirestore();
+      render();
+      if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
+    }
+
+    $("plus").onclick = function() { add("p"); };
+    $("minus").onclick = function() { add("n"); };
+    $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
+    
+    $("undo").onclick = function() {
+      if (items.length) {
+        items.pop();
+        saveToFirestore();
+        render();
+      }
+    };
+    
+    $("reset").onclick = function() {
+      if (items.length && confirm("Azzerare tutti i punti di Cristian?")) {
+        items = [];
+        saveToFirestore();
+        render();
+      }
+    };
+
+    initFirestore();
+  </script>
 
 </body>
 </html>
