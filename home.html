@@ -122,13 +122,18 @@
     <p class="empty" id="empty">Niente da mostrare.</p>
   </main>
 
-  <!-- MODALE ANTEPRIMA FOTO A TUTTO SCHERMO -->
+  <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO -->
   <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
+    <!-- Freccia per tornare indietro in alto a sinistra -->
     <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
-      ← Indietro
+      &#8592;
     </button>
-    <div class="photo-modal-content">
-      <img id="modalImage" src="" alt="Anteprima immagine">
+    
+    <!-- Immagine a schermo intero -->
+    <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
+    
+    <!-- Dissolvenza sfumata in basso con il motivo -->
+    <div id="modalFadeOverlay" class="photo-modal-fade">
       <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
   </div>
