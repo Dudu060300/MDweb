@@ -1,10 +1,10 @@
-// Protezione semplice e diretta delle pagine riservate
 (function () {
   'use strict';
 
+  // Ascolta lo stato di autenticazione di Firebase
   firebase.auth().onAuthStateChanged((user) => {
     if (!user) {
-      // Se l'utente non è loggato, rimandalo al login
+      // Se l'utente NON è loggato, reindirizza subito a index.html
       window.location.replace('index.html');
     }
   });
