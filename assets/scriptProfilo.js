@@ -7,8 +7,7 @@ const firebaseConfig = {
   appId: "1:771370443646:web:5dd712f9e03448ebda2463"
 };
 
-// Configura Firebase (personalizza con i tuoi parametri)
-
+// Configura Firebase
 firebase.initializeApp(firebaseConfig);
 
 const auth = firebase.auth();
@@ -31,47 +30,55 @@ const changeUsernameBtn = document.getElementById("changeUsernameBtn");
 const profileForm = document.getElementById("profileForm");
 const userNameDisplay = document.getElementById("userName");
 const userMenu = document.getElementById("userMenu");
-const dropdownMenu = document.getElementById("dropdownMenu");
-const logoutBtn = 
-document.getElementById('logout');
+const logoutBtn = document.getElementById('logout');
 const editProfileBtn = document.getElementById('editProfile');
 
 // Stato di verifica password
 let passwordVerified = false;
 
+// Tasto indietro
 document.getElementById('backButton').addEventListener('click', () => {
   window.history.back();
 });
 
-userMenu.addEventListener("click", (event) => {
-  event.stopPropagation(); // Previene la chiusura immediata
-  const isOpen = userMenu.classList.contains("open");
-  userMenu.classList.toggle("open");
-  userMenu.setAttribute("aria-expanded", !isOpen);
-});
+// Gestione menu a tendina
+if (userMenu) {
+  userMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const isOpen = userMenu.classList.contains("open");
+    userMenu.classList.toggle("open");
+    userMenu.setAttribute("aria-expanded", !isOpen);
+  });
 
-// Chiudi il menu cliccando fuori
-document.addEventListener("click", () => {
-  userMenu.classList.remove("open");
-  userMenu.setAttribute("aria-expanded", false);
-});
+  document.addEventListener("click", () => {
+    userMenu.classList.remove("open");
+    userMenu.setAttribute("aria-expanded", "false");
+  });
+}
 
-// Recupera dati utente
+// Recupera dati utente all'avvio
 auth.onAuthStateChanged(async user => {
   if (user) {
     emailInput.value = user.email;
 
-    // Ottieni username da Firestore
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    if (userDoc.exists) {
-  const username = userDoc.data().username || "Utente";
-  usernameInput.value = username;
-  userNameDisplay.textContent = username;
+    try {
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      if (userDoc.exists) {
+        const username = userDoc.data().username || "Utente";
+        usernameInput.value = username;
+        if (userNameDisplay) userNameDisplay.textContent = username;
 
-  // Mostra l'iniziale nello userIcon
-  const firstLetter = username.charAt(0).toUpperCase();
-  document.getElementById("userIcon").textContent = firstLetter;
-}
+        // Mostra l'iniziale nello userIcon
+        const userIcon = document.getElementById("userIcon");
+        if (userIcon) {
+          userIcon.textContent = username.charAt(0).toUpperCase();
+        }
+      }
+    } catch (error) {
+      console.error("Errore nel recupero dati utente:", error);
+    }
+  } else {
+    window.location.href = "index.html";
   }
 });
 
@@ -86,19 +93,27 @@ changeUsernameBtn.addEventListener("click", async () => {
   }
 
   try {
-    // Controlla se username già esiste
     const existing = await db.collection("users")
       .where("username", "==", newUsername)
       .get();
 
     if (!existing.empty) {
-      showError("Questo username è già in uso.");
-      return;
+      // Verifica se appartiene allo stesso utente
+      const isSelf = existing.docs.some(doc => doc.id === user.uid);
+      if (!isSelf) {
+        showError("Questo username è già in uso.");
+        return;
+      }
     }
 
     await db.collection("users").doc(user.uid).update({ username: newUsername });
-    showSuccess("Username aggiornato.");
-    userNameDisplay.textContent = newUsername;
+    showSuccess("Username aggiornato con successo.");
+    if (userNameDisplay) userNameDisplay.textContent = newUsername;
+    
+    const userIcon = document.getElementById("userIcon");
+    if (userIcon) {
+      userIcon.textContent = newUsername.charAt(0).toUpperCase();
+    }
   } catch (error) {
     showError("Errore durante l'aggiornamento dello username.");
   }
@@ -107,23 +122,31 @@ changeUsernameBtn.addEventListener("click", async () => {
 // Verifica vecchia password
 verifyPasswordBtn.addEventListener("click", async () => {
   const user = auth.currentUser;
-  const credential = firebase.auth.EmailAuthProvider.credential(
-    user.email,
-    oldPasswordInput.value
-  );
+  const oldPassword = oldPasswordInput.value;
+
+  if (!oldPassword) {
+    showError("Inserisci la vecchia password.");
+    return;
+  }
+
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPassword);
 
   try {
     await user.reauthenticateWithCredential(credential);
-    showSuccess("Password verificata. Ora puoi cambiarla.");
+    showSuccess("Password verificata. Ora puoi inserirne una nuova.");
     passwordVerified = true;
+
     setTimeout(() => {
-        clearMessages();
-      }, 2000);
+      clearMessages();
+    }, 2000);
 
     // Nascondi il gruppo della vecchia password
-    document.querySelector(".old-password-group").parentElement.style.display = "none";
+    const oldPassGroup = document.querySelector(".old-password-group");
+    if (oldPassGroup) {
+      oldPassGroup.parentElement.style.display = "none";
+    }
 
-    // Mostra i campi per nuova password
+    // Mostra i campi per la nuova password
     [newPasswordInput, confirmPasswordInput].forEach(el => el.classList.remove("hidden"));
     [newPasswordLabel, confirmPasswordLabel].forEach(el => el.classList.remove("hidden"));
   } catch (error) {
@@ -131,114 +154,94 @@ verifyPasswordBtn.addEventListener("click", async () => {
   }
 });
 
-// Salva modifiche (nuova password)
+// Salva modifiche (Nuova password tramite submit del form)
 profileForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-
-  if (passwordVerified) {
-    const newPassword = newPasswordInput.value.trim();
-    const confirmPassword = confirmPasswordInput.value.trim();
-
-    if (newPassword.length < 6) {
-      showError("La nuova password deve contenere almeno 6 caratteri.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      showError("Le password non coincidono.");
-      return;
-    }
-
-    try {
-      await user.updatePassword(newPassword);
-      showSuccess("Password aggiornata con successo.");
-      profileForm.reset();
-    } catch (error) {
-      showError("Errore durante l'aggiornamento della password.");
-    }
-  } else {
-    showError("Devi prima verificare la vecchia password.");
-  }
-});
-
-// Mostra messaggi
-function showError(message) {
-  errorMsg.textContent = message;
-  errorMsg.classList.add('visible');
-  successMsg.textContent = '';
-  successMsg.classList.remove('visible');
-}
-
-function showSuccess(message) {
-  successMsg.textContent = message;
-  successMsg.classList.add('visible');
-  errorMsg.textContent = '';
-  errorMsg.classList.remove('visible');
-}
-
-function clearMessages() {
-  errorMsg.textContent = '';
-  errorMsg.classList.remove('visible');
-  successMsg.textContent = '';
-  successMsg.classList.remove('visible');
-}
-
-logoutBtn.addEventListener('click', (e) => {
-  e.preventDefault();
-  auth.signOut().then(() => {
-    location.href = 'index.html';
-  });
-});
-
-// --- Save profile changes (username + password) ---
-profileForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   clearMessages();
 
   const user = auth.currentUser;
   if (!user) {
-    showError('Utente non autenticato.');
+    showError("Utente non autenticato.");
     return;
   }
-  const newUsername = usernameInput.value.trim();
+
+  const passwordChangeRequested = !newPasswordInput.classList.contains("hidden");
+
+  if (!passwordChangeRequested) {
+    showError("Nessuna modifica alla password richiesta (usa il pulsante per lo username).");
+    return;
+  }
+
+  if (!passwordVerified) {
+    showError("Devi prima verificare la vecchia password.");
+    return;
+  }
+
   const newPassword = newPasswordInput.value.trim();
   const confirmPassword = confirmPasswordInput.value.trim();
-  const usernameChanged = newUsername && newUsername !== user.displayName;
-  const passwordChangeRequested = !newPasswordInput.classList.contains('hidden');
 
-  if (!passwordChangeRequested && !usernameChanged) {
-    showError('Nessuna modifica da salvare.');
+  if (newPassword.length < 6) {
+    showError("La nuova password deve contenere almeno 6 caratteri.");
     return;
   }
 
-  if (usernameChanged && !passwordChangeRequested) {
-    showError('Cliccare su Cambia Username.');
+  if (newPassword !== confirmPassword) {
+    showError("Le password non coincidono.");
     return;
   }
 
-  if (passwordChangeRequested) {
-    if (newPassword.length < 6) {
-      showError('La nuova password deve contenere almeno 6 caratteri.');
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      showError('Le password non corrispondono.');
-      return;
-    }
-    try {
-      await user.updatePassword(newPassword);
-      showSuccess('Password aggiornata con successo.');
-    } catch (err) {
-      if (err.code === 'auth/requires-recent-login') {
-        showError('Devi eseguire nuovamente il login prima di cambiare la password.');
-      } else {
-        showError('Errore durante l\'aggiornamento della password: ' + err.message);
-      }
-      return;
+  try {
+    await user.updatePassword(newPassword);
+    showSuccess("Password aggiornata con successo.");
+    profileForm.reset();
+    passwordVerified = false;
+  } catch (error) {
+    if (error.code === 'auth/requires-recent-login') {
+      showError("Devi eseguire nuovamente il login prima di cambiare la password.");
+    } else {
+      showError("Errore durante l'aggiornamento della password: " + error.message);
     }
   }
-  setTimeout(() => {
-    closeProfilePopup();
-  }, 1000);
 });
+
+// Funzioni per la gestione dei messaggi
+function showError(message) {
+  if (!errorMsg) return;
+  errorMsg.textContent = message;
+  errorMsg.classList.add('visible');
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+function showSuccess(message) {
+  if (!successMsg) return;
+  successMsg.textContent = message;
+  successMsg.classList.add('visible');
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+}
+
+function clearMessages() {
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+// Gestione Logout
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    auth.signOut().then(() => {
+      location.href = 'index.html';
+    });
+  });
+}
