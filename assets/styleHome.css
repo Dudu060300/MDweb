@@ -1,3 +1,6 @@
+/* =========================================================
+   VARIABILI GLOBALI (TEMA CHIARO)
+   ========================================================= */
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
@@ -22,15 +25,22 @@
   --input-bg-readonly: #444444;
 
   --transition-speed: 0.3s;
-
   --msg-bg: #000000;
+
+  /* Variabili specifiche per il modulo Cristian: Più e Meno */
+  --pos: #047857; 
+  --pos-bg: #d1fae5;
+  --neg: #be123c; 
+  --neg-bg: #ffe4e6;
+  --line: #d9dfea;
+  --surface: #f8f9fa;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
 }
 
 
 /* =========================================================
-   TEMA SCURO
+   TEMA SCURO (Attivato tramite la classe .dark sul body)
    ========================================================= */
-
 body.dark {
   --popup-bg: #ffffff;
   --popup-color: #000000;
@@ -44,17 +54,28 @@ body.dark {
   --barra-color: #000000;
 
   --text-color: #ffffff;
+  --text-muted: #aaaaaa;
 
   --msg-bg: #ffffff;
+
+  /* Ridefinizione variabili per il tema scuro di Cristian */
+  --surface: #121212;
+  --line: #2e384e;
+  --pos: #34d399; 
+  --pos-bg: #064e3b;
+  --neg: #fb7185; 
+  --neg-bg: #4c0519;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
 }
 
 
 /* =========================================================
-   RESET
+   RESET E CONFIGURAZIONE TOUCH
    ========================================================= */
-
 * {
   box-sizing: border-box;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
 }
 
 html,
@@ -62,27 +83,21 @@ body {
   margin: 0;
   padding: 0;
   width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
-
-  font-family:
-    'Segoe UI',
-    Tahoma,
-    Geneva,
-    Verdana,
-    sans-serif;
-
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
+  background-attachment: fixed;
 }
 
 
 /* =========================================================
    LINK GENERICI
    ========================================================= */
-
 a {
   text-decoration: none;
   color: var(--nav-text);
@@ -90,139 +105,61 @@ a {
 
 
 /* =========================================================
-   NAVBAR
+   BARRA DI NAVIGAZIONE (NAVBAR)
    ========================================================= */
-
 nav {
   position: sticky;
   top: 0;
-
   z-index: 1000;
-
   width: 100%;
   height: 60px;
-
   display: flex;
   align-items: center;
-
-  /*
-    Non usiamo justify-content: space-between
-    perché MDweb è posizionato indipendentemente.
-  */
   justify-content: flex-start;
-
   padding: 0 20px;
-
   background: var(--nav-bg);
   color: var(--nav-text);
-
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
-
-  /*
-    Il dropdown deve poter uscire
-    dalla navbar.
-  */
   overflow: visible;
 }
 
 
 /* =========================================================
-   PULSANTE INDIETRO
+   LOGO PRINCIPALE (MDWEB)
    ========================================================= */
-
-.back-btn {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin: 0;
-  padding: 0;
-
-  background: transparent;
-  border: none;
-
-  color: var(--nav-text);
-
-  font-size: 1.5rem;
-  line-height: 1;
-
-  cursor: pointer;
-
-  flex-shrink: 0;
-}
-
-.back-btn:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-
-/* =========================================================
-   LOGO MDWEB
-   ========================================================= */
-
 nav h1 {
   position: absolute;
-
   left: 50%;
   top: 50%;
-
   width: max-content;
-
   margin: 0;
-
   transform: translate(-50%, -50%);
-
   color: var(--nav-text);
-
   font-size: 1.5rem;
   font-weight: 700;
-
   line-height: 1;
-
   white-space: nowrap;
-
   z-index: 1;
 }
 
 
 /* =========================================================
-   MENU UTENTE
+   MENU UTENTE (POSIZIONATO A DESTRA)
    ========================================================= */
-
 nav .user-menu {
   position: relative;
-
-  /*
-    QUESTE DUE REGOLE SONO QUELLE
-    CHE LO PORTANO A DESTRA.
-  */
   margin-left: auto;
   margin-inline-start: auto;
-
   margin-right: 0;
   margin-inline-end: 0;
-
-  /*
-    Impedisce al flex container
-    di spostarlo o comprimerlo.
-  */
   flex-shrink: 0;
-
   width: auto;
-
   display: flex;
   align-items: center;
   justify-content: flex-end;
-
   gap: 10px;
-
   cursor: pointer;
-
   user-select: none;
-
   z-index: 2;
 }
 
@@ -230,56 +167,39 @@ nav .user-menu {
 /* =========================================================
    ICONA UTENTE
    ========================================================= */
-
 nav .user-icon {
   width: 40px;
   height: 40px;
-
   flex: 0 0 40px;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: var(--bg-color);
   color: var(--text-color);
-
   border-radius: 50%;
-
   font-size: 1.2rem;
   font-weight: bold;
-
   text-align: center;
 }
 
 
 /* =========================================================
-   FRECCIA
+   FRECCIA MENU A TENDINA
    ========================================================= */
-
 nav .arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   width: 18px;
   height: 40px;
-
   margin: 0;
   padding: 0;
-
   color: var(--nav-text);
-
   font-size: 1.1rem;
-
   line-height: 1;
-
   flex-shrink: 0;
-
   user-select: none;
-
-  transition:
-    transform var(--transition-speed) ease;
+  transition: transform var(--transition-speed) ease;
 }
 
 nav .user-menu.open .arrow {
@@ -288,95 +208,52 @@ nav .user-menu.open .arrow {
 
 
 /* =========================================================
-   DROPDOWN
+   MENU A TENDINA (DROPDOWN)
    ========================================================= */
-
 nav .user-menu .dropdown {
   position: absolute;
-
-  /*
-    ATTACCATO AL LATO DESTRO
-    DEL MENU UTENTE.
-  */
   right: 0;
   left: auto;
-
   top: calc(100% + 10px);
-
   width: 250px;
   min-width: 180px;
-
-  /*
-    Non permette al menu di uscire
-    dai bordi dello schermo.
-  */
   max-width: calc(100vw - 20px);
-
   display: none;
   flex-direction: column;
-
   padding: 0;
   margin: 0;
-
   background: #333333;
-
   border-radius: 0 0 15px 15px;
-
-  box-shadow:
-    0 5px 15px rgba(0, 0, 0, 0.5);
-
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-
   z-index: 9999;
-
   opacity: 0;
-
   transform: translateY(-10px);
-
   pointer-events: none;
-
-  transition:
-    opacity var(--transition-speed) ease,
-    transform var(--transition-speed) ease;
+  transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
 }
-
-
-/* =========================================================
-   DROPDOWN APERTO
-   ========================================================= */
 
 nav .user-menu.open .dropdown {
   display: flex;
-
   opacity: 1;
-
   transform: translateY(0);
-
   pointer-events: auto;
 }
 
 
 /* =========================================================
-   NOME UTENTE
+   NOME UTENTE NEL DROPDOWN
    ========================================================= */
-
 nav .dropdown .username-display {
   display: block;
-
   width: 100%;
-
   margin: 0;
   padding: 12px 16px;
-
   background: var(--accent-color);
   color: #000000;
-
   font-weight: 600;
-
   line-height: 1.4;
-
   cursor: default;
-
   user-select: none;
 }
 
@@ -384,446 +261,367 @@ nav .dropdown .username-display:hover,
 nav .dropdown .username-display:focus {
   background: var(--accent-color);
   color: #000000;
-
   outline: none;
 }
 
 
 /* =========================================================
-   LINK DEL DROPDOWN
+   LINK ALL'INTERNO DEL DROPDOWN
    ========================================================= */
-
 nav .dropdown a {
   display: block;
-
   width: 100%;
-
   margin: 0;
   padding: 12px 16px;
-
   background: transparent;
-
   color: var(--text-light);
-
   text-decoration: none;
-
   font-size: 1rem;
   font-weight: 600;
-
   line-height: 1.4;
-
-  transition:
-    background var(--transition-speed) ease,
-    color var(--transition-speed) ease;
+  transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
 }
-
-
-/* =========================================================
-   HOVER DROPDOWN
-   ========================================================= */
 
 nav .dropdown a:hover,
 nav .dropdown a:focus {
   background: var(--accent-color);
   color: #000000;
-
   outline: none;
 }
 
 
 /* =========================================================
-   FORM
+   SEZIONE DEDICATA A CRISTIAN: PIÙ E MENO
    ========================================================= */
-
-#profileForm {
-  margin: 20px;
+main.cristian-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
 }
 
-#barra {
-  margin-bottom: 20px;
-
-  padding: 10px;
-
-  border-radius: 20px;
-
-  text-align: center;
-
-  background: var(--barra-bg);
+main.cristian-main h1 {
+  font-size: 2.2rem;
+  margin: 4px 0 2px;
+  letter-spacing: -.7px;
+  font-weight: 800;
 }
 
-#barra h3 {
-  margin: 0;
-
-  color: var(--barra-color);
-
-  font-size: 1.4rem;
-
-  user-select: none;
-}
-
-
-/* =========================================================
-   FORM GROUP
-   ========================================================= */
-
-.form-group,
-.username-group,
-.old-password-group {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 5px;
-
-  width: 100%;
-}
-
-label {
-  font-weight: 600;
-
-  user-select: none;
-
-  text-align: left;
-}
-
-
-/* =========================================================
-   INPUT
-   ========================================================= */
-
-input {
-  width: 100%;
-  height: 40px;
-
-  padding: 8px;
-
-  font-size: 1rem;
-
-  border-radius: 6px;
-  border: 1px solid #444444;
-
-  outline: none;
-
-  background-color: #696969;
-
-  color: var(--text-light);
-
-  transition:
-    box-shadow var(--transition-speed);
-}
-
-input:focus {
-  background: #111111;
-
-  box-shadow:
-    0 0 6px var(--accent-color);
-}
-
-input[readonly] {
-  background: var(--input-bg-readonly);
-
+.sub {
   color: var(--text-muted);
-
-  cursor: default;
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-
-/* =========================================================
-   PULSANTI
-   ========================================================= */
-
-button {
-  margin-top: 15px;
-
-  padding: 10px 0;
-
-  background: var(--barra-bg);
-
-  border: none;
-  border-radius: 8px;
-
-  color: var(--barra-color);
-
-  font-size: 1.1rem;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  transition:
-    background var(--transition-speed);
-}
-
-button:hover,
-button:focus {
-  background: var(--accent-hover);
-
-  outline: none;
-}
-
-
-/* =========================================================
-   PULSANTI USERNAME / PASSWORD
-   ========================================================= */
-
-#changeUsernameBtn,
-#verifyPasswordBtn {
-  width: auto;
-  height: 40px;
-
-  margin-top: 0;
-
-  padding: 0 16px;
-
-  border-radius: 8px;
-
-  background: var(--barra-bg);
-  color: var(--barra-color);
-
-  font-size: 1.1rem;
-  font-weight: 700;
-
-  transition:
-    background var(--transition-speed);
-}
-
-#changeUsernameBtn:hover,
-#verifyPasswordBtn:hover,
-#changeUsernameBtn:focus,
-#verifyPasswordBtn:focus {
-  background: var(--accent-hover);
-
-  outline: none;
-}
-
-
-/* =========================================================
-   GRUPPI CON INPUT + PULSANTE
-   ========================================================= */
-
-.username-group,
-.old-password-group {
-  flex-direction: row;
-
-  gap: 10px;
-}
-
-
-/* =========================================================
-   HIDDEN
-   ========================================================= */
-
-.hidden {
-  display: none !important;
-}
-
-
-/* =========================================================
-   MESSAGGI
-   ========================================================= */
-
-#errorMsg,
-#successMsg {
-  display: none;
-
-  min-height: 20px;
-
-  margin-top: 6px;
-  padding-left: 4px;
-
-  border-radius: 4px;
-
-  font-size: 0.9rem;
-  font-weight: 700;
-
-  user-select: none;
-}
-
-#errorMsg.visible {
-  display: block;
-
-  color: var(--error-color);
-  background: var(--msg-bg);
-
-  transition:
-    opacity var(--transition-speed);
-}
-
-#successMsg.visible {
-  display: block;
-
-  color: var(--success-color);
-  background: var(--msg-bg);
-
+.balance {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 24px;
   text-align: center;
+  box-shadow: var(--card-shadow);
+}
 
-  transition:
-    opacity var(--transition-speed);
+.balance .num {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.balance .lbl {
+  color: var(--text-color);
+  opacity: 0.9;
+  margin-top: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--line);
+  margin-top: 18px;
+  border: 1px solid var(--line);
+}
+
+.bar i {
+  display: block;
+  transition: width .4s ease;
+}
+
+.bar .p { background: var(--pos); }
+.bar .n { background: var(--neg); }
+
+.note-container {
+  margin: 18px 0;
+}
+
+.note {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background-color: var(--surface) !important;
+  color: var(--text-color) !important;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.note:focus {
+  border-color: var(--accent-color);
+}
+
+.note::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.btns button {
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 22px 12px;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s ease;
+  margin-top: 0;
+}
+
+.btns button:active {
+  transform: scale(0.95);
+}
+
+.btns .sym {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.btns .cnt {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+#plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+#minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
+
+.tools {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 24px 0;
+}
+
+.tools button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid var(--line) !important;
+  background: var(--surface);
+  color: var(--text-color);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tools button:hover {
+  background: var(--line);
+  border-color: var(--accent-color) !important;
+}
+
+main.cristian-main h2 {
+  font-size: 1.2rem;
+  margin: 16px 0 12px;
+  font-weight: 800;
+}
+
+main.cristian-main ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+main.cristian-main li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+li.day-header {
+  background: transparent !important;
+  border: none !important;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+  padding: 0 4px !important;
+}
+
+main.cristian-main li .tag {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+li.p .tag { background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); }
+li.n .tag { background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); }
+
+li .txt {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+li .time {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  flex: none;
+  font-weight: 700;
+}
+
+.empty {
+  color: var(--text-muted);
+  padding: 16px 0;
+  text-align: center;
+  font-style: italic;
+  font-weight: 500;
 }
 
 
 /* =========================================================
-   MOBILE
+   RESPONSIVE DESIGN: DISPOSITIVI MOBILI (max-width: 600px)
    ========================================================= */
-
 @media (max-width: 600px) {
-
   nav {
     width: 100%;
     height: 60px;
-
     padding: 0 15px;
-
     overflow: visible;
   }
-
 
   nav h1 {
     left: 50%;
     top: 50%;
-
     font-size: 1.5rem;
   }
 
-
-  /*
-    UTENTE SEMPRE A DESTRA
-  */
   nav .user-menu {
     margin-left: auto;
     margin-inline-start: auto;
-
     margin-right: 0;
     margin-inline-end: 0;
-
     flex-shrink: 0;
-
     gap: 8px;
   }
-
 
   nav .user-icon {
     width: 40px;
     height: 40px;
-
     flex-basis: 40px;
   }
-
 
   nav .arrow {
     width: 18px;
   }
 
-
-  /*
-    DROPDOWN MOBILE
-  */
   nav .user-menu .dropdown {
     right: 0;
     left: auto;
-
     top: calc(100% + 10px);
-
     width: 250px;
     max-width: calc(100vw - 20px);
   }
 
-
-  /* -------------------------
-     BARRA
-     ------------------------- */
-
   #barra {
     display: flex;
-
     justify-content: center;
     align-items: center;
-
     position: relative;
-
     margin-top: 20px;
     margin-bottom: 20px;
-
     background: var(--barra-bg);
   }
 
-
   #barra h3 {
     margin: 0 auto;
-
     color: var(--barra-color);
-
     font-size: 1.4rem;
-
     text-align: center;
   }
 
-
-  /* -------------------------
-     FORM
-     ------------------------- */
-
   .form-group {
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     width: 100%;
   }
-
 
   .form-group label {
     width: 100%;
-
     margin-bottom: 5px;
-
     text-align: left;
-
     font-weight: 600;
   }
 
-
   .form-group input {
     width: 100%;
-
     margin-bottom: 10px;
   }
-
 
   .username-group,
   .old-password-group {
     display: flex;
-
     flex-direction: column;
-
     align-items: center;
-
     width: 100%;
-
     gap: 5px;
   }
-
 
   .username-group label,
   .old-password-group label {
     width: 100%;
-
     margin-bottom: 5px;
-
     text-align: left;
-
     font-weight: 600;
   }
-
 
   .username-group input,
   .old-password-group input {
     width: 100%;
-
     margin-bottom: 10px;
   }
-
 
   #changeUsernameBtn,
   #verifyPasswordBtn,
@@ -831,80 +629,60 @@ button:focus {
     width: 100%;
   }
 
-
   .username-group button {
     width: 100%;
-
     margin-bottom: 10px;
   }
 }
 
 
 /* =========================================================
-   TABLET / DESKTOP LANDSCAPE
+   RESPONSIVE DESIGN: TABLET E DESKTOP LANDSCAPE
    ========================================================= */
-
 @media (min-width: 601px) and (orientation: landscape) {
-
   form {
     display: flex;
-
     flex-direction: column;
-
     gap: 10px;
   }
-
 
   .form-group,
   .username-group,
   .old-password-group {
     display: flex;
-
     flex-direction: row;
-
     align-items: center;
-
     width: 100%;
   }
-
 
   .form-group label,
   .username-group label,
   .old-password-group label {
     width: 25%;
-
     font-weight: 600;
-
     text-align: left;
   }
-
 
   .form-group input,
   .username-group input,
   .old-password-group input {
     width: 100%;
-
     margin-bottom: 0;
   }
-
 
   #changeUsernameBtn,
   #verifyPasswordBtn {
     width: 30%;
-
     margin-top: 0;
   }
-
 
   button[type="submit"] {
     width: 100%;
   }
 
-
   html,
   body {
     min-height: 90vh;
-
     overflow: auto;
   }
 }
