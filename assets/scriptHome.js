@@ -29,11 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const closePhotoModal = document.getElementById("closePhotoModal");
   const zoomContainer = document.getElementById("zoomContainer");
 
-  let scale = 1;
-  let startDistance = 0;
-  let touchStartX = 0;
-  let touchStartY = 0;
-
   // =====================================================================
   // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
   // =====================================================================
@@ -80,14 +75,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================================
-  // GESTIONE MODALE ANTEPRIMA FOTO (ZOOM, SWIPE & TOGGLE NOTA)
+  // GESTIONE MODALE ANTEPRIMA FOTO (BLOCCO ASSOLUTO BACK DI NAVIGAZIONE)
   // =====================================================================
   function closePreview() {
     if (photoModal) {
       photoModal.classList.add("hidden");
       document.body.style.overflow = "";
       if (modalImage) {
-        modalImage.style.transform = "scale(1)";
+        modalImage.style.transform = "translateZ(0)";
       }
     }
   }
@@ -114,8 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openPhotoPreview = function(imgSrc, captionText) {
     if (modalImage && photoModal) {
       modalImage.src = imgSrc;
-      scale = 1;
-      modalImage.style.transform = `scale(${scale})`;
+      modalImage.style.transform = "translateZ(0)";
 
       if (modalCaption) {
         modalCaption.textContent = captionText || "";
@@ -129,58 +123,44 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Gestione Swipe da sinistra a destra (soltanto per chiudere la foto) e Pinch-to-Zoom
+  // Gestione rigorosa dello swipe per chiudere la foto e blocco assoluto del back di navigazione
   if (zoomContainer && modalImage) {
+    let touchStartX = 0;
+    let touchStartY = 0;
+
     zoomContainer.addEventListener("touchstart", (e) => {
       if (e.touches.length === 1) {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
-      } else if (e.touches.length === 2) {
-        startDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
       }
     }, { passive: true });
 
     zoomContainer.addEventListener("touchmove", (e) => {
-      if (e.touches.length === 1 && scale === 1) {
+      if (e.touches.length === 1) {
         const currentX = e.touches[0].clientX;
         const diffX = currentX - touchStartX;
         
-        // Intercetta lo swipe verso destra da bordo ed evita il back di navigazione del browser
-        if (touchStartX < 120 && diffX > 10) {
-          if (e.cancelable) e.preventDefault();
-        }
-      } else if (e.touches.length === 2) {
-        const currentDistance = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        if (startDistance > 0) {
-          const factor = currentDistance / startDistance;
-          scale = Math.min(Math.max(1, scale * factor), 4);
-          modalImage.style.transform = `scale(${scale})`;
-          startDistance = currentDistance;
+        // Impedisce a Safari/Chrome di attivare il cambio pagina con lo swipe dal bordo
+        if (touchStartX < 140 && diffX > 0) {
+          if (e.cancelable) {
+            e.preventDefault();
+          }
         }
       }
     }, { passive: false });
 
     zoomContainer.addEventListener("touchend", (e) => {
-      if (e.changedTouches.length === 1 && scale === 1) {
+      if (e.changedTouches.length === 1) {
         const touchEndX = e.changedTouches[0].clientX;
         const touchEndY = e.changedTouches[0].clientY;
         
         const diffX = touchEndX - touchStartX;
         const diffY = Math.abs(touchEndY - touchStartY);
 
-        // Swipe da sinistra verso destra per chiudere l'anteprima foto
-        if (touchStartX < 140 && diffX > 80 && diffY < 70) {
+        // Chiusura con swipe da sinistra verso destra
+        if (touchStartX < 140 && diffX > 70 && diffY < 60) {
           closePreview();
         }
-      }
-      if (e.touches.length < 2) {
-        startDistance = 0;
       }
     });
   }
