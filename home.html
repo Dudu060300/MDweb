@@ -2,38 +2,23 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <!-- Meta viewport per bloccare completamente lo zoom e adattare l'app ai dispositivi mobili -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <title>Cristian: più e meno - MDweb</title>
 
-  <!-- CSS globali del sito (inclusi i nuovi stili di Cristian) -->
+  <!-- Fogli di stile CSS globali del sito -->
   <link rel="stylesheet" href="assets/styleHome.css">
   <link rel="stylesheet" href="assets/css.css">
 
-  <!-- Script JavaScript per bloccare definitivamente qualsiasi gesto di zoom -->
-  <script>
-    document.addEventListener('gesturestart', function(e) {
-      e.preventDefault();
-    });
-
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function(e) {
-      const now = (new Date()).getTime();
-      if (now - lastTouchEnd <= 300) {
-        e.preventDefault();
-      }
-      lastTouchEnd = now;
-    }, false);
-  </script>
-
-  <!-- Firebase SDK -->
+  <!-- Firebase SDK (versione compatibile) -->
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
 
-  <!-- Configurazione e protezione Firebase -->
+  <!-- Inizializzazione Firebase e protezione pagina -->
   <script src="firebase-init.js"></script>
   <script src="auth-guard.js"></script>
 </head>
@@ -56,6 +41,7 @@
       <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
       <span class="arrow" aria-hidden="true">&#9662;</span>
 
+      <!-- Menu a tendina delle opzioni utente -->
       <div
         class="dropdown"
         id="dropdownMenu"
@@ -65,7 +51,7 @@
         <span class="dropdown-item username-display" id="userName">Utente</span>
         <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
         <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
-        <a href="#" id="logout" role="menuitem" tabindex="-1" onclick="logout(); return false;">Logout</a>
+        <a href="#" id="logout" role="menuitem" tabindex="-1">Logout</a>
       </div>
     </div>
   </nav>
@@ -75,6 +61,7 @@
     <h1>Cristian</h1>
     <p class="sub">Tocca + o − ogni volta. Se vuoi, scrivi il motivo.</p>
 
+    <!-- Sezione riepilogo del saldo -->
     <section class="balance" aria-live="polite">
       <div class="num" id="bal">0</div>
       <div class="lbl" id="verdict">Ancora nessun punto</div>
@@ -84,10 +71,12 @@
       </div>
     </section>
 
+    <!-- Casella di input per il motivo opzionale -->
     <div class="note-container">
       <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (facoltativo)" aria-label="Motivo">
     </div>
 
+    <!-- Pulsanti principali (+) e (-) -->
     <div class="btns">
       <button id="plus" type="button" aria-label="Aggiungi un più">
         <span class="sym">+</span>
@@ -99,169 +88,22 @@
       </button>
     </div>
 
-    <!-- STRUMENTI SOPRA LO STORICO -->
+    <!-- Strumenti posizionati sopra lo storico -->
     <div class="tools">
       <button id="undo" type="button">Annulla ultimo</button>
       <button id="reset" type="button">Azzera tutto</button>
     </div>
 
+    <!-- Sezione dello storico -->
     <h2>Storico</h2>
     <ul id="log"></ul>
     <p class="empty" id="empty">Niente da mostrare. Premi + o − per iniziare.</p>
   </main>
 
-  <!-- SCRIPT DEL SITO -->
+  <!-- SCRIPT ESTERNI DEL SITO -->
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
-
-  <!-- LOGICA JAVASCRIPT DEL SISTEMA -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      // Gestione del tema salvato (applica la classe .dark se necessario)
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme === "dark") {
-        document.body.classList.add("dark");
-      } else if (savedTheme === "light") {
-        document.body.classList.remove("dark");
-      } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.body.classList.add("dark");
-      }
-
-      let items = [];
-      let db, userId;
-
-      const $ = function(id) { return document.getElementById(id); };
-      function esc(t) { var d = document.createElement("div"); d.textContent = t; return d.innerHTML; }
-
-      function render() {
-        var p = items.filter(function(i) { return i.t === "p"; }).length,
-            n = items.length - p,
-            b = p - n;
-        
-        if ($("bal")) {
-          $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
-          $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text-color)";
-        }
-        if ($("verdict")) {
-          $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
-        }
-        if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
-        if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
-        
-        var tot = items.length || 1;
-        if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
-        if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
-        if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
-        
-        if ($("log")) {
-          let lastDayStr = "";
-          let html = "";
-          
-          items.slice().reverse().forEach(function(i) {
-            var d = new Date(i.d);
-            var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
-            
-            if (dayStr !== lastDayStr) {
-              lastDayStr = dayStr;
-              html += '<li class="day-header">' + dayStr + '</li>';
-            }
-            
-            var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-            html += '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
-          });
-          
-          $("log").innerHTML = html;
-        }
-      }
-
-      async function saveToFirestore() {
-        if (!db || !userId) return;
-        try {
-          await db.collection("users").doc(userId).collection("data").doc("cristian_score").set({ items });
-        } catch (e) {
-          console.error("Errore salvataggio Firestore:", e);
-        }
-      }
-
-      async function initFirestore() {
-        try {
-          db = firebase.firestore();
-          firebase.auth().onAuthStateChanged(async (user) => {
-            if (user) {
-              userId = user.uid;
-              try {
-                const docRef = await db.collection("users").doc(userId).collection("data").doc("cristian_score").get();
-                if (docRef.exists) {
-                  items = docRef.data().items || [];
-                } else {
-                  const oldData = localStorage.getItem("cristian-score");
-                  if (oldData) {
-                    items = JSON.parse(oldData) || [];
-                    await saveToFirestore();
-                  }
-                }
-              } catch (err) {
-                console.error("Errore lettura dati utente:", err);
-              }
-              render();
-            }
-          });
-        } catch (e) {
-          console.error("Errore Firebase:", e);
-        }
-      }
-
-      function add(t) {
-        const noteEl = $("note");
-        const val = noteEl ? noteEl.value.trim() : "";
-        items.push({ t: t, n: val, d: Date.now() });
-        if (noteEl) noteEl.value = "";
-        saveToFirestore();
-        render();
-        if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
-      }
-
-      if ($("plus")) $("plus").onclick = function() { add("p"); };
-      if ($("minus")) $("minus").onclick = function() { add("n"); };
-      
-      if ($("note")) {
-        $("note").addEventListener("keydown", function(e) { 
-          if (e.key === "Enter") { add("p"); } 
-        });
-      }
-      
-      if ($("undo")) {
-        $("undo").onclick = function() {
-          if (items.length) {
-            if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
-              items.pop();
-              saveToFirestore();
-              render();
-            }
-          } else {
-            alert("Non ci sono elementi da annullare.");
-          }
-        };
-      }
-      
-      if ($("reset")) {
-        $("reset").onclick = function() {
-          if (items.length) {
-            if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
-              items = [];
-              saveToFirestore();
-              render();
-            }
-          } else {
-            alert("Il registro è già vuoto.");
-          }
-        };
-      }
-
-      render();
-      initFirestore();
-    });
-  </script>
+  <script src="assets/scriptCristian.js"></script>
 
 </body>
 </html>
