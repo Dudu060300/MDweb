@@ -13,163 +13,269 @@
   <link rel="stylesheet" href="assets/css.css">
 
   <style>
-    /* Stili specifici per il sistema Più e Meno */
+    /* Stili specifici ed estetica avanzata per il sistema Più e Meno */
     :root {
-      --pos: #1f9d6b; --pos-bg: #dcf4e8;
-      --neg: #d6405a; --neg-bg: #fbe0e5;
+      --pos: #10b981; --pos-bg: #ecfdf5; --pos-bg-card: rgba(16, 185, 129, 0.08);
+      --neg: #f43f5e; --neg-bg: #fff1f2; --neg-bg-card: rgba(244, 63, 94, 0.08);
+      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --pos: #4fd1a0; --pos-bg: #143a2c;
-        --neg: #ff7a90; --neg-bg: #41202a;
+        --pos: #34d399; --pos-bg: #064e3b; --pos-bg-card: rgba(52, 211, 153, 0.12);
+        --neg: #fb7185; --neg-bg: #4c0519; --neg-bg-card: rgba(251, 113, 133, 0.12);
+        --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
       }
     }
     :root[data-theme="dark"] {
-      --pos: #4fd1a0; --pos-bg: #143a2c;
-      --neg: #ff7a90; --neg-bg: #41202a;
+      --pos: #34d399; --pos-bg: #064e3b; --pos-bg-card: rgba(52, 211, 153, 0.12);
+      --neg: #fb7185; --neg-bg: #4c0519; --neg-bg-card: rgba(251, 113, 133, 0.12);
+      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(circle at top right, var(--pos-bg-card), transparent 40%),
+                        radial-gradient(circle at bottom left, var(--neg-bg-card), transparent 40%);
+      background-attachment: fixed;
     }
 
     main.cristian-main {
       max-width: 480px;
       margin: 0 auto;
-      padding: 20px 16px 40px;
+      padding: 24px 16px 48px;
     }
+
     main.cristian-main h1 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       margin: 4px 0 2px;
-      letter-spacing: -.5px;
+      letter-spacing: -.7px;
+      font-weight: 800;
     }
+
     .sub {
       color: var(--muted);
-      margin: 0 0 18px;
+      margin: 0 0 20px;
+      font-size: 0.95rem;
     }
+
+    /* Card del saldo con effetto vetro/sfondo pulito */
     .balance {
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 18px;
+      border-radius: 24px;
+      padding: 24px;
       text-align: center;
+      box-shadow: var(--card-shadow);
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s ease;
     }
+
     .balance .num {
-      font-size: 3.6rem;
-      font-weight: 800;
+      font-size: 4rem;
+      font-weight: 900;
       line-height: 1;
+      letter-spacing: -2px;
     }
+
     .balance .lbl {
       color: var(--muted);
-      margin-top: 6px;
+      margin-top: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
     }
+
     .bar {
       display: flex;
-      height: 12px;
-      border-radius: 6px;
+      height: 10px;
+      border-radius: 5px;
       overflow: hidden;
       background: var(--line);
-      margin-top: 14px;
+      margin-top: 18px;
     }
+
     .bar i {
       display: block;
-      transition: width .3s;
+      transition: width .4s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     .bar .p { background: var(--pos); }
     .bar .n { background: var(--neg); }
 
-    .btns {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 16px 0;
+    /* Input motivo elegante */
+    .note-container {
+      position: relative;
+      margin: 18px 0;
     }
-    .btns button {
-      border: 0;
-      border-radius: 18px;
-      padding: 18px 8px;
-      font: inherit;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-    }
-    .btns button:active { transform: scale(.96); }
-    .btns .sym { font-size: 3rem; font-weight: 800; line-height: 1; }
-    .btns .cnt { font-size: 1.1rem; font-weight: 700; }
-    #plus { background: var(--pos-bg); color: var(--pos); }
-    #minus { background: var(--neg-bg); color: var(--neg); }
 
-    /* Correzione input motivo: sfondo corretto e testo leggibile ed esplicito */
     .note {
       width: 100%;
-      padding: 14px;
-      border-radius: 14px;
+      padding: 16px 18px;
+      border-radius: 16px;
       border: 1px solid var(--line);
       background-color: var(--surface) !important;
       color: var(--text) !important;
       font: inherit;
       font-size: 1rem;
       outline: none;
+      box-shadow: var(--card-shadow);
+      transition: all 0.2s ease;
     }
+
     .note:focus {
-      border-color: var(--text);
-      background-color: var(--surface) !important;
-      color: var(--text) !important;
+      border-color: var(--pos);
+      box-shadow: 0 0 0 4px var(--pos-bg-card);
     }
+
     .note::placeholder {
       color: var(--muted);
     }
 
-    main.cristian-main h2 {
-      font-size: 1.1rem;
-      margin: 24px 0 8px;
+    /* Pulsanti principali Più e Meno */
+    .btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
     }
+
+    .btns button {
+      border: 0;
+      border-radius: 20px;
+      padding: 22px 12px;
+      font: inherit;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      box-shadow: var(--card-shadow);
+      transition: transform 0.15s ease, filter 0.15s ease;
+    }
+
+    .btns button:active {
+      transform: scale(0.95);
+    }
+
+    .btns .sym {
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .btns .cnt {
+      font-size: 1rem;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    #plus { background: var(--pos-bg); color: var(--pos); border: 1px solid rgba(16, 185, 129, 0.2); }
+    #minus { background: var(--neg-bg); color: var(--neg); border: 1px solid rgba(244, 63, 94, 0.2); }
+
+    main.cristian-main h2 {
+      font-size: 1.2rem;
+      margin: 28px 0 12px;
+      font-weight: 700;
+    }
+
     main.cristian-main ul {
       list-style: none;
       padding: 0;
       margin: 0;
     }
+
     main.cristian-main li {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       background: var(--surface);
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: 10px 12px;
-      margin-bottom: 8px;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--card-shadow);
+      animation: fadeIn 0.3s ease;
     }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Intestazione del giorno nello storico */
+    li.day-header {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      font-weight: 700;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 20px;
+      margin-bottom: 8px;
+      padding: 0 4px !important;
+    }
+
     main.cristian-main li .tag {
       flex: none;
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-weight: 800;
+      font-weight: 900;
+      font-size: 1.1rem;
     }
+
     li.p .tag { background: var(--pos-bg); color: var(--pos); }
     li.n .tag { background: var(--neg-bg); color: var(--neg); }
-    li .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
-    li .time { color: var(--muted); font-size: .8rem; flex: none; }
-    .empty { color: var(--muted); padding: 8px 0; }
-    
-    /* Gestione strumenti e bordi pulsanti in basso */
-    .tools { 
-      display: flex; 
-      gap: 10px; 
-      margin-top: 16px; 
+
+    li .txt {
+      flex: 1;
+      min-width: 0;
+      overflow-wrap: anywhere;
+      font-size: 0.95rem;
+      font-weight: 500;
     }
+
+    li .time {
+      color: var(--muted);
+      font-size: 0.8rem;
+      flex: none;
+      font-weight: 600;
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 16px 0;
+      text-align: center;
+      font-style: italic;
+    }
+    
+    /* Pulsanti strumenti inferiori */
+    .tools {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
     .tools button {
       flex: 1;
-      padding: 12px;
-      border-radius: 12px;
+      padding: 14px;
+      border-radius: 16px;
       border: 1px solid var(--line) !important;
       background: var(--surface);
       color: var(--text);
       font: inherit;
+      font-weight: 600;
       cursor: pointer;
+      box-shadow: var(--card-shadow);
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
+
     .tools button:hover {
-      border-color: var(--text) !important;
+      background: var(--line);
+      border-color: var(--muted) !important;
     }
   </style>
 
@@ -229,11 +335,19 @@
       </div>
     </section>
 
-    <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (facoltativo)" aria-label="Motivo">
+    <div class="note-container">
+      <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (facoltativo)" aria-label="Motivo">
+    </div>
 
     <div class="btns">
-      <button id="plus" type="button" aria-label="Aggiungi un più"><span class="sym">+</span><span class="cnt" id="cp">0 positivi</span></button>
-      <button id="minus" type="button" aria-label="Aggiungi un meno"><span class="sym">−</span><span class="cnt" id="cn">0 negativi</span></button>
+      <button id="plus" type="button" aria-label="Aggiungi un più">
+        <span class="sym">+</span>
+        <span class="cnt" id="cp">0 positivi</span>
+      </button>
+      <button id="minus" type="button" aria-label="Aggiungi un meno">
+        <span class="sym">−</span>
+        <span class="cnt" id="cn">0 negativi</span>
+      </button>
     </div>
 
     <h2>Storico</h2>
@@ -250,7 +364,7 @@
   <script src="assets/tema.js"></script>
   <script src="assets/scriptHome.js"></script>
 
-  <!-- LOGICA DEL SISTEMA PIÙ E MENO -->
+  <!-- LOGICA DEL SISTEMA PIÙ E MENO CON GESTIONE FIRESTORE E GIORNI -->
   <script>
     document.addEventListener("DOMContentLoaded", function() {
       let items = [];
@@ -280,11 +394,23 @@
         if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
         
         if ($("log")) {
-          $("log").innerHTML = items.slice().reverse().map(function(i) {
-            var d = new Date(i.d),
-                h = d.toLocaleDateString("it-IT", {day: "numeric", month: "short"}) + " " + d.toLocaleTimeString("it-IT", {hour: "2-digit", minute: "2-digit"});
-            return '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
-          }).join("");
+          let lastDayStr = "";
+          let html = "";
+          
+          items.slice().reverse().forEach(function(i) {
+            var d = new Date(i.d);
+            var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+            
+            if (dayStr !== lastDayStr) {
+              lastDayStr = dayStr;
+              html += '<li class="day-header">' + dayStr + '</li>';
+            }
+            
+            var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+            html += '<li class="' + i.t + '"><span class="tag">' + (i.t === "p" ? "+" : "−") + '</span><span class="txt">' + (i.n ? esc(i.n) : '<span style="color:var(--muted)">senza motivo</span>') + '</span><span class="time">' + h + '</span></li>';
+          });
+          
+          $("log").innerHTML = html;
         }
       }
 
