@@ -1,25 +1,17 @@
-// Protezione delle pagine riservate (home, profilo, impostazioni).
-// Da includere nel <head> dopo firebase-init.js.
-// Nasconde la pagina finché Firebase non conferma l'utente, poi la mostra
-// oppure reindirizza a index.html.
+// Protezione semplice e diretta delle pagine riservate
 (function () {
   'use strict';
 
-  document.documentElement.style.visibility = 'hidden';
-
-  auth.onAuthStateChanged((user) => {
+  firebase.auth().onAuthStateChanged((user) => {
     if (!user) {
+      // Se l'utente non è loggato, rimandalo al login
       window.location.replace('index.html');
-      return;
     }
-    window.currentUser = user;
-    document.documentElement.style.visibility = '';
-    document.dispatchEvent(new CustomEvent('auth-ready', { detail: user }));
   });
 
-  // Da collegare al link "Logout": onclick="logout(); return false;"
+  // Funzione globale di logout
   window.logout = function () {
-    return auth.signOut().finally(() => {
+    return firebase.auth().signOut().finally(() => {
       window.location.replace('index.html');
     });
   };
