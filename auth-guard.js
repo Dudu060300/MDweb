@@ -6,7 +6,7 @@
   'use strict';
 
   document.documentElement.style.visibility = 'hidden';
-
+ 
   auth.onAuthStateChanged((user) => {
     if (!user) {
       window.location.replace('index.html');
