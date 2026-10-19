@@ -7,6 +7,7 @@
   const MIN_PASSWORD = 8;
   let busy = false;
 
+
   // ---------- Utility ----------
   const el = (id) => document.getElementById(id);
 
