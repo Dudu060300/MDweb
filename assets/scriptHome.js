@@ -1,22 +1,5 @@
-// Configurazione Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyA1U8IL5gdwoKmsdZgANGR_646ZDbjU50c",
-  authDomain: "proghtml-2e571.firebaseapp.com",
-  projectId: "proghtml-2e571",
-  storageBucket: "proghtml-2e571.appspot.com",
-  messagingSenderId: "771370443646",
-  appId: "1:771370443646:web:5dd712f9e03448ebda2463"
-};
+// Usa `auth` e `db` definiti in firebase-init.js (caricato prima nella pagina)
 
-// Inizializza Firebase solo se non è già fatto
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-
-// Aspettiamo che il documento sia caricato prima di cercare gli elementi
 document.addEventListener("DOMContentLoaded", () => {
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logout");
@@ -32,7 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const expanded = userMenu.getAttribute("aria-expanded") === "true";
       userMenu.setAttribute("aria-expanded", String(!expanded));
       userMenu.classList.toggle("open");
-      
+
       if (overlay) {
         overlay.style.display = userMenu.classList.contains("open") ? "block" : "none";
       }
@@ -57,24 +40,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ================= AUTH & UI UPDATE =================
+  // ================= UI UTENTE =================
+  // Il reindirizzamento per chi non è loggato lo gestisce auth-guard.js
   auth.onAuthStateChanged((user) => {
-    if (!user) {
-      location.href = "index.html";
-      return;
-    }
+    if (!user) return;
 
-    // Nome utente con fallback intelligente
     const name = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
-
-    // Iniziale maiuscola sicura
     const initial = name.charAt(0).toUpperCase();
 
-    // Aggiornamento sicuro della UI
     if (userName) userName.textContent = name;
     if (userIcon) userIcon.textContent = initial;
 
-    // Controllo provider (Google / Apple)
     const providers = user.providerData.map(p => p.providerId);
     const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
 
