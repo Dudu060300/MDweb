@@ -68,7 +68,7 @@ body.dark {
 
 
 /* =========================================================
-   RESET E CONFIGURAZIONE TOUCH, PULL-TO-REFRESH & SWIPE
+   RESET E BLOCCO CONFIGURAZIONE GESTURE DI SISTEMA
    ========================================================= */
 * {
   box-sizing: border-box;
