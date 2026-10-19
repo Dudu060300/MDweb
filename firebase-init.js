@@ -1,18 +1,32 @@
-// Configurazione e inizializzazione Firebase (condivisa da tutte le pagine).
-const firebaseConfig = {
-  apiKey: "AIzaSyA1U8IL5gdwoKmsdZgANGR_646ZDbjU50c",
-  authDomain: "proghtml-2e571.firebaseapp.com",
-  projectId: "proghtml-2e571",
-  storageBucket: "proghtml-2e571.appspot.com",
-  messagingSenderId: "1071205946034",
-  appId: "1:1071205946034:web:7b33935a4232f29abfefab",
-  measurementId: "G-Z1TKBCDZ0E"
-};
- 
-// Inizializza solo se non è già stato fatto
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+(function () {
+  'use strict';
 
-const db = firebase.firestore();
-const auth = firebase.auth();
+  // 1. Applica il blocco invisibile IMMEDIATAMENTE appena lo script viene letto
+  var style = document.createElement('style');
+  style.id = 'auth-guard-style';
+  style.innerHTML = 'html { display: none !important; }';
+  document.head.appendChild(style);
+
+  // 2. Verifica dello stato utente con Firebase
+  firebase.auth().onAuthStateChanged(function (user) {
+    if (!user) {
+      // Non loggato -> Reindirizzamento forzato immediato
+      window.location.replace('index.html');
+    } else {
+      // Loggato -> Rimuove il blocco invisibile e mostra la pagina
+      var guardStyle = document.getElementById('auth-guard-style');
+      if (guardStyle) guardStyle.remove();
+
+      // Invia l'evento per scriptProfilo.js
+      var event = new CustomEvent('auth-ready', { detail: user });
+      document.dispatchEvent(event);
+    }
+  });
+
+  // Funzione globale di logout
+  window.logout = function () {
+    return firebase.auth().signOut().finally(function () {
+      window.location.replace('index.html');
+    });
+  };
+})();
