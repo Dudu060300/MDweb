@@ -447,7 +447,7 @@ main.cristian-main li .entry-photo {
 }
 
 /* =========================================================
-   MODALE ANTEPRIMA FOTO A SCHERMO INTERO (CON DISSOLVENZA)
+   MODALE ANTEPRIMA FOTO A SCHERMO INTERO ADATTIVA
    ========================================================= */
 .photo-modal {
   position: fixed;
@@ -468,7 +468,7 @@ main.cristian-main li .entry-photo {
   position: absolute;
   top: 20px;
   left: 20px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   color: #ffffff;
   border: none;
   border-radius: 50%;
@@ -489,25 +489,25 @@ main.cristian-main li .entry-photo {
 
 .modal-back-btn:active {
   transform: scale(0.9);
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
 }
 
-/* Immagine a tutto schermo */
+/* Immagine adattata a schermo intero in base al dispositivo */
 .photo-modal-img {
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
 
-/* Fascia con dissolvenza sfumata in basso */
+/* Fascia con dissolvenza sfumata in basso per il motivo */
 .photo-modal-fade {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  padding: 40px 20px 28px 20px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.5) 60%, rgba(0, 0, 0, 0) 100%);
+  padding: 40px 20px 30px 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 70%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
   z-index: 10001;
 }
