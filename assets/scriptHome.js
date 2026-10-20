@@ -157,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function triggerNotification(title, message, isApproved) {
-    // 1. Notifica Push di Sistema (PWA/Browser)
     if ("Notification" in window && Notification.permission === "granted") {
       try {
         new Notification(title, {
@@ -169,7 +168,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 2. Banner Visivo Popup nell'App (Toast Notification)
     let toast = document.getElementById("appToast");
     if (!toast) {
       toast = document.createElement("div");
@@ -384,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
           // VERIFICA NOTIFICHE APPROVAZIONE / RIFIUTO PER L'UTENTE LOGGATO
           if (lastKnownDecisionsCount !== -1 && newDecisionHistory.length > lastKnownDecisionsCount) {
             const latestDecision = newDecisionHistory[newDecisionHistory.length - 1];
-            if (latestDecision && latestDecision.author && latestDecision.author.toLowerCase() === currentUsername.toLowerCase()) {
+            if (latestDecision && latestDecision.author && latestDecision.author.trim().toLowerCase() === currentUsername.trim().toLowerCase()) {
               if (latestDecision.status === "approved") {
                 triggerNotification(
                   "✓ Segnalazione Approvata!",
@@ -417,21 +415,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render() {
-    const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
+    // CONTROLLO RIGOROSO: SOLO ED ESCLUSIVAMENTE L'UTENTE "mudi06" È ADMIN
+    const isMudi06 = (currentUsername.trim().toLowerCase() === "mudi06");
 
     // FILTRAGGIO VISIBILITÀ ELEMENTI AMMINISTRATORE (IN ATTESA / DECISIONI)
     const adminOnlyNavButtons = document.querySelectorAll(".bottom-nav .admin-only");
     adminOnlyNavButtons.forEach(btn => {
       if (isMudi06) {
-        btn.style.display = "flex";
+        btn.style.setProperty("display", "flex", "important");
         btn.classList.remove("hidden");
       } else {
-        btn.style.display = "none !important";
+        btn.style.setProperty("display", "none", "important");
         btn.classList.add("hidden");
-        // Se un utente standard si trova erroneamente su una scheda admin, lo riporta alla Home
+        
+        // Se un utente normale è su una tab admin, lo sposta subito alla Home
         if (btn.classList.contains("active")) {
-          const homeTab = document.querySelector('[data-tab="tab-home"]');
-          if (homeTab) homeTab.click();
+          btn.classList.remove("active");
+          const homeNav = document.querySelector('[data-tab="tab-home"]');
+          if (homeNav) homeNav.classList.add("active");
+          
+          const tabContents = document.querySelectorAll(".tab-content");
+          tabContents.forEach(tab => tab.classList.remove("active"));
+          const homeTab = document.getElementById("tab-home");
+          if (homeTab) homeTab.classList.add("active");
         }
       }
     });
@@ -579,11 +585,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const sentContainer = document.getElementById("sentContainer");
     if (sentContainer) {
       const pendingUserItems = pendingItems
-        .filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase())
+        .filter(i => i.author && i.author.trim().toLowerCase() === currentUsername.trim().toLowerCase())
         .map(i => ({ ...i, currentStatus: "pending" }));
 
       const decidedUserItems = decisionHistory
-        .filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase())
+        .filter(i => i.author && i.author.trim().toLowerCase() === currentUsername.trim().toLowerCase())
         .map(i => ({ ...i, currentStatus: i.status }));
 
       const allMySent = [...pendingUserItems, ...decidedUserItems].sort((a, b) => (b.d || 0) - (a.d || 0));
@@ -722,7 +728,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
-    const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
+    const isMudi06 = (currentUsername.trim().toLowerCase() === "mudi06");
     const now = Date.now();
     
     const newItem = {
@@ -763,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   window.approvePendingItem = function(id) {
-    if (currentUsername.toLowerCase() !== "mudi06") return;
+    if (currentUsername.trim().toLowerCase() !== "mudi06") return;
     const index = pendingItems.findIndex(i => i.id === id);
     if (index !== -1) {
       const item = pendingItems.splice(index, 1)[0];
@@ -777,7 +783,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   window.rejectPendingItem = function(id) {
-    if (currentUsername.toLowerCase() !== "mudi06") return;
+    if (currentUsername.trim().toLowerCase() !== "mudi06") return;
     const index = pendingItems.findIndex(i => i.id === id);
     if (index !== -1) {
       const item = pendingItems.splice(index, 1)[0];
@@ -800,7 +806,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("undo")) {
     $("undo").onclick = function() {
       if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
+      if (currentUsername.trim().toLowerCase() !== "mudi06") {
         alert("Solo Mudi06 può annullare le voci.");
         return;
       }
@@ -823,7 +829,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("reset")) {
     $("reset").onclick = function() {
       if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
+      if (currentUsername.trim().toLowerCase() !== "mudi06") {
         alert("Solo Mudi06 può azzerare tutto.");
         return;
       }
@@ -845,7 +851,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("clearCache")) {
     $("clearCache").onclick = function() {
       if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
+      if (currentUsername.trim().toLowerCase() !== "mudi06") {
         alert("Solo Mudi06 può svuotare la cache.");
         return;
       }
