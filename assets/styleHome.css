@@ -123,7 +123,7 @@ nav:not(.bottom-nav) .user-menu {
   z-index: 2;
 }
 
-/* CERCHIO USER ICON: SFONDO BIANCO E "M" NERA */
+/* CERCHIO USER ICON: LIGHT MODE (SFONDO BIANCO, M NERA) */
 nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
@@ -138,10 +138,11 @@ nav:not(.bottom-nav) .user-icon {
   font-weight: 800 !important;
 }
 
+/* CERCHIO USER ICON: DARK MODE (SFONDO NERO, M BIANCA) */
 body.dark nav:not(.bottom-nav) .user-icon {
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #e5e5e5;
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #333333;
 }
 
 nav:not(.bottom-nav) .arrow {
@@ -167,7 +168,7 @@ nav:not(.bottom-nav) .user-menu.open::before {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 9990;
-  pointer-events: none;
+  pointer-events: auto; /* Impedisce il click/tap sui pulsanti sfocati sotto */
 }
 
 /* DROPDOWN FULL-WIDTH (LARGHEZZA TUTTO LO SCHERMO) */
