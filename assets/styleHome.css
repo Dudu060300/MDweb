@@ -434,6 +434,15 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 
 .day-accordion.open .day-content { display: block; }
 
+/* SEPARATORE DI SEZIONE */
+.section-divider {
+  border: none;
+  height: 2px;
+  background-color: var(--line);
+  margin: 28px 0;
+  width: 100%;
+}
+
 /* =========================================================
    5. BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR FISSA IN BASSO)
    ========================================================= */
@@ -460,6 +469,7 @@ nav.bottom-nav {
 nav.bottom-nav .nav-item {
   background: transparent !important;
   border: none !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.1) !important; /* Separatore verticale tra le sezioni */
   color: var(--text-muted, #888888) !important;
   display: flex !important;
   flex-direction: column !important;
@@ -473,6 +483,13 @@ nav.bottom-nav .nav-item {
   padding: 0 !important;
   margin: 0 !important;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Rimuove il separatore dall'ultima icona visibile */
+nav.bottom-nav .nav-item:last-child,
+nav.bottom-nav .nav-item.hidden + .nav-item, 
+nav.bottom-nav .nav-item:not(.hidden):last-of-type {
+  border-right: none !important;
 }
 
 nav.bottom-nav .nav-item.active {
