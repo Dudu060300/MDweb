@@ -104,26 +104,42 @@
     <p class="empty" id="empty" style="display: none;">Seleziona un utente per vederne lo storico.</p>
   </main>
 
-  <!-- TAB 2: SEGNALAZIONI IN ATTESA (SOLO AMMINISTRAZIONE MUDI06) -->
-  <main class="cristian-main tab-content" id="tab-pending">
-    <h1>In Attesa</h1>
-    <p class="sub">Segnalazioni inviate in attesa di approvazione.</p>
-    <div id="pendingContainer"></div>
-  </main>
-
-  <!-- TAB 3: CLASSIFICA (VISIBILE A TUTTI) -->
+  <!-- TAB 2: CLASSIFICA (VISIBILE A TUTTI) -->
   <main class="cristian-main tab-content" id="tab-leaderboard">
     <h1>Classifica</h1>
     <p class="sub">Punteggi e contributi registrati per utente.</p>
     <div id="leaderboardContainer"></div>
   </main>
 
-  <!-- TAB 4: DECISIONI RECENTI (SOLO AMMINISTRAZIONE MUDI06) -->
+  <!-- TAB 3: SEGNALAZIONI INVIATE (PER UTENTI NORMALI) -->
+  <main class="cristian-main tab-content" id="tab-sent">
+    <h1>Segnalazioni Inviate</h1>
+    <p class="sub">Stato delle tue segnalazioni mandate all'admin.</p>
+    <div id="sentContainer"></div>
+  </main>
+
+  <!-- TAB 4: CHAT (VISIBILE A TUTTI) -->
+  <main class="cristian-main tab-content" id="tab-chat">
+    <h1>Chat</h1>
+    <p class="sub">Discussione e commenti di gruppo.</p>
+    <div id="chatContainer">
+      <p class="empty">Nessun messaggio presente.</p>
+    </div>
+  </main>
+
+  <!-- TAB AMMINISTRAZIONE 1: IN ATTESA (SOLO MUDI06) -->
+  <main class="cristian-main tab-content" id="tab-pending">
+    <h1>In Attesa</h1>
+    <p class="sub">Segnalazioni inviate dagli utenti in attesa di approvazione.</p>
+    <div id="pendingContainer"></div>
+  </main>
+
+  <!-- TAB AMMINISTRAZIONE 2: DECISIONI (SOLO MUDI06) -->
   <main class="cristian-main tab-content" id="tab-decisions">
     <h1>Ultimi Movimenti</h1>
     <p class="sub">Registro delle segnalazioni approvate, rifiutate o annullate.</p>
     
-        <!-- Strumenti dell'Admin su un'unica riga -->
+    <!-- Strumenti dell'Admin su un'unica riga -->
     <div class="tools" style="display: flex; gap: 8px; margin-bottom: 15px;">
       <button id="undo" type="button" style="flex: 1; padding: 12px 6px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer; text-align: center;">
         ↩ Annulla
@@ -136,23 +152,33 @@
       </button>
     </div>
 
-
     <div id="decisionsContainer"></div>
   </main>
 
   <!-- BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR) -->
   <nav class="bottom-nav" aria-label="Navigazione principale">
-    <button type="button" class="nav-item active" data-tab="tab-home">
+    <!-- VISIBILI A TUTTI / UTENTI STANDARD -->
+    <button type="button" class="nav-item user-only active" data-tab="tab-home">
       <span class="nav-icon">🏠</span>
       <span class="nav-label">Home</span>
     </button>
+    <button type="button" class="nav-item user-only" data-tab="tab-leaderboard">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Classifica</span>
+    </button>
+    <button type="button" class="nav-item user-only" data-tab="tab-sent">
+      <span class="nav-icon">📤</span>
+      <span class="nav-label">Inviate</span>
+    </button>
+    <button type="button" class="nav-item user-only" data-tab="tab-chat">
+      <span class="nav-icon">💬</span>
+      <span class="nav-label">Chat</span>
+    </button>
+
+    <!-- VISIBILI SOLO AD ADMIN (MUDI06) -->
     <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
       <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
       <span class="nav-label">In Attesa</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="tab-leaderboard">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-label">Classifica</span>
     </button>
     <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
       <span class="nav-icon">📋</span>
