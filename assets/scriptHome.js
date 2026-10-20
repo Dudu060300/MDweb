@@ -309,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentUser = auth.currentUser;
       let foundUsername = "";
       
-      // 1. RECUPERO USERNAME DA FIRESTORE
       try {
         const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
         if (userDoc.exists && userDoc.data().username) {
@@ -327,10 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Manteniamo lo username esatto recuperato dal DB (senza forzature su Mudi06)
+      // Manteniamo lo username esatto recuperato dal DB
       currentUsername = (foundUsername || "Utente").trim();
 
-      // Mostriamo lo username e l'iniziale corretta nella UI
       const initial = currentUsername.charAt(0).toUpperCase();
       if (userName) userName.textContent = currentUsername;
       if (userIcon) userIcon.textContent = initial;
@@ -360,10 +358,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render() {
-    // 2. CONTROLLO ADMIN ESCLUSIVAMENTE SULLO USERNAME "MUDI06"
+    // CONTROLLO ADMIN ESCLUSIVAMENTE SULLO USERNAME "MUDI06"
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-    // GESTIONE VISIBILITÀ TAB ADMIN (Solo se l'utente è Mudi06)
     const adminTabButtons = document.querySelectorAll(".bottom-nav .admin-only");
     adminTabButtons.forEach(btn => {
       if (isMudi06) {
@@ -556,14 +553,28 @@ document.addEventListener("DOMContentLoaded", () => {
           var d = new Date(i.decisionDate || i.d);
           var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
           var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var rawNoteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
           var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
           
-          const isApproved = (i.status === "approved");
-          const statusBadge = isApproved 
-            ? '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✓ Approvato</span>' 
-            : '<span style="background:var(--neg-bg); color:var(--neg); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✕ Rifiutato</span>';
-          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
+          let statusBadge = "";
+          let isCanceled = (i.status === "canceled");
+
+          if (i.status === "approved") {
+            statusBadge = '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✓ Approvato</span>';
+          } else if (i.status === "rejected") {
+            statusBadge = '<span style="background:var(--neg-bg); color:var(--neg); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✕ Rifiutato</span>';
+          } else if (isCanceled) {
+            statusBadge = '<div style="display:flex; align-items:center; gap:6px;">' +
+                            '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold; text-decoration:line-through; opacity:0.6;">✓ Approvato</span>' +
+                            '<span style="background:#666; color:#fff; padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">Annullato</span>' +
+                          '</div>';
+          }
+
+          var noteText = isCanceled 
+            ? '<span style="text-decoration:line-through; opacity:0.6;">' + rawNoteText + '</span>' 
+            : rawNoteText;
+
+          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer; ' + (isCanceled ? 'opacity:0.5;' : '') + '" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
 
           html += '<li class="' + i.t + '" style="margin-bottom:10px; flex-direction:column; align-items:stretch;">' +
                     '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">' +
@@ -571,7 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       '<span class="time">' + dayStr + ' ' + h + '</span>' +
                     '</div>' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<span class="tag" style="' + (isCanceled ? 'opacity:0.5;' : '') + '">' + (i.t === "p" ? "+" : "−") + '</span>' +
                       '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
                     '</div>' +
                   '</li>';
@@ -652,7 +663,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (approvedItems.length) {
         if (confirm("Sei sicuro di voler annullare l'ultimo inserimento approvato?")) {
-          approvedItems.pop();
+          const lastItem = approvedItems.pop();
+          lastItem.status = "canceled";
+          lastItem.decisionDate = Date.now();
+          decisionHistory.push(lastItem);
           saveSharedData();
           render();
         }
