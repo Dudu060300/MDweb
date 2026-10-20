@@ -123,21 +123,14 @@ nav:not(.bottom-nav) .user-menu {
   z-index: 2;
 }
 
-/* CERCHIO "M": SFONDO NERO E TESTO BIANCO IN DARK MODE */
-body.dark nav:not(.bottom-nav) .user-icon {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 1px solid #333333;
-}
-
 nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #000000;
-  color: #ffffff;
+  background: var(--nav-bg);
+  color: vari(--nav-text);
   border-radius: 50%;
   font-size: 1.2rem;
   font-weight: 800 !important;
@@ -160,7 +153,7 @@ nav:not(.bottom-nav) .user-menu .dropdown {
   width: 250px;
   display: none;
   flex-direction: column;
-  background: #222222;
+  background: var(--nav-bg);
   border-radius: 0 0 15px 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   overflow: hidden;
@@ -175,14 +168,14 @@ nav:not(.bottom-nav) .dropdown .username-display {
   display: block;
   padding: 12px 16px;
   background: var(--accent-color);
-  color: #000000;
+  color: var(--nav-text);
   font-weight: 700 !important;
 }
 
 nav:not(.bottom-nav) .dropdown a {
   display: block;
   padding: 12px 16px;
-  color: #ffffff;
+  color: var(--nav-text);
   font-weight: 600 !important;
 }
 
