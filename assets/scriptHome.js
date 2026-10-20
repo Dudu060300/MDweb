@@ -180,31 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!user) return;
 
     currentUserId = user.uid;
-    let displayName = user.displayName;
-
-    try {
-      const db = firebase.firestore();
-      const userDoc = await db.collection("users").doc(currentUserId).get();
-      if (userDoc.exists && userDoc.data().username) {
-        displayName = userDoc.data().username;
-      }
-    } catch (e) {
-      console.log("Errore lettura username Firestore:", e);
-    }
-
-    const finalName = displayName || (user.email ? user.email.split("@")[0] : "Utente");
-    const initial = finalName.charAt(0).toUpperCase();
-
-    if (userName) userName.textContent = finalName;
-    if (userIcon) userIcon.textContent = initial;
-
-    const providers = user.providerData.map(p => p.providerId);
-    const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
-
-    if (editProfileBtn) {
-      editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
-    }
-
     initFirestore(currentUserId);
   });
 
@@ -213,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   let approvedItems = [];
   let pendingItems = [];
+  let decisionHistory = [];
   let currentUsername = "";
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
@@ -225,6 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const logContainer = $("log");
   const pendingContainer = $("pendingContainer");
   const leaderboardContainer = $("leaderboardContainer");
+  const decisionsContainer = $("decisionsContainer");
   const pendingBadge = $("pendingBadge");
 
   // COMPRESSIONE FOTO
@@ -318,7 +295,8 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       await dbInstance.collection("shared_data").doc("cristian_score").set({
         approvedItems: approvedItems,
-        pendingItems: pendingItems
+        pendingItems: pendingItems,
+        decisionHistory: decisionHistory
       });
     } catch (e) {
       console.error("Errore salvataggio Firestore:", e);
@@ -330,13 +308,53 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       dbInstance = firebase.firestore();
       
-      const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
-      if (userDoc.exists && userDoc.data().username) {
-        currentUsername = userDoc.data().username;
-      } else {
-        currentUsername = auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split("@")[0] : "Utente");
+      const currentUser = auth.currentUser;
+      let foundUsername = "";
+      
+      // 1. Tenta la lettura dal documento Firestore
+      try {
+        const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
+        if (userDoc.exists && userDoc.data().username) {
+          foundUsername = userDoc.data().username;
+        }
+      } catch (e) {
+        console.log("Errore lettura documento utente Firestore:", e);
       }
 
+      // 2. Fallback su Firebase Auth
+      if (!foundUsername && currentUser) {
+        if (currentUser.displayName) {
+          foundUsername = currentUser.displayName;
+        } else if (currentUser.email) {
+          foundUsername = currentUser.email.split("@")[0];
+        }
+      }
+
+      currentUsername = (foundUsername || "Utente").trim();
+
+      // 3. Riconoscimento amministratore flessibile per Mudi06
+      const userEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase() : "";
+      const isMudi06ByEmail = userEmail.includes("mudi06") || userEmail.startsWith("mudi");
+      const isMudi06ByUsername = currentUsername.toLowerCase().includes("mudi06") || currentUsername.toLowerCase() === "mudi";
+      
+      if (isMudi06ByEmail || isMudi06ByUsername) {
+        currentUsername = "Mudi06";
+      }
+
+      // Aggiornamento interfaccia navbar utente
+      const initial = currentUsername.charAt(0).toUpperCase();
+      if (userName) userName.textContent = currentUsername;
+      if (userIcon) userIcon.textContent = initial;
+
+      if (currentUser) {
+        const providers = currentUser.providerData.map(p => p.providerId);
+        const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
+        if (editProfileBtn) {
+          editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
+        }
+      }
+
+      // 4. Recupero automatico vecchi dati personali se la collezione condivisa è vuota
       let oldItemsBackup = [];
       try {
         const oldDoc = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
@@ -357,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const data = doc.data();
           approvedItems = data.approvedItems || [];
           pendingItems = data.pendingItems || [];
+          decisionHistory = data.decisionHistory || [];
 
           if (approvedItems.length === 0 && pendingItems.length === 0 && oldItemsBackup.length > 0) {
             approvedItems = oldItemsBackup.map(i => ({
@@ -365,7 +384,7 @@ document.addEventListener("DOMContentLoaded", () => {
               n: i.n || "",
               img: i.img || "",
               d: i.d || Date.now(),
-              author: "Mudi06"
+              author: currentUsername
             }));
             await saveSharedData();
           }
@@ -376,12 +395,13 @@ document.addEventListener("DOMContentLoaded", () => {
             n: i.n || "",
             img: i.img || "",
             d: i.d || Date.now(),
-            author: "Mudi06"
+            author: currentUsername
           }));
           await saveSharedData();
         } else {
           approvedItems = [];
           pendingItems = [];
+          decisionHistory = [];
         }
         render();
       });
@@ -393,9 +413,21 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-    // BADGE NOTIFICHE PENDING
+    // GESTIONE VISIBILITÀ TAB ADMIN (MUDI06)
+    const adminTabButtons = document.querySelectorAll(".bottom-nav .admin-only");
+    adminTabButtons.forEach(btn => {
+      if (isMudi06) {
+        btn.classList.remove("hidden");
+      } else {
+        btn.classList.add("hidden");
+        if (btn.classList.contains("active")) {
+          document.querySelector('[data-tab="tab-home"]').click();
+        }
+      }
+    });
+
     if (pendingBadge) {
-      if (pendingItems.length > 0) {
+      if (pendingItems.length > 0 && isMudi06) {
         pendingBadge.textContent = pendingItems.length;
         pendingBadge.classList.remove("hidden");
       } else {
@@ -487,7 +519,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 2. RENDER TAB DA APPROVARE
     if (pendingContainer) {
-      if (pendingItems.length === 0) {
+      if (!isMudi06) {
+        pendingContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
+      } else if (pendingItems.length === 0) {
         pendingContainer.innerHTML = '<div class="empty">Nessuna segnalazione in attesa.</div>';
       } else {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
@@ -502,11 +536,11 @@ document.addEventListener("DOMContentLoaded", () => {
             ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' 
             : '';
 
-          var actionBtns = isMudi06 ? 
+          var actionBtns = 
             '<div style="display:flex; gap:8px; margin-top:10px;">' +
               '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--pos); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
               '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--neg); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
-            '</div>' : '<div style="font-size:0.85rem; color:var(--text-muted); margin-top:6px;">In attesa di approvazione da Mudi06</div>';
+            '</div>';
 
           html += '<li class="' + i.t + '" style="margin-bottom:12px; flex-direction:column; align-items:stretch;">' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
@@ -561,6 +595,43 @@ document.addEventListener("DOMContentLoaded", () => {
         leaderboardContainer.innerHTML = html;
       }
     }
+
+    // 4. RENDER TAB DECISIONI RECENTI
+    if (decisionsContainer) {
+      if (!isMudi06) {
+        decisionsContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
+      } else if (decisionHistory.length === 0) {
+        decisionsContainer.innerHTML = '<div class="empty">Ancora nessuna decisione registrata.</div>';
+      } else {
+        let html = '<ul style="list-style:none; padding:0; margin:0;">';
+        decisionHistory.slice().reverse().forEach(function(i) {
+          var d = new Date(i.decisionDate || i.d);
+          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
+          
+          const isApproved = (i.status === "approved");
+          const statusBadge = isApproved 
+            ? '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✓ Approvato</span>' 
+            : '<span style="background:var(--neg-bg); color:var(--neg); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✕ Rifiutato</span>';
+          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
+
+          html += '<li class="' + i.t + '" style="margin-bottom:10px; flex-direction:column; align-items:stretch;">' +
+                    '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">' +
+                      statusBadge +
+                      '<span class="time">' + dayStr + ' ' + h + '</span>' +
+                    '</div>' +
+                    '<div style="display:flex; align-items:center; gap:10px;">' +
+                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
+                    '</div>' +
+                  '</li>';
+        });
+        html += '</ul>';
+        decisionsContainer.innerHTML = html;
+      }
+    }
   }
 
   function add(t) {
@@ -590,13 +661,15 @@ document.addEventListener("DOMContentLoaded", () => {
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
-  // AZIONI RISERVATE MUDI06
   window.approvePendingItem = function(id) {
     if (currentUsername.toLowerCase() !== "mudi06") return;
     const index = pendingItems.findIndex(i => i.id === id);
     if (index !== -1) {
       const item = pendingItems.splice(index, 1)[0];
+      item.status = "approved";
+      item.decisionDate = Date.now();
       approvedItems.push(item);
+      decisionHistory.push(item);
       saveSharedData();
       render();
     }
@@ -606,7 +679,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (currentUsername.toLowerCase() !== "mudi06") return;
     const index = pendingItems.findIndex(i => i.id === id);
     if (index !== -1) {
-      pendingItems.splice(index, 1);
+      const item = pendingItems.splice(index, 1)[0];
+      item.status = "rejected";
+      item.decisionDate = Date.now();
+      decisionHistory.push(item);
       saveSharedData();
       render();
     }
@@ -616,9 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("minus")) $("minus").onclick = function() { if (this.blur) this.blur(); add("n"); };
   
   if ($("note")) {
-    $("note").addEventListener("keydown", function(e) { 
-      if (e.key === "Enter") { add("p"); } 
-    });
+    $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
   }
   
   if ($("undo")) {
@@ -651,6 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico condiviso?")) {
           approvedItems = [];
           pendingItems = [];
+          decisionHistory = [];
           saveSharedData();
           render();
         }
