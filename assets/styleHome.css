@@ -444,22 +444,21 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA DI NAVIGAZIONE INFERIORE (FIX SPATIAL BALANCING & FLOATING PILL)
+   5. BARRA DI NAVIGAZIONE INFERIORE (FIX ANCORAGGIO IOS & FLOATING PILL)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
   bottom: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  top: auto !important;
-  width: 100% !important;
-  height: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
-  padding-bottom: calc(4px + env(safe-area-inset-bottom, 0px)) !important;
+  width: 100vw !important;
+  height: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   padding-top: 4px !important;
-  padding-left: 8px !important;
-  padding-right: 8px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
   margin: 0 !important;
-  background: rgba(10, 10, 10, 0.96) !important;
+  background: rgba(10, 10, 10, 0.98) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
   display: flex !important;
@@ -478,14 +477,14 @@ nav.bottom-nav .nav-item {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 1px !important;
+  gap: 2px !important;
   flex: 1 !important;
-  height: 58px !important;
-  border-radius: 18px !important;
+  height: 50px !important;
+  border-radius: 14px !important;
   cursor: pointer !important;
-  padding: 6px 4px 6px 4px !important;
+  padding: 4px 0 !important;
   margin: 0 2px !important;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease !important;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -494,18 +493,12 @@ nav.bottom-nav .nav-item.hidden {
   display: none !important;
 }
 
-/* STATO NON ATTIVO: PRESS FEEDBACK */
-nav.bottom-nav .nav-item:not(.active):active {
-  background: rgba(255, 255, 255, 0.08) !important;
-  transform: scale(0.95);
-}
-
-/* STATO ATTIVO: PILLOLA VERDE ACQUA BILANCIATA */
+/* STATO ATTIVO: PILLOLA VERDE ACQUA PERFETTAMENTE PROPORZIONATA */
 nav.bottom-nav .nav-item.active {
   background: linear-gradient(135deg, #00f7ff 0%, #00c2cc 100%) !important;
   color: #000000 !important;
   font-weight: 800 !important;
-  box-shadow: 0 4px 15px rgba(0, 247, 255, 0.35) !important;
+  box-shadow: 0 3px 12px rgba(0, 247, 255, 0.35) !important;
 }
 
 nav.bottom-nav .nav-item.active .nav-label,
@@ -514,22 +507,15 @@ nav.bottom-nav .nav-item.active .nav-icon {
 }
 
 nav.bottom-nav .nav-icon {
-  font-size: 1.2rem !important;
+  font-size: 1.15rem !important;
   position: relative !important;
   line-height: 1 !important;
-  margin-top: 2px !important;
-  transition: transform 0.2s ease !important;
-}
-
-nav.bottom-nav .nav-item.active .nav-icon {
-  transform: scale(1.08);
 }
 
 nav.bottom-nav .nav-label {
   font-size: 0.68rem !important;
   font-weight: 700 !important;
-  line-height: 1.1 !important;
-  margin-bottom: 2px !important;
+  line-height: 1 !important;
 }
 
 .badge-count {
