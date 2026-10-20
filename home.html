@@ -74,8 +74,8 @@
     </div>
   </nav>
 
-  <!-- CONTENUTO PRINCIPALE -->
-  <main class="cristian-main">
+  <!-- TAB 1: HOME (CONTENUTO PRINCIPALE) -->
+  <main class="cristian-main tab-content active" id="tab-home">
     <h1>Cristian</h1>
     <p class="sub">Tocca + o − ogni volta. Indica il motivo.</p>
 
@@ -125,6 +125,47 @@
     <ul id="log"></ul>
     <p class="empty" id="empty">Niente da mostrare.</p>
   </main>
+
+  <!-- NUOVA TAB 2: SEGNALAZIONI IN ATTESA (AMMINISTRAZIONE MUDI06) -->
+  <main class="cristian-main tab-content" id="tab-pending">
+    <h1>In Attesa</h1>
+    <p class="sub">Segnalazioni inviate in attesa di approvazione.</p>
+    <div id="pendingContainer"></div>
+  </main>
+
+  <!-- NUOVA TAB 3: CLASSIFICA (VISIBILE A TUTTI) -->
+  <main class="cristian-main tab-content" id="tab-leaderboard">
+    <h1>Classifica</h1>
+    <p class="sub">Punteggi e contributi registrati per utente.</p>
+    <div id="leaderboardContainer"></div>
+  </main>
+
+  <!-- NUOVA TAB 4: DECISIONI RECENTI (AMMINISTRAZIONE MUDI06) -->
+  <main class="cristian-main tab-content" id="tab-decisions">
+    <h1>Ultimi Movimenti</h1>
+    <p class="sub">Registro delle segnalazioni approvate o rifiutate.</p>
+    <div id="decisionsContainer"></div>
+  </main>
+
+  <!-- BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR) -->
+  <nav class="bottom-nav" aria-label="Navigazione principale">
+    <button type="button" class="nav-item active" data-tab="tab-home">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-label">Home</span>
+    </button>
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
+      <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
+      <span class="nav-label">In Attesa</span>
+    </button>
+    <button type="button" class="nav-item" data-tab="tab-leaderboard">
+      <span class="nav-icon">🏆</span>
+      <span class="nav-label">Classifica</span>
+    </button>
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
+      <span class="nav-icon">📋</span>
+      <span class="nav-label">Decisioni</span>
+    </button>
+  </nav>
 
   <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO (FINO ALLA NOTCH) -->
   <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
