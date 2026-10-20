@@ -26,7 +26,7 @@
 </head>
 <body>
 
-  <!-- BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR) -->
+  <!-- BARRA DI NAVIGAZIONE (NAVBAR) -->
   <nav>
     <h1>MDweb</h1>
 
@@ -47,15 +47,15 @@
   <!-- Sfondo trasparente per chiudere il dropdown al tocco esterno -->
   <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:998;"></div>
 
-  <!-- TAB 1: HOME (PUNTEGGIO CRISTIAN) -->
-  <main class="cristian-main tab-content active" id="tab-home">
+  <!-- SEZIONE PRINCIPALE: CONTATORE CRISTIAN -->
+  <main class="cristian-main">
     <h1>Cristian</h1>
     <p class="sub">Tocca + o − ogni volta. Indica il motivo.</p>
 
     <!-- Punteggio Totale -->
     <div class="balance">
       <div class="num" id="bal">0</div>
-      <div class="lbl" id="verdict">Ancora nessun punto approvato</div>
+      <div class="lbl" id="verdict">Ancora nessun punto</div>
       <div class="bar">
         <i class="p" id="bp" style="width: 50%;"></i>
         <i class="n" id="bn" style="width: 50%;"></i>
@@ -89,65 +89,29 @@
       </button>
     </div>
 
-    <!-- Strumenti Annulla / Azzera (Visibili con permessi) -->
+    <!-- Strumenti Annulla / Azzera -->
     <div class="tools">
       <button id="undo" type="button">Annulla ultimo</button>
       <button id="reset" type="button">Azzera tutto</button>
     </div>
 
-    <!-- Registro Storico Ufficiale -->
-    <h2>Storico Approvato</h2>
-    <div id="empty" class="empty">Niente nello storico approvato ancora.</div>
+    <!-- Registro Storico -->
+    <h2>Storico</h2>
+    <div id="empty" class="empty">Niente nello storico ancora.</div>
     <ul id="log"></ul>
   </main>
 
-  <!-- TAB 2: SEGNALAZIONI DA APPROVARE (RISERVATO MUDI06) -->
-  <main class="cristian-main tab-content" id="tab-pending">
-    <h1>In Attesa</h1>
-    <p class="sub">Segnalazioni inviate in attesa di decisione.</p>
-    <div id="pendingContainer"></div>
-  </main>
-
-  <!-- TAB 3: CLASSIFICA (VISIBILE A TUTTI) -->
-  <main class="cristian-main tab-content" id="tab-leaderboard">
-    <h1>Classifica</h1>
-    <p class="sub">Punteggi e contributi per utente.</p>
-    <div id="leaderboardContainer"></div>
-  </main>
-
-  <!-- TAB 4: DECISIONI RECENTI (RISERVATO MUDI06) -->
-  <main class="cristian-main tab-content" id="tab-decisions">
-    <h1>Ultimi Movimenti</h1>
-    <p class="sub">Registro storico delle segnalazioni approvate o rifiutate.</p>
-    <div id="decisionsContainer"></div>
-  </main>
-
-  <!-- BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR) -->
-  <div class="bottom-nav">
-    <button type="button" class="nav-item active" data-tab="tab-home">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">Home</span>
-    </button>
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
-      <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
-      <span class="nav-label">In Attesa</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="tab-leaderboard">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-label">Classifica</span>
-    </button>
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
-      <span class="nav-icon">📋</span>
-      <span class="nav-label">Decisioni</span>
-    </button>
-  </div>
-
-  <!-- MODALE ANTEPRIMA FOTO -->
+  <!-- MODALE ANTEPRIMA FOTO (ACCELERATA VIA GPU) -->
   <div id="photoModal" class="photo-modal hidden">
+    <!-- Pulsante Indietro in alto a sinistra -->
     <button id="closePhotoModal" class="modal-back-btn" type="button" aria-label="Chiudi foto">←</button>
+
+    <!-- Contenitore Zoomabile -->
     <div id="zoomContainer" class="photo-zoom-container">
       <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima foto" />
     </div>
+
+    <!-- Didascalia e Dissolvenza -->
     <div id="modalFadeOverlay" class="photo-modal-fade">
       <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
