@@ -123,18 +123,19 @@
     <h1>Ultimi Movimenti</h1>
     <p class="sub">Registro delle segnalazioni approvate, rifiutate o annullate.</p>
     
-    <!-- Strumenti dell'Admin per gestione inserimenti, cache e azzeramento -->
-    <div class="tools" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px;">
-      <button id="undo" type="button" style="width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
-        ↩ Annulla ultimo approvato
+        <!-- Strumenti dell'Admin su un'unica riga -->
+    <div class="tools" style="display: flex; gap: 8px; margin-bottom: 15px;">
+      <button id="undo" type="button" style="flex: 1; padding: 12px 6px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer; text-align: center;">
+        ↩ Annulla
       </button>
-      <button id="clearCache" type="button" style="width: 100%; padding: 12px; background: #e67e22; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
-        🧹 Svuota cache ultimi movimenti
+      <button id="reset" type="button" style="flex: 1; padding: 12px 6px; background: var(--neg, #e74c3c); color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer; text-align: center;">
+        ⚠️ Azzera
       </button>
-      <button id="reset" type="button" style="width: 100%; padding: 12px; background: var(--neg, #e74c3c); color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
-        ⚠️ Azzera tutti i punti
+      <button id="clearCache" type="button" style="flex: 1; padding: 12px 6px; background: #e67e22; color: #fff; border: none; border-radius: 12px; font-weight: bold; font-size: 0.85rem; cursor: pointer; text-align: center;">
+        🧹 Svuota
       </button>
     </div>
+
 
     <div id="decisionsContainer"></div>
   </main>
