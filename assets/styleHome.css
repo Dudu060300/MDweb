@@ -4,8 +4,593 @@
 *, html, body, input, button, select, textarea, nav, nav *, .dropdown, .dropdown *, h1, h2, h3, p, span, a {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
   box-sizing: border-box;
+  -webkit-text-size-adjust: /* =========================================================
+   1. UNIFICAZIONE FONT ASSOLUTA E VARIABILI TEMA
+   ========================================================= */
+*, html, body, input, button, select, textarea, nav, nav *, .dropdown, .dropdown *, h1, h2, h3, p, span, a {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
 }
+
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+
+  --nav-bg: #000000;
+  --barra-bg: #000000;
+  --barra-color: #00f7ff;
+  --nav-text: #ffffff;
+
+  --popup-bg: #000000;
+  --popup-color: #ffffff;
+
+  --accent-color: #00f7ff;
+  --accent-hover: #00c2cc;
+
+  --error-color: #ff4c4c;
+  --success-color: #4cff6b;
+
+  --text-light: #ffffff;
+  --text-muted: #666666;
+
+  --transition-speed: 0.3s;
+
+  --pos: #047857; 
+  --pos-bg: #d1fae5;
+  --neg: #be123c; 
+  --neg-bg: #ffe4e6;
+  --line: #d9dfea;
+  --surface: #f8f9fa;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
+}
+
+body.dark {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --nav-bg: #111111;
+  --nav-text: #ffffff;
+  --text-muted: #aaaaaa;
+  --surface: #121212;
+  --line: #2e384e;
+  --pos: #34d399; 
+  --pos-bg: #064e3b;
+  --neg: #fb7185; 
+  --neg-bg: #4c0519;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+/* =========================================================
+   2. RESET COMPLETO E FIX SPAZIO BIANCO IN BASSO
+   ========================================================= */
+html {
+  background-color: #000000 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #000000 !important;
+  color: var(--text-color);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+a {
+  text-decoration: none;
+  color: var(--nav-text);
+}
+
+/* =========================================================
+   3. BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
+   ========================================================= */
+nav:not(.bottom-nav) {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  height: calc(60px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--nav-bg);
+  color: var(--nav-text);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+}
+
+nav:not(.bottom-nav) h1 {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + (env(safe-area-inset-top, 0px) / 2));
+  margin: 0;
+  transform: translate(-50%, -50%);
+  color: var(--nav-text);
+  font-size: 1.5rem;
+  font-weight: 800 !important;
+}
+
+nav:not(.bottom-nav) .user-menu {
+  position: relative;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+}
+
+nav:not(.bottom-nav) .user-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: 800 !important;
+}
+
+nav:not(.bottom-nav) .arrow {
+  color: var(--nav-text);
+  font-size: 1.1rem;
+  transition: transform var(--transition-speed) ease;
+}
+
+nav:not(.bottom-nav) .user-menu.open .arrow {
+  transform: rotate(180deg);
+}
+
+nav:not(.bottom-nav) .user-menu .dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  width: 250px;
+  display: none;
+  flex-direction: column;
+  background: #333333;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 9999;
+}
+
+nav:not(.bottom-nav) .user-menu.open .dropdown {
+  display: flex;
+}
+
+nav:not(.bottom-nav) .dropdown .username-display {
+  display: block;
+  padding: 12px 16px;
+  background: var(--accent-color);
+  color: #000000;
+  font-weight: 700 !important;
+}
+
+nav:not(.bottom-nav) .dropdown a {
+  display: block;
+  padding: 12px 16px;
+  color: var(--text-light);
+  font-weight: 600 !important;
+}
+
+/* =========================================================
+   4. CONTENUTO PRINCIPALE E TAB SCHERMATE
+   ========================================================= */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+main.cristian-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px calc(130px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+main.cristian-main h1 {
+  font-size: 2.2rem;
+  margin: 4px 0 2px;
+  font-weight: 800 !important;
+}
+
+.sub {
+  color: var(--text-muted);
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.balance {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+
+.balance .num {
+  font-size: 4rem;
+  font-weight: 900 !important;
+  line-height: 1;
+}
+
+.balance .lbl {
+  color: var(--text-color);
+  opacity: 0.9;
+  margin-top: 8px;
+  font-weight: 700 !important;
+}
+
+.bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--line);
+  margin-top: 18px;
+}
+
+.bar i {
+  display: block;
+  transition: width .4s ease;
+}
+
+.bar .p { background: var(--pos); }
+.bar .n { background: var(--neg); }
+
+.note-container { margin: 18px 0; }
+
+.note {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background-color: var(--surface) !important;
+  color: var(--text-color) !important;
+  font-size: 1rem;
+  font-weight: 600 !important;
+  outline: none;
+}
+
+/* FOTO E PULSANTI */
+#photoInput { display: none !important; }
+
+.photo-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+
+.photo-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-photo-btn {
+  background: transparent;
+  border: none;
+  color: var(--error-color);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 18px;
+  margin-bottom: 20px;
+}
+
+.btns button {
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 22px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.btns .sym { font-size: 3.2rem; font-weight: 900 !important; line-height: 1; }
+.btns .cnt { font-size: 1.05rem; font-weight: 800 !important; }
+
+#plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+#minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
+
+.tools {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 24px 0;
+}
+
+.tools button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid var(--line) !important;
+  background: var(--surface);
+  color: var(--text-color);
+  font-weight: 700 !important;
+  cursor: pointer;
+}
+
+/* LISTE E STORICO */
+main.cristian-main ul {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+main.cristian-main li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  list-style: none !important;
+}
+
+main.cristian-main li .tag {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 900 !important;
+  font-size: 1.1rem;
+}
+
+li.p .tag { background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); }
+li.n .tag { background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); }
+
+li .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 1rem; font-weight: 600 !important; }
+li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight: 700 !important; }
+
+.empty { color: var(--text-muted); padding: 16px 0; text-align: center; font-style: italic; }
+
+/* STORICO ACCORDION */
+.day-accordion {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.day-header-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--text-color);
+  border: none;
+  font-weight: 800 !important;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+}
+
+.day-header-info { display: flex; align-items: center; gap: 10px; }
+
+.day-badge {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 800 !important;
+}
+
+.day-badge.pos { background: var(--pos-bg); color: var(--pos); }
+.day-badge.neg { background: var(--neg-bg); color: var(--neg); }
+.day-badge.neutral { background: var(--line); color: var(--text-color); }
+
+.day-arrow { font-size: 0.8rem; transition: transform 0.25s ease; color: var(--text-muted); }
+.day-accordion.open .day-arrow { transform: rotate(180deg); }
+
+.day-content {
+  display: none;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.day-accordion.open .day-content { display: block; }
+
+/* SEPARATORE DI SEZIONE */
+.section-divider {
+  border: none;
+  height: 2px;
+  background-color: var(--line);
+  margin: 28px 0;
+  width: 100%;
+}
+
+/* =========================================================
+   5. BARRA DI NAVIGAZIONE INFERIORE (FIX SPATIAL BALANCING & FLOATING PILL)
+   ========================================================= */
+nav.bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  height: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  padding-top: 2px !important;
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+  margin: 0 !important;
+  background: #000000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  box-shadow: none !important;
+  z-index: 99999 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+nav.bottom-nav .nav-item {
+  background: transparent !important;
+  border: none !important;
+  color: #a0a0a0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1px !important;
+  flex: 1 !important;
+  max-width: 16.66% !important;
+  height: 52px !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  padding: 2px 0 !important;
+  margin: 0 1px !important;
+  transition: background-color 0.2s ease, color 0.2s ease !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+nav.bottom-nav .nav-item.hidden {
+  display: none !important;
+}
+
+/* STATO ATTIVO: PILLOLA VERDE ACQUA */
+nav.bottom-nav .nav-item.active {
+  background: linear-gradient(135deg, #00f7ff 0%, #00c2cc 100%) !important;
+  color: #000000 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 10px rgba(0, 247, 255, 0.3) !important;
+}
+
+nav.bottom-nav .nav-item.active .nav-label,
+nav.bottom-nav .nav-item.active .nav-icon {
+  color: #000000 !important;
+}
+
+nav.bottom-nav .nav-icon {
+  font-size: 1.05rem !important;
+  position: relative !important;
+  line-height: 1 !important;
+}
+
+nav.bottom-nav .nav-label {
+  font-size: 0.58rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+
+.badge-count {
+  position: absolute !important;
+  top: -4px !important;
+  right: -6px !important;
+  background: #ff4c4c !important;
+  color: #ffffff !important;
+  font-size: 0.58rem !important;
+  font-weight: 900 !important;
+  padding: 2px 4px !important;
+  border-radius: 8px !important;
+  line-height: 1 !important;
+}
+
+/* =========================================================
+   6. MODALE FOTO
+   ========================================================= */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: #000000;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-zoom-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+
+.modal-back-btn {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10002;
+}
+
+.photo-modal-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.hidden {
+  display: none !important;
+}
+
 
 :root {
   --bg-color: #ffffff;
