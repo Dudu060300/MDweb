@@ -451,7 +451,7 @@ nav.bottom-nav {
   background-color: #000000 !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: space-around !important;
+  justify-content: space-evenly !important; /* Spaziatura geometricamente simmetrica ed uniforme */
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5) !important;
   z-index: 99999 !important;
   border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -467,6 +467,7 @@ nav.bottom-nav .nav-item {
   justify-content: center !important;
   gap: 2px !important;
   flex: 1 !important;
+  max-width: 25% !important; /* Distribuzione equa esatta al 25% per ciascuna delle 4 tab standard */
   height: 60px !important;
   cursor: pointer !important;
   padding: 0 !important;
