@@ -154,15 +154,15 @@ nav:not(.bottom-nav) .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
-/* SFOCATURA SFONDO QUANDO IL DROPDOWN È APERTO */
+/* SFOCATURA SFONDO SOLTANTO FRA LE DUE BARRE (ESCLUDE TOP E BOTTOM NAV) */
 nav:not(.bottom-nav) .user-menu.open::before {
   content: "";
   position: fixed;
-  top: 0;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
   left: 0;
+  right: 0;
   width: 100vw;
-  height: 100vh;
-  height: 100dvh;
   background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
