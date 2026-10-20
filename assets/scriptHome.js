@@ -30,6 +30,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const zoomContainer = document.getElementById("zoomContainer");
 
   // =====================================================================
+  // BLOCCO FORZATO DELLE GESTURE LATERALI DAI BORDI PER iOS WEBKIT
+  // =====================================================================
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 0) {
+      const touchX = e.touches[0].clientX;
+      const screenWidth = window.innerWidth;
+      
+      // Blocca i tocchi nei primi e ultimi 25px dello schermo
+      if (touchX < 25 || touchX > screenWidth - 25) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 0) {
+      const touchX = e.touches[0].clientX;
+      const screenWidth = window.innerWidth;
+      
+      if (touchX < 25 || touchX > screenWidth - 25) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  // =====================================================================
   // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
   // =====================================================================
   // Sovrascrive lo storico azzerando ogni riferimento a index.html per impedire l'uscita
@@ -188,21 +214,58 @@ document.addEventListener("DOMContentLoaded", () => {
   const removePhotoBtn = $("removePhotoBtn");
   const logContainer = $("log");
 
+  // =====================================================================
+  // CARICAMENTO E COMPRESSIONE AUTOMATICA DELLE FOTO (PERMETTE FOTO > 2MB)
+  // =====================================================================
+  function compressImage(file, maxWidth, maxHeight, quality, callback) {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function(event) {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = function() {
+        let width = img.width;
+        let height = img.height;
+
+        // Calcola le nuove dimensioni mantenendo le proporzioni
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        // Disegna l'immagine su un canvas ridimensionato
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Converte in JPEG compresso
+        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
+        callback(compressedBase64);
+      };
+    };
+  }
+
   if (photoInput) {
     photoInput.addEventListener("change", function(e) {
       const file = e.target.files[0];
       if (file) {
-        if (file.size > 2 * 1024 * 1024) {
-          alert("La foto è troppo grande. Scegli un'immagine sotto i 2MB.");
-          return;
-        }
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          currentPhotoBase64 = event.target.result;
+        if (photoName) photoName.textContent = "Elaborazione foto...";
+
+        // Ridimensiona a max 1200px di larghezza/altezza e comprimi al 70% di qualità
+        compressImage(file, 1200, 1200, 0.7, function(base64Result) {
+          currentPhotoBase64 = base64Result;
           if (photoName) photoName.textContent = file.name;
           if (removePhotoBtn) removePhotoBtn.classList.remove("hidden");
-        };
-        reader.readAsDataURL(file);
+        });
       }
     });
   }
@@ -386,4 +449,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   render();
 });
- 
