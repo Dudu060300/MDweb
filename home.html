@@ -1,157 +1,154 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <!-- Disabilita lo zoom nativo e imposta la notch safe area -->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  
-  <!-- Configurazione PWA Standalone per iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="apple-mobile-web-app-title" content="Cristian" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
 
-  <title>Cristian - MDweb</title>
+  <title>Cristian: più e meno - MDweb</title>
 
-  <!-- Fogli di stile -->
-  <link rel="stylesheet" href="assets/styleHome.css" />
+  <!-- Collegamento Manifest PWA -->
+  <link rel="manifest" href="manifest.json" />
 
-  <!-- SDK Firebase (Auth & Firestore) -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <!-- Fogli di stile CSS globali del sito -->
+  <link rel="stylesheet" href="assets/styleHome.css">
+  <link rel="stylesheet" href="assets/css.css">
 
-  <!-- Inizializzazione Firebase e Script Principale -->
-  <script src="assets/firebase-config.js"></script>
-  <script src="assets/scriptHome.js"></script>
+  <!-- Script di blocco gesti di zoom generali della pagina -->
+  <script>
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <!-- Inizializzazione Firebase e protezione pagina -->
+  <script src="firebase-init.js"></script>
+  <script src="auth-guard.js"></script>
 </head>
+
 <body>
 
-  <!-- BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR) -->
+  <div id="overlay" class="hidden"></div>
+
+  <!-- BARRA DI NAVIGAZIONE -->
   <nav>
     <h1>MDweb</h1>
+    <div
+      class="user-menu"
+      id="userMenu"
+      tabindex="0"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-label="Menu utente"
+    >
+      <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
+      <span class="arrow" aria-hidden="true">&#9662;</span>
 
-    <!-- Menu Utente -->
-    <div class="user-menu" id="userMenu" aria-expanded="false" role="button" tabindex="0">
-      <div class="user-icon" id="userIcon">U</div>
-      <span class="arrow">▼</span>
-
-      <!-- Dropdown Utente -->
-      <div class="dropdown" id="userDropdown">
-        <span class="username-display" id="userName">Caricamento...</span>
-        <a href="edit-profile.html" id="editProfile">Modifica Profilo</a>
-        <a href="#" id="logout">Logout</a>
+      <div
+        class="dropdown"
+        id="dropdownMenu"
+        role="menu"
+        aria-label="Menu opzioni utente"
+      >
+        <span class="dropdown-item username-display" id="userName">Utente</span>
+        <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
+        <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
+        <a href="#" id="logout" role="menuitem" tabindex="-1">Logout</a>
       </div>
     </div>
   </nav>
 
-  <!-- Sfondo trasparente per chiudere il dropdown al tocco esterno -->
-  <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:998;"></div>
-
-  <!-- TAB 1: HOME (PUNTEGGIO CRISTIAN) -->
-  <main class="cristian-main tab-content active" id="tab-home">
+  <!-- CONTENUTO PRINCIPALE -->
+  <main class="cristian-main">
     <h1>Cristian</h1>
     <p class="sub">Tocca + o − ogni volta. Indica il motivo.</p>
 
-    <!-- Punteggio Totale -->
-    <div class="balance">
+    <!-- Sezione riepilogo del saldo -->
+    <section class="balance" aria-live="polite">
       <div class="num" id="bal">0</div>
-      <div class="lbl" id="verdict">Ancora nessun punto approvato</div>
+      <div class="lbl" id="verdict">Ancora nessun punto</div>
       <div class="bar">
-        <i class="p" id="bp" style="width: 50%;"></i>
-        <i class="n" id="bn" style="width: 50%;"></i>
+        <i class="p" id="bp" style="width:0"></i>
+        <i class="n" id="bn" style="width:0"></i>
+      </div>
+    </section>
+
+    <!-- Casella di input per il motivo e selezione foto -->
+    <div class="note-container">
+      <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo" aria-label="Motivo">
+      
+      <!-- Contenitore per allegare la foto -->
+      <div class="photo-upload-container">
+        <label for="photoInput" class="photo-btn">📷 Aggiungi foto</label>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" style="display: none !important;">
+        <span id="photoName" class="photo-name"></span>
+        <button type="button" id="removePhotoBtn" class="remove-photo-btn hidden" aria-label="Rimuovi foto">✕</button>
       </div>
     </div>
 
-    <!-- Campo Motivo -->
-    <div class="note-container">
-      <input type="text" id="note" class="note" placeholder="Motivo" autocomplete="off" />
-    </div>
-
-    <!-- Caricamento Foto Allegata -->
-    <div class="photo-upload-container">
-      <label for="photoInput" class="photo-btn">
-        📷 Aggiungi foto
-      </label>
-      <input type="file" id="photoInput" accept="image/*" />
-      <span id="photoName" class="photo-name"></span>
-      <button id="removePhotoBtn" class="remove-photo-btn hidden" type="button">✕</button>
-    </div>
-
-    <!-- Pulsanti Più e Meno -->
-    <div class="btns" style="margin-top: 18px;">
-      <button id="plus" type="button">
+    <!-- Pulsanti principali (+) e (-) -->
+    <div class="btns">
+      <button id="plus" type="button" aria-label="Aggiungi un più">
         <span class="sym">+</span>
         <span class="cnt" id="cp">0 positivi</span>
       </button>
-      <button id="minus" type="button">
+      <button id="minus" type="button" aria-label="Aggiungi un meno">
         <span class="sym">−</span>
         <span class="cnt" id="cn">0 negativi</span>
       </button>
     </div>
 
-    <!-- Strumenti Annulla / Azzera -->
+    <!-- Strumenti posizionati sopra lo storico -->
     <div class="tools">
       <button id="undo" type="button">Annulla ultimo</button>
       <button id="reset" type="button">Azzera tutto</button>
     </div>
 
-    <!-- Registro Storico Ufficiale -->
-    <h2>Storico Approvato</h2>
-    <div id="empty" class="empty">Niente nello storico approvato ancora.</div>
+    <!-- Sezione dello storico -->
+    <h2>Storico</h2>
     <ul id="log"></ul>
+    <p class="empty" id="empty">Niente da mostrare.</p>
   </main>
 
-  <!-- TAB 2: SEGNALAZIONI DA APPROVARE (RISERVATO MUDI06) -->
-  <main class="cristian-main tab-content" id="tab-pending">
-    <h1>In Attesa</h1>
-    <p class="sub">Segnalazioni inviate in attesa di decisione.</p>
-    <div id="pendingContainer"></div>
-  </main>
-
-  <!-- TAB 3: CLASSIFICA (VISIBILE A TUTTI) -->
-  <main class="cristian-main tab-content" id="tab-leaderboard">
-    <h1>Classifica</h1>
-    <p class="sub">Punteggi e contributi per utente.</p>
-    <div id="leaderboardContainer"></div>
-  </main>
-
-  <!-- TAB 4: DECISIONI RECENTI (RISERVATO MUDI06) -->
-  <main class="cristian-main tab-content" id="tab-decisions">
-    <h1>Ultimi Movimenti</h1>
-    <p class="sub">Registro storico delle segnalazioni approvate o rifiutate.</p>
-    <div id="decisionsContainer"></div>
-  </main>
-
-  <!-- BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR) -->
-  <div class="bottom-nav">
-    <button type="button" class="nav-item active" data-tab="tab-home">
-      <span class="nav-icon">🏠</span>
-      <span class="nav-label">Home</span>
-    </button>
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
-      <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
-      <span class="nav-label">In Attesa</span>
-    </button>
-    <button type="button" class="nav-item" data-tab="tab-leaderboard">
-      <span class="nav-icon">🏆</span>
-      <span class="nav-label">Classifica</span>
-    </button>
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
-      <span class="nav-icon">📋</span>
-      <span class="nav-label">Decisioni</span>
-    </button>
-  </div>
-
-  <!-- MODALE ANTEPRIMA FOTO -->
-  <div id="photoModal" class="photo-modal hidden">
-    <button id="closePhotoModal" class="modal-back-btn" type="button" aria-label="Chiudi foto">←</button>
+  <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO (FINO ALLA NOTCH) -->
+  <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
+    
+    <!-- Contenitore zoomabile per il Pinch-to-Zoom -->
     <div id="zoomContainer" class="photo-zoom-container">
-      <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima foto" />
+      <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
     </div>
+
+    <!-- Freccia per tornare indietro in alto a sinistra (sopra la notch) -->
+    <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
+      &#8592;
+    </button>
+    
+    <!-- Dissolvenza sfumata in basso con il motivo -->
     <div id="modalFadeOverlay" class="photo-modal-fade">
       <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
   </div>
+
+  <!-- SCRIPT ESTERNI DEL SITO -->
+  <script src="assets/tema.js"></script>
+  <script src="assets/scriptHome.js"></script>
+  <script src="assets/scriptCristian.js"></script>
 
 </body>
 </html>
