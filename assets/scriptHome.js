@@ -58,17 +58,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
   // =====================================================================
-  // Sovrascrive lo storico azzerando ogni riferimento a index.html per impedire l'uscita
   window.history.replaceState({ page: "home" }, "", window.location.href);
 
   window.addEventListener("popstate", (e) => {
-    // Se la modale foto è aperta, la chiudiamo
     if (photoModal && !photoModal.classList.contains("hidden")) {
       photoModal.classList.add("hidden");
       document.body.style.overflow = "";
       if (modalImage) modalImage.style.transform = "translateZ(0)";
     }
-    // Mantiene lo stato bloccato impedendo qualsiasi uscita o cambio pagina
     window.history.replaceState({ page: "home" }, "", window.location.href);
   });
 
@@ -136,7 +133,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Tap sullo schermo: attiva/disattiva la dissolvenza della didascalia
   if (photoModal) {
     photoModal.onclick = function(e) {
       if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
@@ -201,9 +197,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // =====================================================================
-  // LOGICA DEL CONTATORE "PIÙ E MENO" (CRISTIAN)
+  // LOGICA DEL CONTATORE CONDIVISO CON APPROVAZIONE (CRISTIAN)
   // =====================================================================
-  let items = [];
+  let approvedItems = [];
+  let pendingItems = [];
+  let currentUsername = "";
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
 
@@ -281,7 +279,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   if (logContainer) {
     logContainer.addEventListener("click", function(e) {
-      // 1. Click sulla foto
       if (e.target && e.target.classList.contains("clickable-photo")) {
         const imgSrc = e.target.getAttribute("data-img");
         const caption = e.target.getAttribute("data-caption");
@@ -291,7 +288,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 2. Click sull'intestazione del giorno (Accordion espandibile)
       const dayHeaderBtn = e.target.closest(".day-header-btn");
       if (dayHeaderBtn) {
         const accordion = dayHeaderBtn.closest(".day-accordion");
@@ -308,9 +304,53 @@ document.addEventListener("DOMContentLoaded", () => {
     return d.innerHTML; 
   }
 
+  // =====================================================================
+  // SALVATAGGIO E INIZIALIZZAZIONE FIRESTORE CONDIVISO
+  // =====================================================================
+  async function saveSharedData() {
+    if (!dbInstance) return;
+    try {
+      await dbInstance.collection("shared_data").doc("cristian_score").set({
+        approvedItems: approvedItems,
+        pendingItems: pendingItems
+      });
+    } catch (e) {
+      console.error("Errore salvataggio Firestore condiviso:", e);
+    }
+  }
+
+  async function initFirestore(uid) {
+    currentUserId = uid;
+    try {
+      dbInstance = firebase.firestore();
+      
+      const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
+      if (userDoc.exists && userDoc.data().username) {
+        currentUsername = userDoc.data().username;
+      } else {
+        currentUsername = auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split("@")[0] : "Utente");
+      }
+
+      // Ascolto in tempo reale dei dati condivisi
+      dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
+        if (doc.exists) {
+          const data = doc.data();
+          approvedItems = data.approvedItems || [];
+          pendingItems = data.pendingItems || [];
+        } else {
+          approvedItems = [];
+          pendingItems = [];
+        }
+        render();
+      });
+    } catch (err) {
+      console.error("Errore inizializzazione dati condivisi:", err);
+    }
+  }
+
   function render() {
-    var p = items.filter(function(i) { return i.t === "p"; }).length,
-        n = items.length - p,
+    var p = approvedItems.filter(function(i) { return i.t === "p"; }).length,
+        n = approvedItems.length - p,
         b = p - n;
     
     if ($("bal")) {
@@ -319,125 +359,111 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if ($("verdict")) {
-      $("verdict").textContent = !items.length ? "Ancora nessun punto" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
+      $("verdict").textContent = !approvedItems.length ? "Ancora nessun punto approvato" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
     }
     
     if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
     if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
     
-    var tot = items.length || 1;
+    var tot = approvedItems.length || 1;
     if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
     if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
-    if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
     
     if (logContainer) {
-      if (!items.length) {
-        logContainer.innerHTML = "";
-        return;
-      }
-
-      // Raggruppamento delle voci per giorno (YYYY-MM-DD)
-      const groups = {};
-      items.slice().reverse().forEach(function(i) {
-        var d = new Date(i.d);
-        var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-        var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
-        
-        if (!groups[dayKey]) {
-          groups[dayKey] = {
-            title: dayTitle,
-            items: []
-          };
-        }
-        groups[dayKey].items.push(i);
-      });
-
-      // Generazione HTML degli accordion
       let html = "";
-      Object.keys(groups).forEach(function(dayKey) {
-        const group = groups[dayKey];
-        
-        const posDay = group.items.filter(i => i.t === "p").length;
-        const negDay = group.items.length - posDay;
-        const balDay = posDay - negDay;
-        
-        let badgeClass = "neutral";
-        let badgeText = "0";
-        if (balDay > 0) {
-          badgeClass = "pos";
-          badgeText = "+" + balDay;
-        } else if (balDay < 0) {
-          badgeClass = "neg";
-          badgeText = "−" + Math.abs(balDay);
-        }
+      const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-        html += '<div class="day-accordion">' +
-                  '<button type="button" class="day-header-btn">' +
-                    '<div class="day-header-info">' +
-                      '<span>' + group.title + '</span>' +
-                      '<span class="day-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                    '</div>' +
-                    '<span class="day-arrow">▼</span>' +
-                  '</button>' +
-                  '<div class="day-content">' +
-                    '<ul>';
+      // 1. SEZIONE SEGNALAZIONI IN ATTESA (PENDING)
+      if (pendingItems.length > 0) {
+        html += '<div style="margin-bottom:20px; padding:12px; background:rgba(255, 193, 7, 0.15); border:2px dashed #ffc107; border-radius:16px;">' +
+                  '<h3 style="margin:0 0 10px; font-size:1rem; color:#ffc107; font-weight:800;">⏳ Segnalazioni in attesa (' + pendingItems.length + ')</h3>' +
+                  '<ul style="list-style:none; padding:0; margin:0;">';
 
-        group.items.forEach(function(i) {
+        pendingItems.slice().reverse().forEach(function(i) {
           var d = new Date(i.d);
           var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
           var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          var escapedCaption = i.n ? esc(i.n) : '';
+          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
 
           var photoHtml = i.img 
-            ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + escapedCaption + '" />' 
+            ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' 
             : '';
 
-          html += '<li class="' + i.t + '">' +
-                    '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                    '<div class="txt">' +
-                      noteText +
-                      photoHtml +
+          var actionBtns = isMudi06 ? 
+            '<div style="display:flex; gap:8px; margin-top:8px;">' +
+              '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:6px; background:var(--pos); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
+              '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:6px; background:var(--neg); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
+            '</div>' : '<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">In attesa di approvazione da Mudi06</div>';
+
+          html += '<li class="' + i.t + '" style="margin-bottom:8px; flex-direction:column; align-items:stretch;">' +
+                    '<div style="display:flex; align-items:center; gap:10px;">' +
+                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
+                      '<span class="time">' + h + '</span>' +
                     '</div>' +
-                    '<span class="time">' + h + '</span>' +
+                    actionBtns +
                   '</li>';
         });
 
-        html +=     '</ul>' +
-                  '</div>' +
-                '</div>';
-      });
+        html += '</ul></div>';
+      }
+
+      // 2. STORICO UFFICIALE APPROVATO (ACCORDION)
+      if (!approvedItems.length) {
+        if ($("empty")) $("empty").style.display = "block";
+      } else {
+        if ($("empty")) $("empty").style.display = "none";
+
+        const groups = {};
+        approvedItems.slice().reverse().forEach(function(i) {
+          var d = new Date(i.d);
+          var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+          var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+          
+          if (!groups[dayKey]) {
+            groups[dayKey] = { title: dayTitle, items: [] };
+          }
+          groups[dayKey].items.push(i);
+        });
+
+        Object.keys(groups).forEach(function(dayKey) {
+          const group = groups[dayKey];
+          const posDay = group.items.filter(i => i.t === "p").length;
+          const negDay = group.items.length - posDay;
+          const balDay = posDay - negDay;
+          
+          let badgeClass = balDay > 0 ? "pos" : balDay < 0 ? "neg" : "neutral";
+          let badgeText = balDay > 0 ? "+" + balDay : balDay < 0 ? "−" + Math.abs(balDay) : "0";
+
+          html += '<div class="day-accordion">' +
+                    '<button type="button" class="day-header-btn">' +
+                      '<div class="day-header-info">' +
+                        '<span>' + group.title + '</span>' +
+                        '<span class="day-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                      '</div>' +
+                      '<span class="day-arrow">▼</span>' +
+                    '</button>' +
+                    '<div class="day-content"><ul>';
+
+          group.items.forEach(function(i) {
+            var d = new Date(i.d);
+            var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+            var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+            var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
+            var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
+
+            html += '<li class="' + i.t + '">' +
+                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
+                      '<span class="time">' + h + '</span>' +
+                    '</li>';
+          });
+
+          html += '</ul></div></div>';
+        });
+      }
 
       logContainer.innerHTML = html;
-    }
-  }
-
-  async function saveToFirestore() {
-    if (!dbInstance || !currentUserId) return;
-    try {
-      await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").set({ items });
-    } catch (e) {
-      console.error("Errore salvataggio Firestore:", e);
-    }
-  }
-
-  async function initFirestore(uid) {
-    currentUserId = uid;
-    try {
-      dbInstance = firebase.firestore();
-      const docRef = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
-      
-      if (docRef.exists) {
-        items = docRef.data().items || [];
-      } else {
-        const oldData = localStorage.getItem("cristian-score");
-        if (oldData) {
-          items = JSON.parse(oldData) || [];
-          await saveToFirestore();
-        }
-      }
-      render();
-    } catch (err) {
-      console.error("Errore lettura dati utente:", err);
     }
   }
 
@@ -445,12 +471,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
     
-    items.push({ 
+    const newItem = {
+      id: "item_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
       t: t, 
       n: val, 
       img: currentPhotoBase64, 
-      d: Date.now() 
-    });
+      d: Date.now(),
+      author: currentUsername
+    };
+
+    pendingItems.push(newItem);
 
     if (noteEl) noteEl.value = "";
     currentPhotoBase64 = "";
@@ -458,11 +488,35 @@ document.addEventListener("DOMContentLoaded", () => {
     if (photoName) photoName.textContent = "";
     if (removePhotoBtn) removePhotoBtn.classList.add("hidden");
 
-    saveToFirestore();
+    saveSharedData();
     render();
     
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
+
+  // =====================================================================
+  // AZIONI RISERVATE ESCLUSIVAMENTE A MUDI06
+  // =====================================================================
+  window.approvePendingItem = function(id) {
+    if (currentUsername.toLowerCase() !== "mudi06") return;
+    const index = pendingItems.findIndex(i => i.id === id);
+    if (index !== -1) {
+      const item = pendingItems.splice(index, 1)[0];
+      approvedItems.push(item);
+      saveSharedData();
+      render();
+    }
+  };
+
+  window.rejectPendingItem = function(id) {
+    if (currentUsername.toLowerCase() !== "mudi06") return;
+    const index = pendingItems.findIndex(i => i.id === id);
+    if (index !== -1) {
+      pendingItems.splice(index, 1);
+      saveSharedData();
+      render();
+    }
+  };
 
   if ($("plus")) $("plus").onclick = function() { if (this.blur) this.blur(); add("p"); };
   if ($("minus")) $("minus").onclick = function() { if (this.blur) this.blur(); add("n"); };
@@ -476,14 +530,18 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("undo")) {
     $("undo").onclick = function() {
       if (this.blur) this.blur();
-      if (items.length) {
-        if (confirm("Sei sicuro di voler annullare l'ultimo inserimento?")) {
-          items.pop();
-          saveToFirestore();
+      if (currentUsername.toLowerCase() !== "mudi06") {
+        alert("Solo Mudi06 può annullare le voci.");
+        return;
+      }
+      if (approvedItems.length) {
+        if (confirm("Sei sicuro di voler annullare l'ultimo inserimento approvato?")) {
+          approvedItems.pop();
+          saveSharedData();
           render();
         }
       } else {
-        alert("Non ci sono elementi da annullare.");
+        alert("Non ci sono elementi approvati da annullare.");
       }
     };
   }
@@ -491,10 +549,15 @@ document.addEventListener("DOMContentLoaded", () => {
   if ($("reset")) {
     $("reset").onclick = function() {
       if (this.blur) this.blur();
-      if (items.length) {
-        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico di Cristian?")) {
-          items = [];
-          saveToFirestore();
+      if (currentUsername.toLowerCase() !== "mudi06") {
+        alert("Solo Mudi06 può azzerare tutto.");
+        return;
+      }
+      if (approvedItems.length || pendingItems.length) {
+        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico condiviso?")) {
+          approvedItems = [];
+          pendingItems = [];
+          saveSharedData();
           render();
         }
       } else {
