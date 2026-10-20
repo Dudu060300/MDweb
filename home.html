@@ -63,7 +63,7 @@
   <!-- TAB 1: HOME (CONTENUTO PRINCIPALE) -->
   <main class="cristian-main tab-content active" id="tab-home">
     
-    <!-- 1. SELETTORE DELL'UTENTE TARGET -->
+    <!-- Selettore Persona Target -->
     <div class="user-select-container" style="margin-bottom: 20px;">
       <label for="targetUserSelect" style="font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.95rem;">
         Seleziona la persona:
@@ -73,19 +73,7 @@
       </select>
     </div>
 
-    <!-- 2. SCHEDA PUNTEGGIO & BILANCIO (NASCOSTA FINO ALLA SELEZIONE DELL'UTENTE) -->
-    <div id="scoreCardContainer" style="display: none; margin-bottom: 20px;">
-      <section class="balance" aria-live="polite">
-        <div class="num" id="bal">0</div>
-        <div class="lbl" id="verdict">Seleziona un utente</div>
-        <div class="bar">
-          <i class="p" id="bp" style="width:0"></i>
-          <i class="n" id="bn" style="width:0"></i>
-        </div>
-      </section>
-    </div>
-
-    <!-- 3. INPUT MOTIVO & ALLEGATO FOTO -->
+    <!-- Casella di input per il motivo e selezione foto -->
     <div class="note-container">
       <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (opzionale)..." aria-label="Motivo">
       
@@ -98,19 +86,19 @@
       </div>
     </div>
 
-    <!-- 4. PULSANTI PRINCIPALI (+) E (-) -->
+    <!-- Pulsanti principali (+) e (-) senza contatori -->
     <div class="btns">
       <button id="plus" type="button" aria-label="Aggiungi un più">
         <span class="sym">+</span>
-        <span class="cnt" id="cp">0 positivi</span>
+        <span class="cnt">Positivo</span>
       </button>
       <button id="minus" type="button" aria-label="Aggiungi un meno">
         <span class="sym">−</span>
-        <span class="cnt" id="cn">0 negativi</span>
+        <span class="cnt">Negativo</span>
       </button>
     </div>
 
-    <!-- 5. SEZIONE DELLO STORICO DELL'UTENTE SELEZIONATO -->
+    <!-- Sezione dello storico dell'utente selezionato -->
     <h2>Storico</h2>
     <div id="log"></div>
     <p class="empty" id="empty" style="display: none;">Seleziona un utente per vederne lo storico.</p>
@@ -135,7 +123,7 @@
     <h1>Ultimi Movimenti</h1>
     <p class="sub">Registro delle segnalazioni approvate, rifiutate o annullate.</p>
     
-    <!-- Strumenti dell'Admin per gestire gli inserimenti -->
+    <!-- Strumento Admin per annullare l'ultimo punto approvato -->
     <div class="tools" style="margin-bottom: 15px;">
       <button id="undo" type="button" style="width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
         ↩ Annulla ultimo approvato
