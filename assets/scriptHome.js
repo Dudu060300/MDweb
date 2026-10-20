@@ -667,6 +667,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
   }
   
+  // ANNULLA ULTIMO APPROVATO
   if ($("undo")) {
     $("undo").onclick = function() {
       if (this.blur) this.blur();
@@ -685,6 +686,48 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else {
         alert("Non ci sono elementi approvati da annullare.");
+      }
+    };
+  }
+
+  // SVUOTA CACHE ULTIMI MOVIMENTI (NON INTECCA LA CLASSIFICA O I PUNTI)
+  if ($("clearCache")) {
+    $("clearCache").onclick = function() {
+      if (this.blur) this.blur();
+      if (currentUsername.toLowerCase() !== "mudi06") {
+        alert("Solo Mudi06 può svuotare la cache.");
+        return;
+      }
+      if (decisionHistory.length) {
+        if (confirm("Vuoi svuotare lo storico degli ultimi movimenti? Questa operazione NON modificherà i punti né la classifica.")) {
+          decisionHistory = [];
+          saveSharedData();
+          render();
+        }
+      } else {
+        alert("La cache dei movimenti è già vuota.");
+      }
+    };
+  }
+
+  // AZZERA TUTTI I PUNTI E LA CLASSIFICA
+  if ($("reset")) {
+    $("reset").onclick = function() {
+      if (this.blur) this.blur();
+      if (currentUsername.toLowerCase() !== "mudi06") {
+        alert("Solo Mudi06 può azzerare tutto.");
+        return;
+      }
+      if (approvedItems.length || pendingItems.length || decisionHistory.length) {
+        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare TUTTI i punti e la classifica generale?")) {
+          approvedItems = [];
+          pendingItems = [];
+          decisionHistory = [];
+          saveSharedData();
+          render();
+        }
+      } else {
+        alert("Non ci sono punti o dati da azzerare.");
       }
     };
   }
