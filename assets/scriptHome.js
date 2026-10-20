@@ -305,7 +305,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =====================================================================
-  // SALVATAGGIO E INIZIALIZZAZIONE FIRESTORE CONDIVISO
+  // SALVATAGGIO E MIGRAZIONE AUTOMATICA FIRESTORE CONDIVISO
   // =====================================================================
   async function saveSharedData() {
     if (!dbInstance) return;
@@ -324,6 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       dbInstance = firebase.firestore();
       
+      // 1. Legge il nome utente corrente
       const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
       if (userDoc.exists && userDoc.data().username) {
         currentUsername = userDoc.data().username;
@@ -331,12 +332,54 @@ document.addEventListener("DOMContentLoaded", () => {
         currentUsername = auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split("@")[0] : "Utente");
       }
 
-      // Ascolto in tempo reale dei dati condivisi
-      dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
+      // 2. Cerca un eventuale backup dei vecchi dati personali per il recupero
+      let oldItemsBackup = [];
+      try {
+        const oldDoc = await dbInstance.collection("users").doc(currentUserId).collection("data").doc("cristian_score").get();
+        if (oldDoc.exists && oldDoc.data().items) {
+          oldItemsBackup = oldDoc.data().items;
+        }
+      } catch (e) {
+        console.log("Nessun vecchio dato Firestore personale trovato:", e);
+      }
+
+      if (!oldItemsBackup.length) {
+        const localData = localStorage.getItem("cristian-score");
+        if (localData) {
+          try { oldItemsBackup = JSON.parse(localData) || []; } catch(e){}
+        }
+      }
+
+      // 3. Ascolto in tempo reale dei dati condivisi e recupero automatico
+      dbInstance.collection("shared_data").doc("cristian_score").onSnapshot(async (doc) => {
         if (doc.exists) {
           const data = doc.data();
           approvedItems = data.approvedItems || [];
           pendingItems = data.pendingItems || [];
+
+          // Se lo storico condiviso è vuoto ma esistono vecchi punti salvati, li migra in automatico
+          if (approvedItems.length === 0 && pendingItems.length === 0 && oldItemsBackup.length > 0) {
+            approvedItems = oldItemsBackup.map(i => ({
+              id: "item_" + (i.d || Date.now()) + "_" + Math.random().toString(36).substr(2, 4),
+              t: i.t,
+              n: i.n || "",
+              img: i.img || "",
+              d: i.d || Date.now(),
+              author: "Mudi06"
+            }));
+            await saveSharedData();
+          }
+        } else if (oldItemsBackup.length > 0) {
+          // Se il documento condiviso non esiste ancora, lo crea importando i vecchi punti
+          approvedItems = oldItemsBackup.map(i => ({
+            id: "item_" + (i.d || Date.now()) + "_" + Math.random().toString(36).substr(2, 4),
+            t: i.t,
+            n: i.n || "",
+            img: i.img || "",
+            d: i.d || Date.now(),
+            author: "Mudi06"
+          }));
+          await saveSharedData();
         } else {
           approvedItems = [];
           pendingItems = [];
@@ -344,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
         render();
       });
     } catch (err) {
-      console.error("Errore inizializzazione dati condivisi:", err);
+      console.error("Errore inizializzazione e recupero dati:", err);
     }
   }
 
