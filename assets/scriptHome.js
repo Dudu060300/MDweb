@@ -30,6 +30,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const zoomContainer = document.getElementById("zoomContainer");
 
   // =====================================================================
+  // BLOCCO FORZATO DELLE GESTURE LATERALI DAI BORDI PER iOS WEBKIT
+  // =====================================================================
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 0) {
+      const touchX = e.touches[0].clientX;
+      const screenWidth = window.innerWidth;
+      
+      // Blocca i tocchi nei primi e ultimi 25px dello schermo
+      if (touchX < 25 || touchX > screenWidth - 25) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 0) {
+      const touchX = e.touches[0].clientX;
+      const screenWidth = window.innerWidth;
+      
+      if (touchX < 25 || touchX > screenWidth - 25) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  // =====================================================================
   // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
   // =====================================================================
   // Sovrascrive lo storico azzerando ogni riferimento a index.html per impedire l'uscita
