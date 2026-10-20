@@ -1,7 +1,7 @@
 /* =========================================================
-   1. UNIFICAZIONE FONT GLOBALE E VARIABILI TEMA
+   1. RESET UNIFORME, FONT E VARIABILI TEMA
    ========================================================= */
-*, html, body, input, button, select, textarea {
+*, html, body, input, button, select, textarea, nav, nav * {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
   box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
@@ -196,7 +196,7 @@ nav:not(.bottom-nav) .dropdown a {
 main.cristian-main {
   max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+  padding: 24px 16px calc(130px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 main.cristian-main h1 {
