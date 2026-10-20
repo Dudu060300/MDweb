@@ -81,6 +81,7 @@ body {
   touch-action: pan-y;
   overscroll-behavior: none;
   position: relative;
+  padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
 }
 
 a {
@@ -89,7 +90,7 @@ a {
 }
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE
+   BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
    ========================================================= */
 nav {
   position: sticky;
@@ -187,8 +188,16 @@ nav .dropdown a {
 }
 
 /* =========================================================
-   CONTENUTO PRINCIPALE
+   CONTENUTO PRINCIPALE E TAB SCHERMATE
    ========================================================= */
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
 main.cristian-main {
   max-width: 480px;
   margin: 0 auto;
@@ -239,7 +248,11 @@ main.cristian-main h1 {
   margin-top: 18px;
 }
 
-.bar i { display: block; transition: width .4s ease; }
+.bar i {
+  display: block;
+  transition: width .4s ease;
+}
+
 .bar .p { background: var(--pos); }
 .bar .n { background: var(--neg); }
 
@@ -344,7 +357,7 @@ main.cristian-main h1 {
   cursor: pointer;
 }
 
-/* LISTE E STORICO (RESET PALLINI E STILI ACCORDION) */
+/* LISTE E STORICO */
 main.cristian-main ul {
   list-style: none !important;
   padding: 0 !important;
@@ -430,6 +443,71 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 
 .day-accordion.open .day-content { display: block; }
 
+/* =========================================================
+   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR)
+   ========================================================= */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--nav-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 10000;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-item {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  height: 100%;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item.active {
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+.nav-icon {
+  font-size: 1.4rem;
+  position: relative;
+  line-height: 1;
+}
+
+.nav-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.badge-count {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: var(--error-color);
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
+}
+
 /* MODALE FOTO */
 .photo-modal {
   position: fixed;
@@ -478,4 +556,6 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
   object-fit: contain;
 }
 
-.hidden { display: none !important; }
+.hidden {
+  display: none !important;
+}
