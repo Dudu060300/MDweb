@@ -81,7 +81,7 @@ a {
 }
 
 /* =========================================================
-   3. BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
+   3. BARRA DI NAVIGAZIONE SUPERIORE & DROPDOWN FULL-WIDTH WITH BLUR
    ========================================================= */
 nav:not(.bottom-nav) {
   position: sticky;
@@ -123,14 +123,21 @@ nav:not(.bottom-nav) .user-menu {
   z-index: 2;
 }
 
+/* CERCHIO "M": SFONDO NERO E TESTO BIANCO IN DARK MODE */
+body.dark nav:not(.bottom-nav) .user-icon {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #333333;
+}
+
 nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--nav-bg);
-  color: vari(--nav-text);
+  background: #000000;
+  color: #ffffff;
   border-radius: 50%;
   font-size: 1.2rem;
   font-weight: 800 !important;
@@ -146,16 +153,34 @@ nav:not(.bottom-nav) .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
+/* SFOCATURA SFONDO QUANDO IL DROPDOWN È APERTO */
+nav:not(.bottom-nav) .user-menu.open::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9990;
+  pointer-events: none;
+}
+
+/* DROPDOWN FULL-WIDTH (LARGHEZZA TUTTO LO SCHERMO) */
 nav:not(.bottom-nav) .user-menu .dropdown {
-  position: absolute;
+  position: fixed;
+  left: 0;
   right: 0;
-  top: calc(100% + 10px);
-  width: 250px;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  width: 100vw;
   display: none;
   flex-direction: column;
-  background: var(--nav-bg);
-  border-radius: 0 0 15px 15px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  background: #222222;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   z-index: 9999;
 }
@@ -166,17 +191,40 @@ nav:not(.bottom-nav) .user-menu.open .dropdown {
 
 nav:not(.bottom-nav) .dropdown .username-display {
   display: block;
-  padding: 12px 16px;
+  padding: 14px 20px;
   background: var(--accent-color);
-  color: var(--nav-text);
-  font-weight: 700 !important;
+  color: #000000;
+  font-weight: 800 !important;
+  font-size: 1.05rem;
 }
 
 nav:not(.bottom-nav) .dropdown a {
   display: block;
-  padding: 12px 16px;
-  color: var(--nav-text);
+  padding: 14px 20px;
+  color: #ffffff;
   font-weight: 600 !important;
+  font-size: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+nav:not(.bottom-nav) .dropdown a:last-child {
+  border-bottom: none;
+}
+
+/* DROPDOWN BIANCO E TESTI NERI IN DARK MODE (TRANNE UTENTE) */
+body.dark nav:not(.bottom-nav) .user-menu .dropdown {
+  background: #ffffff !important;
+  border-top: 1px solid #e5e5e5;
+}
+
+body.dark nav:not(.bottom-nav) .dropdown a {
+  color: #000000 !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+body.dark nav:not(.bottom-nav) .dropdown .username-display {
+  background: var(--accent-color) !important;
+  color: #000000 !important;
 }
 
 /* =========================================================
