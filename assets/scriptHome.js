@@ -149,6 +149,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  // SISTEMA NOTIFICHE (POPUP TOAST + NOTIFICHE PUSH DI SISTEMA)
+  function requestNotificationPermission() {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }
+
+  function triggerNotification(title, message, isApproved) {
+    // 1. Notifica Push di Sistema (PWA/Browser)
+    if ("Notification" in window && Notification.permission === "granted") {
+      try {
+        new Notification(title, {
+          body: message,
+          icon: isApproved ? "assets/icon-pos.png" : "assets/icon-neg.png"
+        });
+      } catch (e) {
+        console.log("Errore notifica di sistema:", e);
+      }
+    }
+
+    // 2. Banner Visivo Popup nell'App (Toast Notification)
+    let toast = document.getElementById("appToast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "appToast";
+      toast.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:14px 20px; border-radius:14px; color:#fff; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.4s ease; opacity:0; pointer-events:none; text-align:center; max-width:90%; font-size:0.95rem;";
+      document.body.appendChild(toast);
+    }
+
+    toast.style.background = isApproved ? "var(--pos, #2ecc71)" : "var(--neg, #e74c3c)";
+    toast.innerHTML = `<div style="font-size:1.05rem; margin-bottom:2px;">${title}</div><div style="font-size:0.85rem; font-weight:normal; opacity:0.9;">${message}</div>`;
+    toast.style.opacity = "1";
+    toast.style.transform = "translateX(-50%) translateY(10px)";
+
+    if (navigator.vibrate) { try { navigator.vibrate([100, 50, 100]); } catch (e) {} }
+
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(-50%) translateY(0)";
+    }, 4500);
+  }
+
   // AUTENTICAZIONE E INIZIALIZZAZIONE
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
@@ -156,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     currentUserId = user.uid;
+    requestNotificationPermission();
     initFirestore(currentUserId);
   });
 
@@ -168,6 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentUsername = "";
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
+  let lastKnownDecisionsCount = -1;
 
   const $ = function(id) { return document.getElementById(id); };
 
@@ -335,11 +379,35 @@ document.addEventListener("DOMContentLoaded", () => {
           const data = doc.data();
           approvedItems = data.approvedItems || [];
           pendingItems = data.pendingItems || [];
-          decisionHistory = data.decisionHistory || [];
+          const newDecisionHistory = data.decisionHistory || [];
+
+          // VERIFICA NOTIFICHE APPROVAZIONE / RIFIUTO PER L'UTENTE LOGGATO
+          if (lastKnownDecisionsCount !== -1 && newDecisionHistory.length > lastKnownDecisionsCount) {
+            const latestDecision = newDecisionHistory[newDecisionHistory.length - 1];
+            if (latestDecision && latestDecision.author && latestDecision.author.toLowerCase() === currentUsername.toLowerCase()) {
+              if (latestDecision.status === "approved") {
+                triggerNotification(
+                  "✓ Segnalazione Approvata!",
+                  `Il tuo punto per ${latestDecision.targetUser || 'l\'utente'} è stato accettato dall'admin.`,
+                  true
+                );
+              } else if (latestDecision.status === "rejected") {
+                triggerNotification(
+                  "✕ Segnalazione Rifiutata",
+                  `La tua segnalazione per ${latestDecision.targetUser || 'l\'utente'} è stata rifiutata dall'admin.`,
+                  false
+                );
+              }
+            }
+          }
+
+          decisionHistory = newDecisionHistory;
+          lastKnownDecisionsCount = decisionHistory.length;
         } else {
           approvedItems = [];
           pendingItems = [];
           decisionHistory = [];
+          lastKnownDecisionsCount = 0;
         }
         render();
       });
@@ -351,12 +419,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-    const adminOnlyButtons = document.querySelectorAll(".bottom-nav .admin-only");
-    adminOnlyButtons.forEach(btn => {
+    // FILTRAGGIO VISIBILITÀ ELEMENTI AMMINISTRATORE (IN ATTESA / DECISIONI)
+    const adminOnlyNavButtons = document.querySelectorAll(".bottom-nav .admin-only");
+    adminOnlyNavButtons.forEach(btn => {
       if (isMudi06) {
+        btn.style.display = "flex";
         btn.classList.remove("hidden");
       } else {
+        btn.style.display = "none !important";
         btn.classList.add("hidden");
+        // Se un utente standard si trova erroneamente su una scheda admin, lo riporta alla Home
         if (btn.classList.contains("active")) {
           const homeTab = document.querySelector('[data-tab="tab-home"]');
           if (homeTab) homeTab.click();
@@ -485,19 +557,14 @@ document.addEventListener("DOMContentLoaded", () => {
           let balanceColor = u.balance > 0 ? "var(--pos)" : u.balance < 0 ? "var(--neg)" : "var(--text-color)";
 
           html += '<li style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">' +
-                    // SINISTRA: Numero Posizione e Nome Utente
                     '<div style="display:flex; align-items:center; gap:12px; flex:1;">' +
                       '<span style="font-size:1.2rem; font-weight:bold; min-width:20px; text-align:center; color:var(--text-muted);">' + rankNumber + '</span>' +
                       '<div style="font-weight:bold; font-size:1.1rem;">' + esc(user) + '</div>' +
                     '</div>' +
-                    
-                    // CENTRO: Badge Punti Positivi (Verde) e Negativi (Rosso)
                     '<div style="display:flex; gap:6px; font-weight:bold; font-size:0.9rem; justify-content:center; flex:1;">' +
                       '<span style="color:var(--pos); background:var(--pos-bg); padding:6px 10px; border-radius:8px;">+' + u.pos + '</span>' +
                       '<span style="color:var(--neg); background:var(--neg-bg); padding:6px 10px; border-radius:8px;">−' + u.neg + '</span>' +
                     '</div>' +
-                    
-                    // DESTRA: Totale Netto (Senza dicitura "Saldo:")
                     '<div style="font-size:1.4rem; font-weight:800; color:' + balanceColor + '; min-width:50px; text-align:right;">' +
                       balanceDisplay +
                     '</div>' +
@@ -508,28 +575,51 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO)
+    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO: MOSTRA IN ATTESA, APPROVATE E RIFIUTATE)
     const sentContainer = document.getElementById("sentContainer");
     if (sentContainer) {
-      const mySentItems = pendingItems.filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase());
-      
-      if (mySentItems.length === 0) {
-        sentContainer.innerHTML = '<div class="empty">Non hai segnalazioni in attesa di approvazione.</div>';
+      const pendingUserItems = pendingItems
+        .filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase())
+        .map(i => ({ ...i, currentStatus: "pending" }));
+
+      const decidedUserItems = decisionHistory
+        .filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase())
+        .map(i => ({ ...i, currentStatus: i.status }));
+
+      const allMySent = [...pendingUserItems, ...decidedUserItems].sort((a, b) => (b.d || 0) - (a.d || 0));
+
+      if (allMySent.length === 0) {
+        sentContainer.innerHTML = '<div class="empty">Non hai ancora inviato nessuna segnalazione.</div>';
       } else {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        mySentItems.slice().reverse().forEach(i => {
+        allMySent.forEach(i => {
           const d = new Date(i.d);
           const h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
           const dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
           const noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
           const targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
+          const photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
 
-          html += '<li class="' + i.t + '" style="margin-bottom:10px; padding:12px; background:var(--surface); border:2px solid var(--line); border-radius:12px; display:flex; align-items:center; justify-content:space-between;">' +
+          let badgeHtml = "";
+          if (i.currentStatus === "pending") {
+            badgeHtml = '<span style="background: #f39c12; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">⏳ In Attesa</span>';
+          } else if (i.currentStatus === "approved") {
+            badgeHtml = '<span style="background: var(--pos-bg); color: var(--pos); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">✓ Approvata</span>';
+          } else if (i.currentStatus === "rejected") {
+            badgeHtml = '<span style="background: var(--neg-bg); color: var(--neg); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">✕ Rifiutata</span>';
+          } else if (i.currentStatus === "canceled") {
+            badgeHtml = '<span style="background: #666; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">Annullata</span>';
+          }
+
+          html += '<li class="' + i.t + '" style="margin-bottom:10px; padding:12px; background:var(--surface); border:2px solid var(--line); border-radius:12px; display:flex; flex-direction:column; gap:6px;">' +
+                    '<div style="display:flex; align-items:center; justify-content:space-between;">' +
+                      badgeHtml +
+                      '<span style="font-size:0.8rem; color:var(--text-muted);">' + dayStr + ' ' + h + '</span>' +
+                    '</div>' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
                       '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + targetText + '</div>' +
+                      '<div class="txt">' + noteText + targetText + photoHtml + '</div>' +
                     '</div>' +
-                    '<span style="font-size:0.8rem; color:var(--text-muted);">' + dayStr + ' ' + h + '</span>' +
                   '</li>';
         });
         html += '</ul>';
@@ -537,11 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 4. IN ATTESA (TAB PENDING - SOLO MUDI06)
-    if (pendingContainer) {
-      if (!isMudi06) {
-        pendingContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
-      } else if (pendingItems.length === 0) {
+    // 4. IN ATTESA (TAB PENDING - ESCLUSIVA MUDI06)
+    if (pendingContainer && isMudi06) {
+      if (pendingItems.length === 0) {
         pendingContainer.innerHTML = '<div class="empty">Nessuna segnalazione in attesa.</div>';
       } else {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
@@ -574,11 +662,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 5. ULTIMI MOVIMENTI / DECISIONI (SOLO MUDI06)
-    if (decisionsContainer) {
-      if (!isMudi06) {
-        decisionsContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
-      } else if (decisionHistory.length === 0) {
+    // 5. ULTIMI MOVIMENTI / DECISIONI (ESCLUSIVA MUDI06)
+    if (decisionsContainer && isMudi06) {
+      if (decisionHistory.length === 0) {
         decisionsContainer.innerHTML = '<div class="empty">Ancora nessuna decisione registrata.</div>';
       } else {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
@@ -650,13 +736,11 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     if (isMudi06) {
-      // SE ADMIN (MUDI06): APPROVAZIONE IMMEDIATA
       newItem.status = "approved";
       newItem.decisionDate = now;
       approvedItems.push(newItem);
       decisionHistory.push(newItem);
     } else {
-      // UTENTI NORMALI: IN ATTESA
       pendingItems.push(newItem);
     }
 
@@ -757,7 +841,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // 3. SVUOTA CACHE ULTIMI MOVIMENTI (NON INTECCA LA CLASSIFICA)
+  // 3. SVUOTA CACHE ULTIMI MOVIMENTI
   if ($("clearCache")) {
     $("clearCache").onclick = function() {
       if (this.blur) this.blur();
