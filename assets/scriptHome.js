@@ -1,5 +1,5 @@
 // =========================================================================
-// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
+// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO MULTI-UTENTE
 // =========================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("dark");
   }
 
-  // Riferimenti agli elementi della Navbar e Utente
+  // Riferimenti Navbar e Modale
   const userMenu = document.getElementById("userMenu");
   const logoutBtn = document.getElementById("logout");
   const editProfileBtn = document.getElementById("editProfile");
@@ -21,7 +21,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const userName = document.getElementById("userName");
   const overlay = document.getElementById("overlay");
 
-  // Riferimenti per la Modale Anteprima Foto
   const photoModal = document.getElementById("photoModal");
   const modalImage = document.getElementById("modalImage");
   const modalCaption = document.getElementById("modalCaption");
@@ -45,9 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // =====================================================================
-  // BLOCCO FORZATO DELLE GESTURE LATERALI DAI BORDI PER iOS WEBKIT
-  // =====================================================================
+  // BLOCCO FORZATO GESTURE LATERALI iOS WEBKIT
   document.addEventListener('touchstart', function(e) {
     if (e.touches.length > 0) {
       const touchX = e.touches[0].clientX;
@@ -68,11 +65,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: false });
 
-  // =====================================================================
-  // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
-  // =====================================================================
+  // NAVIGAZIONE APP NATIVA
   window.history.replaceState({ page: "home" }, "", window.location.href);
-
   window.addEventListener("popstate", (e) => {
     if (photoModal && !photoModal.classList.contains("hidden")) {
       photoModal.classList.add("hidden");
@@ -82,19 +76,14 @@ document.addEventListener("DOMContentLoaded", () => {
     window.history.replaceState({ page: "home" }, "", window.location.href);
   });
 
-  // =====================================================================
-  // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
-  // =====================================================================
+  // MENU UTENTE
   if (userMenu) {
     userMenu.addEventListener("click", (e) => {
       e.stopPropagation();
       const expanded = userMenu.getAttribute("aria-expanded") === "true";
       userMenu.setAttribute("aria-expanded", String(!expanded));
       userMenu.classList.toggle("open");
-
-      if (overlay) {
-        overlay.style.display = userMenu.classList.contains("open") ? "block" : "none";
-      }
+      if (overlay) overlay.style.display = userMenu.classList.contains("open") ? "block" : "none";
     });
 
     document.addEventListener("click", (e) => {
@@ -109,26 +98,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const navTitle = document.querySelector("nav h1");
   if (navTitle) {
     navTitle.style.cursor = "pointer";
-    navTitle.addEventListener("click", () => {
-      window.location.reload();
-    });
+    navTitle.addEventListener("click", () => { window.location.reload(); });
   }
 
-  // =====================================================================
-  // GESTIONE DEL LOGOUT FIREBASE
-  // =====================================================================
+  // LOGOUT
   if (logoutBtn) {
     logoutBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      auth.signOut().then(() => {
-        location.href = "index.html";
-      }).catch(err => alert("Errore logout: " + err.message));
+      auth.signOut().then(() => { location.href = "index.html"; }).catch(err => alert("Errore logout: " + err.message));
     });
   }
 
-  // =====================================================================
-  // GESTIONE MODALE ANTEPRIMA FOTO
-  // =====================================================================
+  // ANTEPRIMA FOTO
   function closePreview() {
     if (photoModal && !photoModal.classList.contains("hidden")) {
       photoModal.classList.add("hidden");
@@ -148,9 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (photoModal) {
     photoModal.onclick = function(e) {
       if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
-      if (modalFadeOverlay) {
-        modalFadeOverlay.classList.toggle("hidden-fade");
-      }
+      if (modalFadeOverlay) modalFadeOverlay.classList.toggle("hidden-fade");
     };
   }
 
@@ -158,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (modalImage && photoModal) {
       modalImage.src = imgSrc;
       modalImage.style.transform = "translateZ(0)";
-
       if (modalCaption) {
         modalCaption.textContent = captionText || "";
         if (modalFadeOverlay) {
@@ -171,25 +149,22 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // =====================================================================
-  // STATO DELL'UTENTE E PROTEZIONE ACCESSO (REINDIRIZZAMENTO LOGIN)
-  // =====================================================================
+  // AUTENTICAZIONE E INIZIALIZZAZIONE
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
       window.location.href = "index.html";
       return;
     }
-
     currentUserId = user.uid;
     initFirestore(currentUserId);
   });
 
-  // =====================================================================
-  // LOGICA DEL CONTATORE CONDIVISO CON APPROVAZIONE (CRISTIAN)
-  // =====================================================================
+  // LOGICA E STATO DELLA PWA
   let approvedItems = [];
   let pendingItems = [];
   let decisionHistory = [];
+  let registeredUsers = [];
+  let selectedTargetUser = ""; // Utente selezionato per la visualizzazione/assegnazione
   let currentUsername = "";
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
@@ -204,6 +179,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const leaderboardContainer = $("leaderboardContainer");
   const decisionsContainer = $("decisionsContainer");
   const pendingBadge = $("pendingBadge");
+  const targetUserSelect = $("targetUserSelect");
+  const scoreCardContainer = $("scoreCardContainer");
 
   function compressImage(file, maxWidth, maxHeight, quality, callback) {
     const reader = new FileReader();
@@ -212,29 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const img = new Image();
       img.src = event.target.result;
       img.onload = function() {
-        let width = img.width;
-        let height = img.height;
-
+        let width = img.width, height = img.height;
         if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
+          if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
         } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
+          if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; }
         }
-
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
-
-        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
-        callback(compressedBase64);
+        callback(canvas.toDataURL("image/jpeg", quality));
       };
     };
   }
@@ -276,9 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const dayHeaderBtn = e.target.closest(".day-header-btn");
     if (dayHeaderBtn) {
       const accordion = dayHeaderBtn.closest(".day-accordion");
-      if (accordion) {
-        accordion.classList.toggle("open");
-      }
+      if (accordion) accordion.classList.toggle("open");
     }
   });
 
@@ -301,11 +264,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // LISTA UTENTI FISSA PERSONALIZZATA
+  async function loadUsersList() {
+    registeredUsers = [
+      "Cristian",
+      "Samuele",
+      "Ivan",
+      "Kevin",
+      "Marco",
+      "Lorenzo",
+      "Mudi"
+    ];
+
+    populateUserSelector();
+  }
+
+  function populateUserSelector() {
+    if (!targetUserSelect) return;
+    let html = '<option value="">-- Seleziona Utente --</option>';
+    registeredUsers.forEach(u => {
+      html += `<option value="${esc(u)}" ${selectedTargetUser === u ? 'selected' : ''}>${esc(u)}</option>`;
+    });
+    targetUserSelect.innerHTML = html;
+  }
+
+  if (targetUserSelect) {
+    targetUserSelect.addEventListener("change", (e) => {
+      selectedTargetUser = e.target.value;
+      render();
+    });
+  }
+
   async function initFirestore(uid) {
     currentUserId = uid;
     try {
       dbInstance = firebase.firestore();
-      
       const currentUser = auth.currentUser;
       let foundUsername = "";
       
@@ -319,14 +312,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!foundUsername && currentUser) {
-        if (currentUser.displayName) {
-          foundUsername = currentUser.displayName;
-        } else if (currentUser.email) {
-          foundUsername = currentUser.email.split("@")[0];
-        }
+        if (currentUser.displayName) foundUsername = currentUser.displayName;
+        else if (currentUser.email) foundUsername = currentUser.email.split("@")[0];
       }
 
-      // Manteniamo lo username esatto recuperato dal DB
       currentUsername = (foundUsername || "Utente").trim();
 
       const initial = currentUsername.charAt(0).toUpperCase();
@@ -338,6 +327,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
         editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
       }
+
+      await loadUsersList();
 
       dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
         if (doc.exists) {
@@ -383,9 +374,20 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // VISIBILITÀ SCHEDA PUNTEGGIO SOLO DOPO LA SELEZIONE DELL'UTENTE
+    if (scoreCardContainer) {
+      scoreCardContainer.style.display = selectedTargetUser ? "block" : "none";
+    }
+
+    // FILTRAGGIO ELEMENTI APPROVATI PER L'UTENTE SELEZIONATO
+    const targetApproved = approvedItems.filter(i => {
+      const target = i.targetUser || "Cristian";
+      return selectedTargetUser && target.toLowerCase() === selectedTargetUser.toLowerCase();
+    });
+
     // 1. RENDER HOME & BILANCIO
-    var p = approvedItems.filter(function(i) { return i.t === "p"; }).length,
-        n = approvedItems.length - p,
+    var p = targetApproved.filter(function(i) { return i.t === "p"; }).length,
+        n = targetApproved.length - p,
         b = p - n;
     
     if ($("bal")) {
@@ -394,26 +396,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     if ($("verdict")) {
-      $("verdict").textContent = !approvedItems.length ? "Ancora nessun punto approvato" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
+      $("verdict").textContent = !targetApproved.length ? "Ancora nessun punto approvato" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
     }
     
     if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
     if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
     
-    var tot = approvedItems.length || 1;
+    var tot = targetApproved.length || 1;
     if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
     if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
     
     // STORICO APPROVATO (TAB HOME)
     if (logContainer) {
-      if (!approvedItems.length) {
-        logContainer.innerHTML = "";
-        if ($("empty")) $("empty").style.display = "block";
+      if (!selectedTargetUser) {
+        logContainer.innerHTML = '<div class="empty">Seleziona un utente dal menu in alto per vederne lo storico.</div>';
+        if ($("empty")) $("empty").style.display = "none";
+      } else if (!targetApproved.length) {
+        logContainer.innerHTML = `<div class="empty">Nessun punto ancora approvato per ${esc(selectedTargetUser)}.</div>`;
+        if ($("empty")) $("empty").style.display = "none";
       } else {
         if ($("empty")) $("empty").style.display = "none";
 
         const groups = {};
-        approvedItems.slice().reverse().forEach(function(i) {
+        targetApproved.slice().reverse().forEach(function(i) {
           var d = new Date(i.d);
           var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
           var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
@@ -478,6 +483,7 @@ document.addEventListener("DOMContentLoaded", () => {
           var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
           var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
           var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
           var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
           var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
 
@@ -490,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
           html += '<li class="' + i.t + '" style="margin-bottom:12px; flex-direction:column; align-items:stretch;">' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
                       '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
+                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
                       '<span class="time">' + dayStr + ' ' + h + '</span>' +
                     '</div>' +
                     actionBtns +
@@ -501,15 +507,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. CLASSIFICA (VISIBILE A TUTTI)
+    // 3. CLASSIFICA
     if (leaderboardContainer) {
       const stats = {};
       approvedItems.forEach(i => {
-        const author = i.author || "Mudi06";
-        if (!stats[author]) stats[author] = { pos: 0, neg: 0, total: 0 };
-        if (i.t === "p") stats[author].pos++;
-        else stats[author].neg++;
-        stats[author].total++;
+        const target = i.targetUser || "Cristian";
+        if (!stats[target]) stats[target] = { pos: 0, neg: 0, total: 0 };
+        if (i.t === "p") stats[target].pos++;
+        else stats[target].neg++;
+        stats[target].total++;
       });
 
       const sortedUsers = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
@@ -527,7 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       '<span style="font-size:1.3rem; font-weight:bold;">' + rankEmoji + '</span>' +
                       '<div>' +
                         '<div style="font-weight:bold; font-size:1.05rem;">' + esc(user) + '</div>' +
-                        '<div style="font-size:0.85rem; color:var(--text-muted);">' + u.total + ' segnalazioni totali</div>' +
+                        '<div style="font-size:0.85rem; color:var(--text-muted);">' + u.total + ' punti totali</div>' +
                       '</div>' +
                     '</div>' +
                     '<div style="display:flex; gap:8px; font-weight:bold; font-size:0.9rem;">' +
@@ -554,6 +560,7 @@ document.addEventListener("DOMContentLoaded", () => {
           var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
           var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
           var rawNoteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
           var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
           
           let statusBadge = "";
@@ -583,7 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     '</div>' +
                     '<div style="display:flex; align-items:center; gap:10px;">' +
                       '<span class="tag" style="' + (isCanceled ? 'opacity:0.5;' : '') + '">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
+                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
                     '</div>' +
                   '</li>';
         });
@@ -594,6 +601,12 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function add(t) {
+    if (!selectedTargetUser) {
+      alert("Seleziona prima l'utente a cui desideri assegnare il punto!");
+      if (targetUserSelect) targetUserSelect.focus();
+      return;
+    }
+
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
     
@@ -603,7 +616,8 @@ document.addEventListener("DOMContentLoaded", () => {
       n: val, 
       img: currentPhotoBase64, 
       d: Date.now(),
-      author: currentUsername
+      author: currentUsername,
+      targetUser: selectedTargetUser
     };
 
     pendingItems.push(newItem);
@@ -617,6 +631,7 @@ document.addEventListener("DOMContentLoaded", () => {
     saveSharedData();
     render();
     
+    alert(`Segnalazione inviata per ${selectedTargetUser}! In attesa di approvazione admin.`);
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
@@ -672,27 +687,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else {
         alert("Non ci sono elementi approvati da annullare.");
-      }
-    };
-  }
-  
-  if ($("reset")) {
-    $("reset").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può azzerare tutto.");
-        return;
-      }
-      if (approvedItems.length || pendingItems.length) {
-        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico condiviso?")) {
-          approvedItems = [];
-          pendingItems = [];
-          decisionHistory = [];
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("Il registro è già vuoto.");
       }
     };
   }
