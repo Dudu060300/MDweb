@@ -516,24 +516,27 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
         sortedUsers.forEach((user, index) => {
           const u = stats[user];
-          const rankNumber = index + 1; // Numero semplice della posizione (1, 2, 3...)
+          const rankNumber = index + 1;
           
           let balanceDisplay = (u.balance > 0 ? "+" : "") + u.balance;
           let balanceColor = u.balance > 0 ? "var(--pos)" : u.balance < 0 ? "var(--neg)" : "var(--text-color)";
 
           html += '<li style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">' +
-                    '<div style="display:flex; align-items:center; gap:14px;">' +
-                      '<span style="font-size:1.2rem; font-weight:bold; min-width:24px; text-align:center; color:var(--text-muted);">' + rankNumber + '</span>' +
-                      '<div>' +
-                        '<div style="font-weight:bold; font-size:1.1rem; margin-bottom:2px;">' + esc(user) + '</div>' +
-                        '<div style="font-size:1.05rem; font-weight:bold; color:' + balanceColor + ';">' +
-                          'Saldo: ' + balanceDisplay +
-                        '</div>' +
-                      '</div>' +
+                    // SINISTRA: Numero Posizione e Nome Utente
+                    '<div style="display:flex; align-items:center; gap:12px; flex:1;">' +
+                      '<span style="font-size:1.2rem; font-weight:bold; min-width:20px; text-align:center; color:var(--text-muted);">' + rankNumber + '</span>' +
+                      '<div style="font-weight:bold; font-size:1.1rem;">' + esc(user) + '</div>' +
                     '</div>' +
-                    '<div style="display:flex; gap:8px; font-weight:bold; font-size:0.9rem;">' +
+                    
+                    // CENTRO: Badge Punti Positivi (Verde) e Negativi (Rosso)
+                    '<div style="display:flex; gap:6px; font-weight:bold; font-size:0.9rem; justify-content:center; flex:1;">' +
                       '<span style="color:var(--pos); background:var(--pos-bg); padding:6px 10px; border-radius:8px;">+' + u.pos + '</span>' +
                       '<span style="color:var(--neg); background:var(--neg-bg); padding:6px 10px; border-radius:8px;">−' + u.neg + '</span>' +
+                    '</div>' +
+                    
+                    // DESTRA: Totale Netto (Senza scritta "Saldo:")
+                    '<div style="font-size:1.4rem; font-weight:800; color:' + balanceColor + '; min-width:50px; text-align:right;">' +
+                      balanceDisplay +
                     '</div>' +
                   '</li>';
         });
