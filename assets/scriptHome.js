@@ -351,8 +351,8 @@ document.addEventListener("DOMContentLoaded", () => {
   function render() {
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-    const adminTabButtons = document.querySelectorAll(".bottom-nav .admin-only");
-    adminTabButtons.forEach(btn => {
+    const adminOnlyButtons = document.querySelectorAll(".bottom-nav .admin-only");
+    adminOnlyButtons.forEach(btn => {
       if (isMudi06) {
         btn.classList.remove("hidden");
       } else {
@@ -447,44 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 2. IN ATTESA (TAB PENDING - SOLO MUDI06)
-    if (pendingContainer) {
-      if (!isMudi06) {
-        pendingContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
-      } else if (pendingItems.length === 0) {
-        pendingContainer.innerHTML = '<div class="empty">Nessuna segnalazione in attesa.</div>';
-      } else {
-        let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        pendingItems.slice().reverse().forEach(function(i) {
-          var d = new Date(i.d);
-          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-          var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
-          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-          var actionBtns = 
-            '<div style="display:flex; gap:8px; margin-top:10px;">' +
-              '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--pos); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
-              '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--neg); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
-            '</div>';
-
-          html += '<li class="' + i.t + '" style="margin-bottom:12px; flex-direction:column; align-items:stretch;">' +
-                    '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
-                      '<span class="time">' + dayStr + ' ' + h + '</span>' +
-                    '</div>' +
-                    actionBtns +
-                  '</li>';
-        });
-        html += '</ul>';
-        pendingContainer.innerHTML = html;
-      }
-    }
-
-    // 3. CLASSIFICA (ORDINATA PER PUNTI POSITIVI / BILANCIO MAGGIORE)
+    // 2. CLASSIFICA (ORDINATA PER PUNTI POSITIVI / BILANCIO MAGGIORE)
     if (leaderboardContainer) {
       const stats = {};
 
@@ -534,7 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
                       '<span style="color:var(--neg); background:var(--neg-bg); padding:6px 10px; border-radius:8px;">−' + u.neg + '</span>' +
                     '</div>' +
                     
-                    // DESTRA: Totale Netto (Senza scritta "Saldo:")
+                    // DESTRA: Totale Netto (Senza dicitura "Saldo:")
                     '<div style="font-size:1.4rem; font-weight:800; color:' + balanceColor + '; min-width:50px; text-align:right;">' +
                       balanceDisplay +
                     '</div>' +
@@ -545,7 +508,73 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 4. ULTIMI MOVIMENTI / DECISIONI (SOLO MUDI06)
+    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO)
+    const sentContainer = document.getElementById("sentContainer");
+    if (sentContainer) {
+      const mySentItems = pendingItems.filter(i => i.author && i.author.toLowerCase() === currentUsername.toLowerCase());
+      
+      if (mySentItems.length === 0) {
+        sentContainer.innerHTML = '<div class="empty">Non hai segnalazioni in attesa di approvazione.</div>';
+      } else {
+        let html = '<ul style="list-style:none; padding:0; margin:0;">';
+        mySentItems.slice().reverse().forEach(i => {
+          const d = new Date(i.d);
+          const h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          const dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+          const noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          const targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
+
+          html += '<li class="' + i.t + '" style="margin-bottom:10px; padding:12px; background:var(--surface); border:2px solid var(--line); border-radius:12px; display:flex; align-items:center; justify-content:space-between;">' +
+                    '<div style="display:flex; align-items:center; gap:10px;">' +
+                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<div class="txt">' + noteText + targetText + '</div>' +
+                    '</div>' +
+                    '<span style="font-size:0.8rem; color:var(--text-muted);">' + dayStr + ' ' + h + '</span>' +
+                  '</li>';
+        });
+        html += '</ul>';
+        sentContainer.innerHTML = html;
+      }
+    }
+
+    // 4. IN ATTESA (TAB PENDING - SOLO MUDI06)
+    if (pendingContainer) {
+      if (!isMudi06) {
+        pendingContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
+      } else if (pendingItems.length === 0) {
+        pendingContainer.innerHTML = '<div class="empty">Nessuna segnalazione in attesa.</div>';
+      } else {
+        let html = '<ul style="list-style:none; padding:0; margin:0;">';
+        pendingItems.slice().reverse().forEach(function(i) {
+          var d = new Date(i.d);
+          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
+          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
+          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
+          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
+
+          var actionBtns = 
+            '<div style="display:flex; gap:8px; margin-top:10px;">' +
+              '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--pos); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
+              '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--neg); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
+            '</div>';
+
+          html += '<li class="' + i.t + '" style="margin-bottom:12px; flex-direction:column; align-items:stretch;">' +
+                    '<div style="display:flex; align-items:center; gap:10px;">' +
+                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
+                      '<span class="time">' + dayStr + ' ' + h + '</span>' +
+                    '</div>' +
+                    actionBtns +
+                  '</li>';
+        });
+        html += '</ul>';
+        pendingContainer.innerHTML = html;
+      }
+    }
+
+    // 5. ULTIMI MOVIMENTI / DECISIONI (SOLO MUDI06)
     if (decisionsContainer) {
       if (!isMudi06) {
         decisionsContainer.innerHTML = '<div class="empty">Sezione riservata all\'amministratore Mudi06.</div>';
@@ -607,18 +636,29 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const noteEl = $("note");
     const val = noteEl ? noteEl.value.trim() : "";
+    const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
+    const now = Date.now();
     
     const newItem = {
-      id: "item_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+      id: "item_" + now + "_" + Math.random().toString(36).substr(2, 4),
       t: t, 
       n: val, 
       img: currentPhotoBase64, 
-      d: Date.now(),
+      d: now,
       author: currentUsername,
       targetUser: selectedTargetUser
     };
 
-    pendingItems.push(newItem);
+    if (isMudi06) {
+      // SE ADMIN (MUDI06): APPROVAZIONE IMMEDIATA
+      newItem.status = "approved";
+      newItem.decisionDate = now;
+      approvedItems.push(newItem);
+      decisionHistory.push(newItem);
+    } else {
+      // UTENTI NORMALI: IN ATTESA
+      pendingItems.push(newItem);
+    }
 
     if (noteEl) noteEl.value = "";
     currentPhotoBase64 = "";
@@ -629,7 +669,12 @@ document.addEventListener("DOMContentLoaded", () => {
     saveSharedData();
     render();
     
-    alert(`Segnalazione inviata per ${selectedTargetUser}! In attesa di approvazione admin.`);
+    if (isMudi06) {
+      alert(`Punto registrato e approvato direttamente per ${selectedTargetUser}!`);
+    } else {
+      alert(`Segnalazione inviata per ${selectedTargetUser}! In attesa di approvazione admin.`);
+    }
+    
     if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
   }
 
@@ -667,7 +712,7 @@ document.addEventListener("DOMContentLoaded", () => {
     $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
   }
   
-  // ANNULLA ULTIMO APPROVATO
+  // 1. ANNULLA ULTIMO APPROVATO
   if ($("undo")) {
     $("undo").onclick = function() {
       if (this.blur) this.blur();
@@ -690,27 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // SVUOTA CACHE ULTIMI MOVIMENTI (NON INTECCA LA CLASSIFICA O I PUNTI)
-  if ($("clearCache")) {
-    $("clearCache").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può svuotare la cache.");
-        return;
-      }
-      if (decisionHistory.length) {
-        if (confirm("Vuoi svuotare lo storico degli ultimi movimenti? Questa operazione NON modificherà i punti né la classifica.")) {
-          decisionHistory = [];
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("La cache dei movimenti è già vuota.");
-      }
-    };
-  }
-
-  // AZZERA TUTTI I PUNTI E LA CLASSIFICA
+  // 2. AZZERA TUTTI I PUNTI E LA CLASSIFICA
   if ($("reset")) {
     $("reset").onclick = function() {
       if (this.blur) this.blur();
@@ -728,6 +753,26 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       } else {
         alert("Non ci sono punti o dati da azzerare.");
+      }
+    };
+  }
+
+  // 3. SVUOTA CACHE ULTIMI MOVIMENTI (NON INTECCA LA CLASSIFICA)
+  if ($("clearCache")) {
+    $("clearCache").onclick = function() {
+      if (this.blur) this.blur();
+      if (currentUsername.toLowerCase() !== "mudi06") {
+        alert("Solo Mudi06 può svuotare la cache.");
+        return;
+      }
+      if (decisionHistory.length) {
+        if (confirm("Vuoi svuotare lo storico degli ultimi movimenti? Questa operazione NON modificherà i punti né la classifica.")) {
+          decisionHistory = [];
+          saveSharedData();
+          render();
+        }
+      } else {
+        alert("La cache dei movimenti è già vuota.");
       }
     };
   }
