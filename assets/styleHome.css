@@ -68,7 +68,7 @@ body.dark {
 
 
 /* =========================================================
-   RESET E BLOCCO CONFIGURAZIONE GESTURE DI SISTEMA
+   RESET E BLOCCO TOTALE SWIPE / RIMBALZO IN MODALITÀ PWA
    ========================================================= */
 * {
   box-sizing: border-box;
@@ -80,24 +80,26 @@ html {
   padding: 0;
   width: 100%;
   height: 100%;
-  overscroll-behavior-y: auto;
-  overscroll-behavior-x: none;
+  position: fixed;
+  overflow: hidden;
+  touch-action: pan-y;
+  overscroll-behavior: none;
 }
 
 body {
   margin: 0;
   padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: 100vw;
+  height: 100dvh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
-  background-attachment: fixed;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-x: none;
+  touch-action: pan-y;
+  overscroll-behavior: none;
+  position: relative;
 }
 
 
@@ -645,19 +647,6 @@ main.cristian-main li {
   margin-bottom: 10px;
 }
 
-li.day-header {
-  background: transparent !important;
-  border: none !important;
-  font-weight: 800;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 20px;
-  margin-bottom: 8px;
-  padding: 0 4px !important;
-}
-
 main.cristian-main li .tag {
   flex: none;
   width: 34px;
@@ -693,6 +682,101 @@ li .time {
   text-align: center;
   font-style: italic;
   font-weight: 500;
+}
+
+
+/* =========================================================
+   STORICO RAGGRUPPATO PER GIORNO (ACCORDION)
+   ========================================================= */
+.day-accordion {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.day-header-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--text-color);
+  border: none;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.day-header-btn:hover {
+  background: var(--line);
+}
+
+.day-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-badge {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.day-badge.pos {
+  background: var(--pos-bg);
+  color: var(--pos);
+}
+
+.day-badge.neg {
+  background: var(--neg-bg);
+  color: var(--neg);
+}
+
+.day-badge.neutral {
+  background: var(--line);
+  color: var(--text-color);
+}
+
+.day-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.25s ease;
+  color: var(--text-muted);
+}
+
+.day-accordion.open .day-arrow {
+  transform: rotate(180deg);
+}
+
+.day-content {
+  display: none;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.day-accordion.open .day-content {
+  display: block;
+}
+
+.day-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.day-content li {
+  margin-bottom: 8px;
+}
+
+.day-content li:last-child {
+  margin-bottom: 0;
 }
 
 
