@@ -1,160 +1,189 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>Cristian Score</title>
-  <link rel="stylesheet" href="styleHome.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <title>Cristian: più e meno - MDweb</title>
+
+  <!-- Collegamento Manifest PWA -->
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Fogli di stile CSS globali del sito -->
+  <link rel="stylesheet" href="assets/styleHome.css">
+
+  <!-- Script di blocco gesti di zoom generali della pagina -->
+  <script>
+    document.addEventListener('gesturestart', function(e) {
+      e.preventDefault();
+    });
+
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(e) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+  <!-- Inizializzazione Firebase e protezione pagina -->
+  <script src="firebase-init.js"></script>
+  <script src="auth-guard.js"></script>
 </head>
+
 <body>
 
-  <!-- NAVBAR SUPERIORE -->
-  <nav class="navbar">
-    <h1>Cristian Score</h1>
-    
-    <!-- Menu Utente Dropdown -->
-    <div class="user-menu" id="userMenu" aria-expanded="false">
-      <div class="user-icon" id="userIcon">U</div>
-      <div class="dropdown-menu">
-        <div class="dropdown-header" id="userName">Utente</div>
-        <a href="profilo.html" id="editProfile">Modifica profilo</a>
-        <a href="#" id="logout">Logout</a>
+  <div id="overlay" class="hidden"></div>
+
+  <!-- BARRA DI NAVIGAZIONE SUPERIORE -->
+  <nav>
+    <h1><a href="home.html">Crisrror</a></h1>
+    <div class="user-menu" id="userMenu" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="Menu utente">
+      <div class="user-icon" id="userIcon" aria-hidden="true">U</div>
+      <span class="arrow" aria-hidden="true">&#9662;</span>
+      <div class="dropdown" id="dropdownMenu" role="menu" aria-label="Menu opzioni utente">
+        <span class="dropdown-item username-display" id="userName">Utente</span>
+        <a href="profilo.html" id="editProfile" role="menuitem" tabindex="-1">Modifica profilo</a>
+        <a href="impostazioni.html" id="openSettings" role="menuitem" tabindex="-1">Impostazioni</a>
+        <a href="" id="logout" role="menuitem" tabindex="-1">Logout</a>
       </div>
     </div>
   </nav>
 
-  <div id="overlay" class="overlay"></div>
-
-  <!-- CONTENUTO PRINCIPALE TAB HOME -->
-  <main class="main-content">
-    <div id="tab-home" class="tab-content active">
-
-      <!-- 1. SELETTORE DELL'UTENTE TARGET -->
-      <div class="card" style="margin-bottom: 15px;">
-        <label for="targetUserSelect" style="font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.95rem; color: var(--text-color);">
-          Seleziona la persona:
-        </label>
-        <select id="targetUserSelect" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--text-color); font-size: 1rem; font-weight: bold; font-family: inherit; outline: none; -webkit-appearance: none;">
-          <option value="">-- Seleziona Utente --</option>
-        </select>
-      </div>
-
-      <!-- 2. SCHEDA PUNTEGGIO & BILANCIO (NASCOSTA FINO ALLA SELEZIONE) -->
-      <div id="scoreCardContainer" class="card" style="display: none; margin-bottom: 20px;">
-        <div class="score-display">
-          <div id="bal" class="main-score">0</div>
-          <div id="verdict" class="verdict-text">Seleziona un utente</div>
-        </div>
-
-        <!-- Barra del Bilancio -->
-        <div class="progress-bar-container" style="display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--line); margin: 15px 0;">
-          <div id="bp" style="width: 50%; background: var(--pos); transition: width 0.3s;"></div>
-          <div id="bn" style="width: 50%; background: var(--neg); transition: width 0.3s;"></div>
-        </div>
-
-        <!-- Dettagli Positivi/Negativi -->
-        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 0.9rem;">
-          <span id="cp" style="color: var(--pos);">0 positivi</span>
-          <span id="cn" style="color: var(--neg);">0 negativi</span>
-        </div>
-      </div>
-
-      <!-- 3. FORM PER INSERIMENTO SEGNALAZIONE -->
-      <div class="card" style="margin-bottom: 20px;">
-        <input type="text" id="note" placeholder="Motivo (opzionale)..." style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--text-color); font-size: 1rem; font-family: inherit; margin-bottom: 12px; box-sizing: border-box;" />
-
-        <!-- Allegato Foto -->
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-          <label for="photoInput" class="btn-secondary" style="padding: 8px 14px; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
-            📷 Aggiungi foto
-          </label>
-          <input type="file" id="photoInput" accept="image/*" class="hidden" />
-          <span id="photoName" style="font-size: 0.85rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
-          <button type="button" id="removePhotoBtn" class="hidden" style="background: none; border: none; color: var(--neg); font-weight: bold; cursor: pointer;">✕</button>
-        </div>
-
-        <!-- Pulsanti Più e Meno -->
-        <div style="display: flex; gap: 12px;">
-          <button type="button" id="plus" style="flex: 1; padding: 16px; background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); border-radius: 16px; font-size: 1.5rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-            +
-            <span style="font-size: 0.85rem; font-weight: 600;">Positivo</span>
-          </button>
-          <button type="button" id="minus" style="flex: 1; padding: 16px; background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); border-radius: 16px; font-size: 1.5rem; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
-            −
-            <span style="font-size: 0.85rem; font-weight: 600;">Negativo</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- 4. STORICO PUNTI DELL'UTENTE SELEZIONATO -->
-      <div id="log"></div>
-      <div id="empty" class="empty" style="display: none;">Nessun punto registrato per questo utente.</div>
+  <!-- TAB 1: HOME (CONTENUTO PRINCIPALE) -->
+  <main class="cristian-main tab-content active" id="tab-home">
+    
+    <!-- 1. SELETTORE DELL'UTENTE TARGET -->
+    <div class="user-select-container" style="margin-bottom: 20px;">
+      <label for="targetUserSelect" style="font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.95rem;">
+        Seleziona la persona:
+      </label>
+      <select id="targetUserSelect" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--line, #ccc); background: var(--surface, #fff); color: var(--text-color, #000); font-size: 1rem; font-weight: bold; outline: none;">
+        <option value="">-- Seleziona Utente --</option>
+      </select>
     </div>
 
-    <!-- TAB 2: IN ATTESA (SOLO ADMIN MUDI06) -->
-    <div id="tab-pending" class="tab-content">
-      <h2>Segnalazioni In Attesa</h2>
-      <div id="pendingContainer"></div>
+    <!-- 2. SCHEDA PUNTEGGIO & BILANCIO (NASCOSTA FINO ALLA SELEZIONE DELL'UTENTE) -->
+    <div id="scoreCardContainer" style="display: none; margin-bottom: 20px;">
+      <section class="balance" aria-live="polite">
+        <div class="num" id="bal">0</div>
+        <div class="lbl" id="verdict">Seleziona un utente</div>
+        <div class="bar">
+          <i class="p" id="bp" style="width:0"></i>
+          <i class="n" id="bn" style="width:0"></i>
+        </div>
+      </section>
     </div>
 
-    <!-- TAB 3: CLASSIFICA -->
-    <div id="tab-leaderboard" class="tab-content">
-      <h2>Classifica Generale</h2>
-      <div id="leaderboardContainer"></div>
-    </div>
-
-    <!-- TAB 4: DECISIONI (SOLO ADMIN MUDI06) -->
-    <div id="tab-decisions" class="tab-content">
-      <h2>Storico Decisioni Admin</h2>
+    <!-- 3. INPUT MOTIVO & ALLEGATO FOTO -->
+    <div class="note-container">
+      <input class="note" id="note" type="text" maxlength="80" placeholder="Motivo (opzionale)..." aria-label="Motivo">
       
-      <!-- Pulsante Annulla Ultimo -->
-      <div style="margin-bottom: 15px;">
-        <button type="button" id="undo" style="width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
-          ↩ Annulla Ultimo Inserimento Approvato
-        </button>
+      <!-- Contenitore per allegare la foto -->
+      <div class="photo-upload-container">
+        <label for="photoInput" class="photo-btn">📷 Aggiungi foto</label>
+        <input type="file" id="photoInput" accept="image/*" class="hidden" style="display: none !important;">
+        <span id="photoName" class="photo-name"></span>
+        <button type="button" id="removePhotoBtn" class="remove-photo-btn hidden" aria-label="Rimuovi foto">✕</button>
       </div>
-
-      <div id="decisionsContainer"></div>
     </div>
+
+    <!-- 4. PULSANTI PRINCIPALI (+) E (-) -->
+    <div class="btns">
+      <button id="plus" type="button" aria-label="Aggiungi un più">
+        <span class="sym">+</span>
+        <span class="cnt" id="cp">0 positivi</span>
+      </button>
+      <button id="minus" type="button" aria-label="Aggiungi un meno">
+        <span class="sym">−</span>
+        <span class="cnt" id="cn">0 negativi</span>
+      </button>
+    </div>
+
+    <!-- 5. SEZIONE DELLO STORICO DELL'UTENTE SELEZIONATO -->
+    <h2>Storico</h2>
+    <div id="log"></div>
+    <p class="empty" id="empty" style="display: none;">Seleziona un utente per vederne lo storico.</p>
   </main>
 
-  <!-- NAVBAR INFERIORE (TAB BAR) -->
-  <nav class="bottom-nav">
-    <button class="nav-item active" data-tab="tab-home">
+  <!-- TAB 2: SEGNALAZIONI IN ATTESA (SOLO AMMINISTRAZIONE MUDI06) -->
+  <main class="cristian-main tab-content" id="tab-pending">
+    <h1>In Attesa</h1>
+    <p class="sub">Segnalazioni inviate in attesa di approvazione.</p>
+    <div id="pendingContainer"></div>
+  </main>
+
+  <!-- TAB 3: CLASSIFICA (VISIBILE A TUTTI) -->
+  <main class="cristian-main tab-content" id="tab-leaderboard">
+    <h1>Classifica</h1>
+    <p class="sub">Punteggi e contributi registrati per utente.</p>
+    <div id="leaderboardContainer"></div>
+  </main>
+
+  <!-- TAB 4: DECISIONI RECENTI (SOLO AMMINISTRAZIONE MUDI06) -->
+  <main class="cristian-main tab-content" id="tab-decisions">
+    <h1>Ultimi Movimenti</h1>
+    <p class="sub">Registro delle segnalazioni approvate, rifiutate o annullate.</p>
+    
+    <!-- Strumenti dell'Admin per gestire gli inserimenti -->
+    <div class="tools" style="margin-bottom: 15px;">
+      <button id="undo" type="button" style="width: 100%; padding: 12px; background: #666; color: #fff; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">
+        ↩ Annulla ultimo approvato
+      </button>
+    </div>
+
+    <div id="decisionsContainer"></div>
+  </main>
+
+  <!-- BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR) -->
+  <nav class="bottom-nav" aria-label="Navigazione principale">
+    <button type="button" class="nav-item active" data-tab="tab-home">
       <span class="nav-icon">🏠</span>
       <span class="nav-label">Home</span>
     </button>
-    <button class="nav-item admin-only hidden" data-tab="tab-pending">
-      <span class="nav-icon" style="position: relative;">
-        ⏳
-        <span id="pendingBadge" class="badge hidden">0</span>
-      </span>
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
+      <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
       <span class="nav-label">In Attesa</span>
     </button>
-    <button class="nav-item" data-tab="tab-leaderboard">
+    <button type="button" class="nav-item" data-tab="tab-leaderboard">
       <span class="nav-icon">🏆</span>
       <span class="nav-label">Classifica</span>
     </button>
-    <button class="nav-item admin-only hidden" data-tab="tab-decisions">
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
       <span class="nav-icon">📋</span>
       <span class="nav-label">Decisioni</span>
     </button>
   </nav>
 
-  <!-- MODALE ANTEPRIMA FOTO GRANDE -->
-  <div id="photoModal" class="photo-modal hidden">
-    <button type="button" id="closePhotoModal" class="close-photo-btn">✕</button>
-    <img id="modalImage" src="" alt="Anteprima Foto" />
-    <div id="modalFadeOverlay" class="modal-fade-overlay">
-      <p id="modalCaption"></p>
+  <!-- MODALE ANTEPRIMA FOTO A SCHERMO INTERO -->
+  <div id="photoModal" class="photo-modal hidden" role="dialog" aria-modal="true" aria-label="Anteprima foto">
+    <div id="zoomContainer" class="photo-zoom-container">
+      <img id="modalImage" class="photo-modal-img" src="" alt="Anteprima immagine">
+    </div>
+
+    <button type="button" id="closePhotoModal" class="modal-back-btn" aria-label="Torna indietro">
+      &#8592;
+    </button>
+    
+    <div id="modalFadeOverlay" class="photo-modal-fade">
+      <p id="modalCaption" class="photo-modal-caption"></p>
     </div>
   </div>
 
-  <!-- FIREBASE SDK & JS PRINCIPALE -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="script.js"></script>
+  <!-- SCRIPT ESTERNI DEL SITO -->
+  <script src="assets/tema.js"></script>
+  <script src="assets/scriptHome.js"></script>
+  <script src="assets/scriptCristian.js"></script>
+
 </body>
 </html>
