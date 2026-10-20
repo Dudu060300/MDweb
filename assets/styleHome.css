@@ -1,7 +1,7 @@
 /* =========================================================
    1. UNIFICAZIONE FONT ASSOLUTA (iOS SF PRO) E VARIABILI TEMA
    ========================================================= */
-*, html, body, input, button, select, textarea, nav, nav *, .dropdown, .dropdown *, h1, h2, h3, p, span, a, label {
+*, html, body, input, button, select, textarea, nav, nav *, .bottom-nav, .bottom-nav *, .dropdown, .dropdown *, h1, h2, h3, p, span, a, label, i {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
   box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
@@ -97,22 +97,26 @@ nav:not(.bottom-nav) {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  background: var(--nav-bg);
-  color: var(--nav-text);
+  background: var(--nav-bg) !important;
+  color: var(--nav-text) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid var(--line);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
+/* TITOLO CENTRALE ("Crisrror") */
 nav:not(.bottom-nav) h1 {
   position: absolute;
   left: 50%;
   top: calc(50% + (env(safe-area-inset-top, 0px) / 2));
   margin: 0;
   transform: translate(-50%, -50%);
-  color: var(--nav-text);
-  font-size: 1.5rem;
+  color: var(--nav-text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
+  font-size: 1.45rem !important;
   font-weight: 700 !important;
-  letter-spacing: -0.4px;
+  letter-spacing: -0.4px !important;
+  -webkit-font-smoothing: antialiased;
 }
 
 nav:not(.bottom-nav) .user-menu {
@@ -124,6 +128,7 @@ nav:not(.bottom-nav) .user-menu {
   cursor: pointer;
   user-select: none;
   z-index: 2;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 /* CERCHIO USER ICON: LIGHT MODE (SFONDO BIANCO, M NERA) */
@@ -137,8 +142,10 @@ nav:not(.bottom-nav) .user-icon {
   color: #000000 !important;
   border: 1px solid #e5e5e5;
   border-radius: 50%;
-  font-size: 1.2rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
+  font-size: 1.15rem !important;
   font-weight: 700 !important;
+  line-height: 1 !important;
 }
 
 /* CERCHIO USER ICON: DARK MODE (SFONDO NERO, M BIANCA) */
@@ -149,8 +156,9 @@ body.dark nav:not(.bottom-nav) .user-icon {
 }
 
 nav:not(.bottom-nav) .arrow {
-  color: var(--nav-text);
-  font-size: 1.1rem;
+  color: var(--nav-text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
+  font-size: 1.1rem !important;
   transition: transform var(--transition-speed) ease;
 }
 
@@ -158,7 +166,7 @@ nav:not(.bottom-nav) .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
-/* SFOCATURA SFONDO SOLTANTO FRA LE DUE BARRE (ESCLUDE TOP E BOTTOM NAV) */
+/* SFOCATURA SFONDO SOLTANTO FRA LE DUE BARRE */
 nav:not(.bottom-nav) .user-menu.open::before {
   content: "";
   position: fixed;
@@ -171,10 +179,10 @@ nav:not(.bottom-nav) .user-menu.open::before {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   z-index: 9990;
-  pointer-events: auto; /* Impedisce il click/tap sui pulsanti sfocati sotto */
+  pointer-events: auto;
 }
 
-/* DROPDOWN FULL-WIDTH (LARGHEZZA TUTTO LO SCHERMO CON UNIFORMITÀ FONT) */
+/* DROPDOWN FULL-WIDTH */
 nav:not(.bottom-nav) .user-menu .dropdown {
   position: fixed;
   left: 0;
@@ -188,6 +196,7 @@ nav:not(.bottom-nav) .user-menu .dropdown {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav:not(.bottom-nav) .user-menu.open .dropdown {
@@ -202,6 +211,7 @@ nav:not(.bottom-nav) .dropdown .username-display {
   font-size: 1rem;
   font-weight: 700 !important;
   letter-spacing: -0.2px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav:not(.bottom-nav) .dropdown a {
@@ -212,13 +222,14 @@ nav:not(.bottom-nav) .dropdown a {
   font-weight: 600 !important;
   letter-spacing: -0.2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav:not(.bottom-nav) .dropdown a:last-child {
   border-bottom: none;
 }
 
-/* DROPDOWN BIANCO E TESTI NERI IN DARK MODE (TRANNE UTENTE) */
+/* DROPDOWN BIANCO E TESTI NERI IN DARK MODE */
 body.dark nav:not(.bottom-nav) .user-menu .dropdown {
   background: #ffffff !important;
   border-top: 1px solid #e5e5e5;
@@ -498,7 +509,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA DI NAVIGAZIONE INFERIORE
+   5. BARRA DI NAVIGAZIONE INFERIORE (UNIFICAZIONE FONT COMPLETA)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -517,6 +528,7 @@ nav.bottom-nav {
   z-index: 99999 !important;
   border-top: 1px solid var(--line) !important;
   transform: translateZ(0);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-item {
@@ -537,6 +549,7 @@ nav.bottom-nav .nav-item {
   margin: 0 1px !important;
   transition: background-color 0.2s ease, color 0.2s ease !important;
   -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 /* SFONDO BIANCO E TESTO NERO IN DARK MODE PER LA BOTTOM NAV */
@@ -565,12 +578,14 @@ nav.bottom-nav .nav-item.active .nav-label,
 nav.bottom-nav .nav-item.active .nav-icon {
   color: #00f7ff !important;
   text-shadow: 0 0 8px rgba(0, 247, 255, 0.4);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-icon {
   font-size: 1.05rem !important;
   position: relative !important;
   line-height: 1 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-label {
@@ -579,6 +594,7 @@ nav.bottom-nav .nav-label {
   line-height: 1 !important;
   white-space: nowrap;
   letter-spacing: -0.1px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 .badge-count {
@@ -592,6 +608,7 @@ nav.bottom-nav .nav-label {
   padding: 2px 4px !important;
   border-radius: 8px !important;
   line-height: 1 !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 /* =========================================================
