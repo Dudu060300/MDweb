@@ -4,7 +4,7 @@
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
- 
+
   --nav-bg: #000000;
   --barra-bg: #000000;
   --barra-color: #00f7ff;
@@ -81,7 +81,7 @@ body {
   touch-action: pan-y;
   overscroll-behavior: none;
   position: relative;
-  padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(75px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 a {
@@ -92,7 +92,7 @@ a {
 /* =========================================================
    BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
    ========================================================= */
-nav {
+nav:not(.bottom-nav) {
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -109,7 +109,7 @@ nav {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
 }
 
-nav h1 {
+nav:not(.bottom-nav) h1 {
   position: absolute;
   left: 50%;
   top: calc(50% + (env(safe-area-inset-top, 0px) / 2));
@@ -120,7 +120,7 @@ nav h1 {
   font-weight: 700;
 }
 
-nav .user-menu {
+nav:not(.bottom-nav) .user-menu {
   position: relative;
   margin-left: auto;
   display: flex;
@@ -131,7 +131,7 @@ nav .user-menu {
   z-index: 2;
 }
 
-nav .user-icon {
+nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
   display: flex;
@@ -144,17 +144,17 @@ nav .user-icon {
   font-weight: bold;
 }
 
-nav .arrow {
+nav:not(.bottom-nav) .arrow {
   color: var(--nav-text);
   font-size: 1.1rem;
   transition: transform var(--transition-speed) ease;
 }
 
-nav .user-menu.open .arrow {
+nav:not(.bottom-nav) .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
-nav .user-menu .dropdown {
+nav:not(.bottom-nav) .user-menu .dropdown {
   position: absolute;
   right: 0;
   top: calc(100% + 10px);
@@ -168,11 +168,11 @@ nav .user-menu .dropdown {
   z-index: 9999;
 }
 
-nav .user-menu.open .dropdown {
+nav:not(.bottom-nav) .user-menu.open .dropdown {
   display: flex;
 }
 
-nav .dropdown .username-display {
+nav:not(.bottom-nav) .dropdown .username-display {
   display: block;
   padding: 12px 16px;
   background: var(--accent-color);
@@ -180,7 +180,7 @@ nav .dropdown .username-display {
   font-weight: 600;
 }
 
-nav .dropdown a {
+nav:not(.bottom-nav) .dropdown a {
   display: block;
   padding: 12px 16px;
   color: var(--text-light);
@@ -444,68 +444,69 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 .day-accordion.open .day-content { display: block; }
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR)
+   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR FISSA IN BASSO)
    ========================================================= */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100vw;
-  height: calc(60px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  background: var(--nav-bg);
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-  z-index: 10000;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+nav.bottom-nav {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  top: auto !important;
+  width: 100vw !important;
+  height: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  background: var(--nav-bg, #000000) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5) !important;
+  z-index: 99999 !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-.nav-item {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  flex: 1;
-  height: 100%;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  padding: 0;
-  margin: 0;
+nav.bottom-nav .nav-item {
+  background: transparent !important;
+  border: none !important;
+  color: var(--text-muted, #888888) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  flex: 1 !important;
+  height: 100% !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.nav-item.active {
-  color: var(--accent-color);
-  font-weight: bold;
+nav.bottom-nav .nav-item.active {
+  color: var(--accent-color, #00f7ff) !important;
+  font-weight: bold !important;
 }
 
-.nav-icon {
-  font-size: 1.4rem;
-  position: relative;
-  line-height: 1;
+nav.bottom-nav .nav-icon {
+  font-size: 1.3rem !important;
+  position: relative !important;
+  line-height: 1 !important;
 }
 
-.nav-label {
-  font-size: 0.72rem;
-  font-weight: 600;
+nav.bottom-nav .nav-label {
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
 }
 
 .badge-count {
-  position: absolute;
-  top: -6px;
-  right: -10px;
-  background: var(--error-color);
-  color: #ffffff;
-  font-size: 0.7rem;
-  font-weight: 900;
-  padding: 2px 6px;
-  border-radius: 10px;
-  line-height: 1;
+  position: absolute !important;
+  top: -5px !important;
+  right: -10px !important;
+  background: var(--error-color, #ff4c4c) !important;
+  color: #ffffff !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  padding: 2px 5px !important;
+  border-radius: 10px !important;
+  line-height: 1 !important;
 }
 
 /* MODALE FOTO */
