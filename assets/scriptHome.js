@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const logContainer = $("log");
 
   // =====================================================================
-  // CARICAMENTO E COMPRESSIONE AUTOMATICA DELLE FOTO (PERMETTE FOTO > 2MB)
+  // CARICAMENTO E COMPRESSIONE AUTOMATICA DELLE FOTO (> 2MB)
   // =====================================================================
   function compressImage(file, maxWidth, maxHeight, quality, callback) {
     const reader = new FileReader();
@@ -227,7 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let width = img.width;
         let height = img.height;
 
-        // Calcola le nuove dimensioni mantenendo le proporzioni
         if (width > height) {
           if (width > maxWidth) {
             height = Math.round((height * maxWidth) / width);
@@ -240,14 +239,12 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
 
-        // Disegna l'immagine su un canvas ridimensionato
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Converte in JPEG compresso
         const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
         callback(compressedBase64);
       };
@@ -260,7 +257,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (file) {
         if (photoName) photoName.textContent = "Elaborazione foto...";
 
-        // Ridimensiona a max 1200px di larghezza/altezza e comprimi al 70% di qualità
         compressImage(file, 1200, 1200, 0.7, function(base64Result) {
           currentPhotoBase64 = base64Result;
           if (photoName) photoName.textContent = file.name;
@@ -280,13 +276,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // =====================================================================
+  // GESTIONE CLICK SULLE FOTO E SUGLI ACCORDION DELLO STORICO
+  // =====================================================================
   if (logContainer) {
     logContainer.addEventListener("click", function(e) {
+      // 1. Click sulla foto
       if (e.target && e.target.classList.contains("clickable-photo")) {
         const imgSrc = e.target.getAttribute("data-img");
         const caption = e.target.getAttribute("data-caption");
         if (imgSrc && typeof window.openPhotoPreview === "function") {
           window.openPhotoPreview(imgSrc, caption);
+        }
+        return;
+      }
+
+      // 2. Click sull'intestazione del giorno (Accordion espandibile)
+      const dayHeaderBtn = e.target.closest(".day-header-btn");
+      if (dayHeaderBtn) {
+        const accordion = dayHeaderBtn.closest(".day-accordion");
+        if (accordion) {
+          accordion.classList.toggle("open");
         }
       }
     });
@@ -321,36 +331,82 @@ document.addEventListener("DOMContentLoaded", () => {
     if ($("empty")) $("empty").style.display = items.length ? "none" : "block";
     
     if (logContainer) {
-      let lastDayStr = "";
-      let html = "";
-      
+      if (!items.length) {
+        logContainer.innerHTML = "";
+        return;
+      }
+
+      // Raggruppamento delle voci per giorno (YYYY-MM-DD)
+      const groups = {};
       items.slice().reverse().forEach(function(i) {
         var d = new Date(i.d);
-        var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+        var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
         
-        if (dayStr !== lastDayStr) {
-          lastDayStr = dayStr;
-          html += '<li class="day-header">' + dayStr + '</li>';
+        if (!groups[dayKey]) {
+          groups[dayKey] = {
+            title: dayTitle,
+            items: []
+          };
         }
-        
-        var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-        var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-        var escapedCaption = i.n ? esc(i.n) : '';
-
-        var photoHtml = i.img 
-          ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + escapedCaption + '" />' 
-          : '';
-        
-        html += '<li class="' + i.t + '">' +
-                  '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                  '<div class="txt">' +
-                    noteText +
-                    photoHtml +
-                  '</div>' +
-                  '<span class="time">' + h + '</span>' +
-                '</li>';
+        groups[dayKey].items.push(i);
       });
-      
+
+      // Generazione HTML degli accordion
+      let html = "";
+      Object.keys(groups).forEach(function(dayKey) {
+        const group = groups[dayKey];
+        
+        const posDay = group.items.filter(i => i.t === "p").length;
+        const negDay = group.items.length - posDay;
+        const balDay = posDay - negDay;
+        
+        let badgeClass = "neutral";
+        let badgeText = "0";
+        if (balDay > 0) {
+          badgeClass = "pos";
+          badgeText = "+" + balDay;
+        } else if (balDay < 0) {
+          badgeClass = "neg";
+          badgeText = "−" + Math.abs(balDay);
+        }
+
+        html += '<div class="day-accordion">' +
+                  '<button type="button" class="day-header-btn">' +
+                    '<div class="day-header-info">' +
+                      '<span>' + group.title + '</span>' +
+                      '<span class="day-badge ' + badgeClass + '">' + badgeText + '</span>' +
+                    '</div>' +
+                    '<span class="day-arrow">▼</span>' +
+                  '</button>' +
+                  '<div class="day-content">' +
+                    '<ul>';
+
+        group.items.forEach(function(i) {
+          var d = new Date(i.d);
+          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
+          var escapedCaption = i.n ? esc(i.n) : '';
+
+          var photoHtml = i.img 
+            ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + escapedCaption + '" />' 
+            : '';
+
+          html += '<li class="' + i.t + '">' +
+                    '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
+                    '<div class="txt">' +
+                      noteText +
+                      photoHtml +
+                    '</div>' +
+                    '<span class="time">' + h + '</span>' +
+                  '</li>';
+        });
+
+        html +=     '</ul>' +
+                  '</div>' +
+                '</div>';
+      });
+
       logContainer.innerHTML = html;
     }
   }
