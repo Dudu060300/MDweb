@@ -42,8 +42,8 @@
 body.dark {
   --bg-color: #000000;
   --text-color: #ffffff;
-  --nav-bg: #111111;
-  --nav-text: #ffffff;
+  --nav-bg: #ffffff;      /* Sfondo bianco in dark mode per entrambe le navbar */
+  --nav-text: #000000;    /* Testi neri in dark mode per la navbar */
   --text-muted: #aaaaaa;
   --surface: #121212;
   --line: #2e384e;
@@ -55,10 +55,10 @@ body.dark {
 }
 
 /* =========================================================
-   2. RESET COMPLETO (SFONDO HTML NERO = NESSUNA STRISCIA BIANCA)
+   2. RESET COMPLETO
    ========================================================= */
 html {
-  background-color: #000000 !important;
+  background-color: var(--bg-color, #ffffff) !important;
   margin: 0 !important;
   padding: 0 !important;
   width: 100%;
@@ -97,7 +97,8 @@ nav:not(.bottom-nav) {
   justify-content: flex-start;
   background: var(--nav-bg);
   color: var(--nav-text);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--line);
 }
 
 nav:not(.bottom-nav) h1 {
@@ -122,14 +123,21 @@ nav:not(.bottom-nav) .user-menu {
   z-index: 2;
 }
 
+/* CERCHIO "M": SFONDO NERO E TESTO BIANCO IN DARK MODE */
+body.dark nav:not(.bottom-nav) .user-icon {
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #333333;
+}
+
 nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-color);
-  color: var(--text-color);
+  background: #000000;
+  color: #ffffff;
   border-radius: 50%;
   font-size: 1.2rem;
   font-weight: 800 !important;
@@ -152,7 +160,7 @@ nav:not(.bottom-nav) .user-menu .dropdown {
   width: 250px;
   display: none;
   flex-direction: column;
-  background: #333333;
+  background: #222222;
   border-radius: 0 0 15px 15px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
   overflow: hidden;
@@ -174,7 +182,7 @@ nav:not(.bottom-nav) .dropdown .username-display {
 nav:not(.bottom-nav) .dropdown a {
   display: block;
   padding: 12px 16px;
-  color: var(--text-light);
+  color: #ffffff;
   font-weight: 600 !important;
 }
 
@@ -440,7 +448,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA DI NAVIGAZIONE INFERIORE (FISSA IN FONDO)
+   5. BARRA DI NAVIGAZIONE INFERIORE
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -450,22 +458,21 @@ nav.bottom-nav {
   width: 100% !important;
   height: auto !important;
   margin: 0 !important;
-  /* stesso spazio sopra e sotto + safe area iPhone */
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px)) !important;
-  background: #000000 !important;
+  background: var(--nav-bg) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
   box-shadow: none !important;
   z-index: 99999 !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-top: 1px solid var(--line) !important;
   transform: translateZ(0);
 }
 
 nav.bottom-nav .nav-item {
   background: transparent !important;
   border: none !important;
-  color: #a0a0a0 !important;
+  color: var(--nav-text) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -482,21 +489,32 @@ nav.bottom-nav .nav-item {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* SFONDO BIANCO E TESTO NERO IN DARK MODE PER LA BOTTOM NAV */
+body.dark nav.bottom-nav {
+  background: #ffffff !important;
+  border-top: 1px solid #e5e5e5 !important;
+}
+
+body.dark nav.bottom-nav .nav-item {
+  color: #000000 !important;
+}
+
 nav.bottom-nav .nav-item.hidden {
   display: none !important;
 }
 
-/* STATO ATTIVO: PILLOLA VERDE ACQUA */
+/* STATO ATTIVO: PILLOLA NERA CON SCRITTE E ICONA VERDE ACQUA */
 nav.bottom-nav .nav-item.active {
-  background: linear-gradient(135deg, #00f7ff 0%, #00c2cc 100%) !important;
-  color: #000000 !important;
+  background: #000000 !important;
+  color: #00f7ff !important;
   font-weight: 800 !important;
-  box-shadow: 0 2px 10px rgba(0, 247, 255, 0.3) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
 }
 
 nav.bottom-nav .nav-item.active .nav-label,
 nav.bottom-nav .nav-item.active .nav-icon {
-  color: #000000 !important;
+  color: #00f7ff !important;
+  text-shadow: 0 0 8px rgba(0, 247, 255, 0.4);
 }
 
 nav.bottom-nav .nav-icon {
