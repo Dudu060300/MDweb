@@ -64,7 +64,6 @@ body.dark {
    2. RESET COMPLETO E FIX SPAZIO BIANCO IN BASSO
    ========================================================= */
 html {
-  background-color: #000000 !important;
   margin: 0 !important;
   padding: 0 !important;
   width: 100%;
@@ -78,7 +77,6 @@ body {
   width: 100vw;
   height: 100vh;
   height: 100dvh;
-  background-color: #000000 !important;
   color: var(--text-color);
   overflow-x: hidden;
   overflow-y: auto;
