@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let pendingItems = [];
   let decisionHistory = [];
   let registeredUsers = [];
-  let selectedTargetUser = ""; // Utente selezionato per la visualizzazione/assegnazione
+  let selectedTargetUser = "";
   let currentUsername = "";
   let dbInstance, currentUserId;
   let currentPhotoBase64 = "";
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // LISTA UTENTI FISSA PERSONALIZZATA
+  // LISTA UTENTI FISSA
   async function loadUsersList() {
     registeredUsers = [
       "Cristian",
@@ -349,7 +349,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render() {
-    // CONTROLLO ADMIN ESCLUSIVAMENTE SULLO USERNAME "MUDI06"
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
     const adminTabButtons = document.querySelectorAll(".bottom-nav .admin-only");
@@ -374,9 +373,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // VISIBILITÀ SCHEDA PUNTEGGIO SOLO DOPO LA SELEZIONE DELL'UTENTE
+    // NASCONDIAMO TOTALMENTE IL CONTENITORE DEL CONTEGGIO SOTTO LA SELEZIONE
     if (scoreCardContainer) {
-      scoreCardContainer.style.display = selectedTargetUser ? "block" : "none";
+      scoreCardContainer.style.display = "none";
     }
 
     // FILTRAGGIO ELEMENTI APPROVATI PER L'UTENTE SELEZIONATO
@@ -385,34 +384,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return selectedTargetUser && target.toLowerCase() === selectedTargetUser.toLowerCase();
     });
 
-    // 1. RENDER HOME & BILANCIO
-    var p = targetApproved.filter(function(i) { return i.t === "p"; }).length,
-        n = targetApproved.length - p,
-        b = p - n;
-    
-    if ($("bal")) {
-      $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
-      $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text-color)";
-    }
-    
-    if ($("verdict")) {
-      $("verdict").textContent = !targetApproved.length ? "Ancora nessun punto approvato" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
-    }
-    
-    if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
-    if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
-    
-    var tot = targetApproved.length || 1;
-    if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
-    if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
-    
-    // STORICO APPROVATO (TAB HOME)
+    // 1. STORICO APPROVATO DELL'UTENTE SELEZIONATO (TAB HOME)
     if (logContainer) {
       if (!selectedTargetUser) {
         logContainer.innerHTML = '<div class="empty">Seleziona un utente dal menu in alto per vederne lo storico.</div>';
         if ($("empty")) $("empty").style.display = "none";
       } else if (!targetApproved.length) {
-        logContainer.innerHTML = `<div class="empty">Nessun punto ancora approvato per ${esc(selectedTargetUser)}.</div>`;
+        logContainer.innerHTML = `<div class="empty">Nessun punto ancora registrato per ${esc(selectedTargetUser)}.</div>`;
         if ($("empty")) $("empty").style.display = "none";
       } else {
         if ($("empty")) $("empty").style.display = "none";
@@ -507,18 +485,31 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. CLASSIFICA
+    // 3. CLASSIFICA (ORDINATA PER CHI HA PIÙ PUNTI POSITIVI/BILANCIO MAGGIORE)
     if (leaderboardContainer) {
       const stats = {};
-      approvedItems.forEach(i => {
-        const target = i.targetUser || "Cristian";
-        if (!stats[target]) stats[target] = { pos: 0, neg: 0, total: 0 };
-        if (i.t === "p") stats[target].pos++;
-        else stats[target].neg++;
-        stats[target].total++;
+
+      registeredUsers.forEach(user => {
+        stats[user] = { pos: 0, neg: 0, balance: 0 };
       });
 
-      const sortedUsers = Object.keys(stats).sort((a, b) => stats[b].total - stats[a].total);
+      approvedItems.forEach(i => {
+        const target = i.targetUser || "Cristian";
+        if (!stats[target]) {
+          stats[target] = { pos: 0, neg: 0, balance: 0 };
+        }
+        if (i.t === "p") stats[target].pos++;
+        else stats[target].neg++;
+
+        stats[target].balance = stats[target].pos - stats[target].neg;
+      });
+
+      const sortedUsers = Object.keys(stats).sort((a, b) => {
+        if (stats[b].balance !== stats[a].balance) {
+          return stats[b].balance - stats[a].balance;
+        }
+        return stats[b].pos - stats[a].pos;
+      });
 
       if (sortedUsers.length === 0) {
         leaderboardContainer.innerHTML = '<div class="empty">Nessun dato ancora in classifica.</div>';
@@ -527,13 +518,18 @@ document.addEventListener("DOMContentLoaded", () => {
         sortedUsers.forEach((user, index) => {
           const u = stats[user];
           const rankEmoji = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "#" + (index + 1);
+          
+          let balanceDisplay = (u.balance > 0 ? "+" : "") + u.balance;
+          let balanceColor = u.balance > 0 ? "var(--pos)" : u.balance < 0 ? "var(--neg)" : "var(--text-color)";
 
           html += '<li style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">' +
                     '<div style="display:flex; align-items:center; gap:12px;">' +
                       '<span style="font-size:1.3rem; font-weight:bold;">' + rankEmoji + '</span>' +
                       '<div>' +
                         '<div style="font-weight:bold; font-size:1.05rem;">' + esc(user) + '</div>' +
-                        '<div style="font-size:0.85rem; color:var(--text-muted);">' + u.total + ' punti totali</div>' +
+                        '<div style="font-size:0.85rem; color:var(--text-muted);">' +
+                          'Saldo: <strong style="color:' + balanceColor + ';">' + balanceDisplay + '</strong>' +
+                        '</div>' +
                       '</div>' +
                     '</div>' +
                     '<div style="display:flex; gap:8px; font-weight:bold; font-size:0.9rem;">' +
