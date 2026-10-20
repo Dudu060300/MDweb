@@ -373,7 +373,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // NASCONDIAMO TOTALMENTE IL CONTENITORE DEL CONTEGGIO SOTTO LA SELEZIONE
     if (scoreCardContainer) {
       scoreCardContainer.style.display = "none";
     }
@@ -485,7 +484,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. CLASSIFICA (ORDINATA PER CHI HA PIÙ PUNTI POSITIVI/BILANCIO MAGGIORE)
+    // 3. CLASSIFICA (ORDINATA PER PUNTI POSITIVI / BILANCIO MAGGIORE)
     if (leaderboardContainer) {
       const stats = {};
 
@@ -517,24 +516,24 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '<ul style="list-style:none; padding:0; margin:0;">';
         sortedUsers.forEach((user, index) => {
           const u = stats[user];
-          const rankEmoji = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "#" + (index + 1);
+          const rankNumber = index + 1; // Numero semplice della posizione (1, 2, 3...)
           
           let balanceDisplay = (u.balance > 0 ? "+" : "") + u.balance;
           let balanceColor = u.balance > 0 ? "var(--pos)" : u.balance < 0 ? "var(--neg)" : "var(--text-color)";
 
           html += '<li style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">' +
-                    '<div style="display:flex; align-items:center; gap:12px;">' +
-                      '<span style="font-size:1.3rem; font-weight:bold;">' + rankEmoji + '</span>' +
+                    '<div style="display:flex; align-items:center; gap:14px;">' +
+                      '<span style="font-size:1.2rem; font-weight:bold; min-width:24px; text-align:center; color:var(--text-muted);">' + rankNumber + '</span>' +
                       '<div>' +
-                        '<div style="font-weight:bold; font-size:1.05rem;">' + esc(user) + '</div>' +
-                        '<div style="font-size:0.85rem; color:var(--text-muted);">' +
-                          'Saldo: <strong style="color:' + balanceColor + ';">' + balanceDisplay + '</strong>' +
+                        '<div style="font-weight:bold; font-size:1.1rem; margin-bottom:2px;">' + esc(user) + '</div>' +
+                        '<div style="font-size:1.05rem; font-weight:bold; color:' + balanceColor + ';">' +
+                          'Saldo: ' + balanceDisplay +
                         '</div>' +
                       '</div>' +
                     '</div>' +
                     '<div style="display:flex; gap:8px; font-weight:bold; font-size:0.9rem;">' +
-                      '<span style="color:var(--pos); background:var(--pos-bg); padding:4px 8px; border-radius:8px;">+' + u.pos + '</span>' +
-                      '<span style="color:var(--neg); background:var(--neg-bg); padding:4px 8px; border-radius:8px;">−' + u.neg + '</span>' +
+                      '<span style="color:var(--pos); background:var(--pos-bg); padding:6px 10px; border-radius:8px;">+' + u.pos + '</span>' +
+                      '<span style="color:var(--neg); background:var(--neg-bg); padding:6px 10px; border-radius:8px;">−' + u.neg + '</span>' +
                     '</div>' +
                   '</li>';
         });
