@@ -1,15 +1,10 @@
 /* =========================================================
-   1. UNIFICAZIONE FONT ASSOLUTA (iOS SF PRO) E VARIABILI TEMA
+   1. FONT UNICO (iOS SF PRO) E VARIABILI TEMA
    ========================================================= */
-*, html, body, input, button, select, textarea, nav, nav *, .bottom-nav, .bottom-nav *, .dropdown, .dropdown *, h1, h2, h3, p, span, a, label, i {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
-  box-sizing: border-box;
-  -webkit-text-size-adjust: 100%;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 :root {
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+             "SF Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
   --bg-color: #ffffff;
   --text-color: #000000;
 
@@ -32,9 +27,9 @@
 
   --transition-speed: 0.3s;
 
-  --pos: #047857; 
+  --pos: #047857;
   --pos-bg: #d1fae5;
-  --neg: #be123c; 
+  --neg: #be123c;
   --neg-bg: #ffe4e6;
   --line: #d9dfea;
   --surface: #f8f9fa;
@@ -44,23 +39,33 @@
 body.dark {
   --bg-color: #000000;
   --text-color: #ffffff;
-  --nav-bg: #ffffff;      /* Sfondo bianco in dark mode per entrambe le navbar */
-  --nav-text: #000000;    /* Testi neri in dark mode per la navbar */
+  --nav-bg: #ffffff;
+  --nav-text: #000000;
   --text-muted: #aaaaaa;
   --surface: #121212;
   --line: #2e384e;
-  --pos: #34d399; 
+  --pos: #34d399;
   --pos-bg: #064e3b;
-  --neg: #fb7185; 
+  --neg: #fb7185;
   --neg-bg: #4c0519;
   --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
 }
 
+/* Un'unica regola font per TUTTA la pagina (navbar, dropdown, bottom nav,
+   input e bottoni compresi). Niente piu' ripetizioni nei singoli blocchi. */
+*, *::before, *::after {
+  font-family: var(--font-ui) !important;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* =========================================================
-   2. RESET COMPLETO
+   2. RESET
    ========================================================= */
 html {
-  background-color: var(--bg-color, #ffffff) !important;
+  background-color: var(--bg-color) !important;
   margin: 0 !important;
   padding: 0 !important;
   width: 100%;
@@ -72,8 +77,7 @@ body {
   padding: 0 !important;
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-color, #ffffff) !important;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color) !important;
   color: var(--text-color);
   overflow-x: hidden;
 }
@@ -83,8 +87,12 @@ a {
   color: var(--nav-text);
 }
 
+.hidden {
+  display: none !important;
+}
+
 /* =========================================================
-   3. BARRA DI NAVIGAZIONE SUPERIORE & DROPDOWN FULL-WIDTH WITH BLUR
+   3. NAVBAR SUPERIORE + DROPDOWN A TUTTA LARGHEZZA CON BLUR
    ========================================================= */
 nav:not(.bottom-nav) {
   position: sticky;
@@ -92,9 +100,7 @@ nav:not(.bottom-nav) {
   z-index: 1000;
   width: 100%;
   height: calc(60px + env(safe-area-inset-top, 0px));
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: env(safe-area-inset-top, 0px) 20px 0;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -102,10 +108,9 @@ nav:not(.bottom-nav) {
   color: var(--nav-text) !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   border-bottom: 1px solid var(--line);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
-/* TITOLO CENTRALE ("Crisrror") */
+/* Titolo centrale */
 nav:not(.bottom-nav) h1 {
   position: absolute;
   left: 50%;
@@ -113,11 +118,26 @@ nav:not(.bottom-nav) h1 {
   margin: 0;
   transform: translate(-50%, -50%);
   color: var(--nav-text) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
   font-size: 1.45rem !important;
   font-weight: 700 !important;
   letter-spacing: -0.4px !important;
-  -webkit-font-smoothing: antialiased;
+  white-space: nowrap;
+}
+
+/* Pulsante indietro (pagine interne, es. profilo) */
+nav:not(.bottom-nav) .back-btn {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0 8px 0 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  color: var(--nav-text);
+  cursor: pointer;
+  z-index: 2;
 }
 
 nav:not(.bottom-nav) .user-menu {
@@ -129,13 +149,13 @@ nav:not(.bottom-nav) .user-menu {
   cursor: pointer;
   user-select: none;
   z-index: 2;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
-/* CERCHIO USER ICON: LIGHT MODE (SFONDO BIANCO, M NERA) */
+/* Cerchio utente: light = sfondo bianco, lettera nera */
 nav:not(.bottom-nav) .user-icon {
   width: 40px;
   height: 40px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -143,13 +163,12 @@ nav:not(.bottom-nav) .user-icon {
   color: #000000 !important;
   border: 1px solid #e5e5e5;
   border-radius: 50%;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
   font-size: 1.15rem !important;
   font-weight: 700 !important;
   line-height: 1 !important;
 }
 
-/* CERCHIO USER ICON: DARK MODE (SFONDO NERO, M BIANCA) */
+/* Cerchio utente: dark = sfondo nero, lettera bianca */
 body.dark nav:not(.bottom-nav) .user-icon {
   background: #000000 !important;
   color: #ffffff !important;
@@ -158,7 +177,6 @@ body.dark nav:not(.bottom-nav) .user-icon {
 
 nav:not(.bottom-nav) .arrow {
   color: var(--nav-text) !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
   font-size: 1.1rem !important;
   transition: transform var(--transition-speed) ease;
 }
@@ -167,7 +185,7 @@ nav:not(.bottom-nav) .user-menu.open .arrow {
   transform: rotate(180deg);
 }
 
-/* SFOCATURA SFONDO SOLTANTO FRA LE DUE BARRE */
+/* Sfocatura dello sfondo tra le due barre */
 nav:not(.bottom-nav) .user-menu.open::before {
   content: "";
   position: fixed;
@@ -183,7 +201,7 @@ nav:not(.bottom-nav) .user-menu.open::before {
   pointer-events: auto;
 }
 
-/* DROPDOWN FULL-WIDTH */
+/* Dropdown a tutta larghezza */
 nav:not(.bottom-nav) .user-menu .dropdown {
   position: fixed;
   left: 0;
@@ -197,14 +215,14 @@ nav:not(.bottom-nav) .user-menu .dropdown {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   z-index: 9999;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav:not(.bottom-nav) .user-menu.open .dropdown {
   display: flex;
 }
 
-nav:not(.bottom-nav) .dropdown .username-display {
+nav:not(.bottom-nav) .dropdown .username-display,
+nav:not(.bottom-nav) .dropdown .dropdown-item.username-display {
   display: block;
   padding: 14px 20px;
   background: var(--accent-color);
@@ -212,7 +230,8 @@ nav:not(.bottom-nav) .dropdown .username-display {
   font-size: 1rem;
   font-weight: 700 !important;
   letter-spacing: -0.2px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
+  cursor: default;
+  user-select: none;
 }
 
 nav:not(.bottom-nav) .dropdown a {
@@ -223,14 +242,13 @@ nav:not(.bottom-nav) .dropdown a {
   font-weight: 600 !important;
   letter-spacing: -0.2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav:not(.bottom-nav) .dropdown a:last-child {
   border-bottom: none;
 }
 
-/* DROPDOWN BIANCO E TESTI NERI IN DARK MODE */
+/* Dropdown bianco e testi neri in dark mode */
 body.dark nav:not(.bottom-nav) .user-menu .dropdown {
   background: #ffffff !important;
   border-top: 1px solid #e5e5e5;
@@ -247,15 +265,10 @@ body.dark nav:not(.bottom-nav) .dropdown .username-display {
 }
 
 /* =========================================================
-   4. CONTENUTO PRINCIPALE E TAB SCHERMATE
+   4. CONTENUTO PRINCIPALE E TAB
    ========================================================= */
-.tab-content {
-  display: none;
-}
-
-.tab-content.active {
-  display: block;
-}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
 
 main.cristian-main {
   max-width: 480px;
@@ -309,11 +322,7 @@ main.cristian-main h1 {
   margin-top: 18px;
 }
 
-.bar i {
-  display: block;
-  transition: width .4s ease;
-}
-
+.bar i { display: block; transition: width .4s ease; }
 .bar .p { background: var(--pos); }
 .bar .n { background: var(--neg); }
 
@@ -331,7 +340,7 @@ main.cristian-main h1 {
   outline: none;
 }
 
-/* FOTO E PULSANTI */
+/* Foto e pulsanti */
 #photoInput { display: none !important; }
 
 .photo-upload-container {
@@ -395,13 +404,13 @@ main.cristian-main h1 {
 .btns .sym { font-size: 3.2rem; font-weight: 800 !important; line-height: 1; }
 .btns .cnt { font-size: 1.05rem; font-weight: 700 !important; }
 
-#plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+#plus  { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
 #minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
 
 .tools {
   display: flex;
   gap: 12px;
-  margin: 16px 0 24px 0;
+  margin: 16px 0 24px;
 }
 
 .tools button {
@@ -415,7 +424,7 @@ main.cristian-main h1 {
   cursor: pointer;
 }
 
-/* LISTE E STORICO */
+/* Liste e storico */
 main.cristian-main ul {
   list-style: none !important;
   padding: 0 !important;
@@ -448,12 +457,12 @@ main.cristian-main li .tag {
 li.p .tag { background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); }
 li.n .tag { background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); }
 
-li .txt { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 1rem; font-weight: 600 !important; }
+li .txt  { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 1rem; font-weight: 600 !important; }
 li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight: 600 !important; }
 
 .empty { color: var(--text-muted); padding: 16px 0; text-align: center; font-style: italic; }
 
-/* STORICO ACCORDION */
+/* Storico accordion */
 .day-accordion {
   margin-bottom: 12px;
   border-radius: 16px;
@@ -485,9 +494,9 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
   font-weight: 700 !important;
 }
 
-.day-badge.pos { background: var(--pos-bg); color: var(--pos); }
-.day-badge.neg { background: var(--neg-bg); color: var(--neg); }
-.day-badge.neutral { background: var(--line); color: var(--text-color); }
+.day-badge.pos     { background: var(--pos-bg); color: var(--pos); }
+.day-badge.neg     { background: var(--neg-bg); color: var(--neg); }
+.day-badge.neutral { background: var(--line);   color: var(--text-color); }
 
 .day-arrow { font-size: 0.8rem; transition: transform 0.25s ease; color: var(--text-muted); }
 .day-accordion.open .day-arrow { transform: rotate(180deg); }
@@ -500,7 +509,6 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 
 .day-accordion.open .day-content { display: block; }
 
-/* SEPARATORE DI SEZIONE */
 .section-divider {
   border: none;
   height: 2px;
@@ -510,7 +518,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA DI NAVIGAZIONE INFERIORE (UNIFICAZIONE FONT COMPLETA)
+   5. BARRA INFERIORE
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -529,7 +537,6 @@ nav.bottom-nav {
   z-index: 99999 !important;
   border-top: 1px solid var(--line) !important;
   transform: translateZ(0);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-item {
@@ -550,10 +557,8 @@ nav.bottom-nav .nav-item {
   margin: 0 1px !important;
   transition: background-color 0.2s ease, color 0.2s ease !important;
   -webkit-tap-highlight-color: transparent;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
-/* SFONDO BIANCO E TESTO NERO IN DARK MODE PER LA BOTTOM NAV */
 body.dark nav.bottom-nav {
   background: #ffffff !important;
   border-top: 1px solid #e5e5e5 !important;
@@ -567,7 +572,7 @@ nav.bottom-nav .nav-item.hidden {
   display: none !important;
 }
 
-/* STATO ATTIVO: PILLOLA NERA CON SCRITTE E ICONA VERDE ACQUA */
+/* Stato attivo: pillola nera con icona e testo verde acqua */
 nav.bottom-nav .nav-item.active {
   background: #000000 !important;
   color: #00f7ff !important;
@@ -579,14 +584,12 @@ nav.bottom-nav .nav-item.active .nav-label,
 nav.bottom-nav .nav-item.active .nav-icon {
   color: #00f7ff !important;
   text-shadow: 0 0 8px rgba(0, 247, 255, 0.4);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-icon {
   font-size: 1.05rem !important;
   position: relative !important;
   line-height: 1 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 nav.bottom-nav .nav-label {
@@ -595,7 +598,6 @@ nav.bottom-nav .nav-label {
   line-height: 1 !important;
   white-space: nowrap;
   letter-spacing: -0.1px;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 .badge-count {
@@ -609,7 +611,6 @@ nav.bottom-nav .nav-label {
   padding: 2px 4px !important;
   border-radius: 8px !important;
   line-height: 1 !important;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", sans-serif !important;
 }
 
 /* =========================================================
@@ -660,8 +661,4 @@ nav.bottom-nav .nav-label {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
-}
-
-.hidden {
-  display: none !important;
 }
