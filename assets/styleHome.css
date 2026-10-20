@@ -1,570 +1,825 @@
-// =========================================================================
-// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO DI CRISTIAN
-// =========================================================================
+/* =========================================================
+   VARIABILI GLOBALI (TEMA CHIARO)
+   ========================================================= */
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.body.classList.remove("dark");
-  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.body.classList.add("dark");
+  --nav-bg: #000000;
+  --barra-bg: #000000;
+  --barra-color: #00f7ff;
+  --nav-text: #ffffff;
+
+  --popup-bg: #000000;
+  --popup-color: #ffffff;
+
+  --accent-color: #00f7ff;
+  --accent-hover: #00c2cc;
+
+  --error-color: #ff4c4c;
+  --success-color: #4cff6b;
+
+  --text-light: #ffffff;
+  --text-muted: #bbbbbb;
+
+  --input-bg-readonly: #444444;
+
+  --transition-speed: 0.3s;
+  --msg-bg: #000000;
+
+  --pos: #047857; 
+  --pos-bg: #d1fae5;
+  --neg: #be123c; 
+  --neg-bg: #ffe4e6;
+  --line: #d9dfea;
+  --surface: #f8f9fa;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   TEMA SCURO
+   ========================================================= */
+body.dark {
+  --popup-bg: #ffffff;
+  --popup-color: #000000;
+
+  --bg-color: #000000;
+
+  --nav-bg: #ffffff;
+  --nav-text: #000000;
+
+  --barra-bg: #00f7ff;
+  --barra-color: #000000;
+
+  --text-color: #ffffff;
+  --text-muted: #aaaaaa;
+
+  --msg-bg: #ffffff;
+
+  --surface: #121212;
+  --line: #2e384e;
+  --pos: #34d399; 
+  --pos-bg: #064e3b;
+  --neg: #fb7185; 
+  --neg-bg: #4c0519;
+  --card-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.4);
+}
+
+
+/* =========================================================
+   RESET E BLOCCO TOTALE SWIPE / RIMBALZO IN MODALITÀ PWA
+   ========================================================= */
+* {
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  overflow: hidden;
+  touch-action: pan-y;
+  overscroll-behavior: none;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100dvh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior: none;
+  position: relative;
+}
+
+
+/* =========================================================
+   LINK GENERICI
+   ========================================================= */
+a {
+  text-decoration: none;
+  color: var(--nav-text);
+}
+
+
+/* =========================================================
+   BARRA DI NAVIGAZIONE (NAVBAR) ADATTIVA
+   ========================================================= */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  width: 100%;
+  height: calc(60px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--nav-bg);
+  color: var(--nav-text);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+  overflow: visible;
+}
+
+
+/* =========================================================
+   LOGO PRINCIPALE (MDWEB)
+   ========================================================= */
+nav h1 {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + (env(safe-area-inset-top, 0px) / 2));
+  width: max-content;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  color: var(--nav-text);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+
+/* =========================================================
+   MENU UTENTE
+   ========================================================= */
+nav .user-menu {
+  position: relative;
+  margin-left: auto;
+  margin-inline-start: auto;
+  margin-right: 0;
+  margin-inline-end: 0;
+  flex-shrink: 0;
+  width: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 2;
+}
+
+
+/* =========================================================
+   ICONA UTENTE
+   ========================================================= */
+nav .user-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  color: var(--text-color);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/* =========================================================
+   FRECCIA MENU A TENDINA
+   ========================================================= */
+nav .arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  color: var(--nav-text);
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  user-select: none;
+  transition: transform var(--transition-speed) ease;
+}
+
+nav .user-menu.open .arrow {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================================
+   MENU A TENDINA (DROPDOWN)
+   ========================================================= */
+nav .user-menu .dropdown {
+  position: absolute;
+  right: 0;
+  left: auto;
+  top: calc(100% + 10px);
+  width: 250px;
+  min-width: 180px;
+  max-width: calc(100vw - 20px);
+  display: none;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  background: #333333;
+  border-radius: 0 0 15px 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease;
+}
+
+nav .user-menu.open .dropdown {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+
+/* =========================================================
+   NOME UTENTE NEL DROPDOWN
+   ========================================================= */
+nav .dropdown .username-display {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  background: var(--accent-color);
+  color: #000000;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: default;
+  user-select: none;
+}
+
+nav .dropdown .username-display:hover,
+nav .dropdown .username-display:focus {
+  background: var(--accent-color);
+  color: #000000;
+  outline: none;
+}
+
+
+/* =========================================================
+   LINK ALL'INTERNO DEL DROPDOWN
+   ========================================================= */
+nav .dropdown a {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  background: transparent;
+  color: var(--text-light);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+nav .dropdown a:hover,
+nav .dropdown a:focus {
+  background: var(--accent-color);
+  color: #000000;
+  outline: none;
+}
+
+
+/* =========================================================
+   SEZIONE DEDICATA A CRISTIAN: PIÙ E MENO
+   ========================================================= */
+main.cristian-main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+main.cristian-main h1 {
+  font-size: 2.2rem;
+  margin: 4px 0 2px;
+  letter-spacing: -.7px;
+  font-weight: 800;
+}
+
+.sub {
+  color: var(--text-muted);
+  margin: 0 0 20px;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.balance {
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+
+.balance .num {
+  font-size: 4rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.balance .lbl {
+  color: var(--text-color);
+  opacity: 0.9;
+  margin-top: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--line);
+  margin-top: 18px;
+  border: 1px solid var(--line);
+}
+
+.bar i {
+  display: block;
+  transition: width .4s ease;
+}
+
+.bar .p { background: var(--pos); }
+.bar .n { background: var(--neg); }
+
+.note-container {
+  margin: 18px 0;
+}
+
+.note {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 2px solid var(--line);
+  background-color: var(--surface) !important;
+  color: var(--text-color) !important;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.note:focus {
+  border-color: var(--accent-color);
+}
+
+.note::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* =========================================================
+   STILI CARICAMENTO FOTO
+   ========================================================= */
+#photoInput {
+  display: none !important;
+}
+
+.photo-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.photo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.photo-btn:hover {
+  background: var(--line);
+}
+
+.photo-name {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.remove-photo-btn {
+  background: transparent;
+  border: none;
+  color: var(--error-color);
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 6px;
+  margin-top: 0;
+}
+
+main.cristian-main li .entry-photo {
+  display: block;
+  max-width: 100%;
+  max-height: 180px;
+  border-radius: 10px;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  object-fit: cover;
+}
+
+/* =========================================================
+   MODALE ANTEPRIMA FOTO (ACCELERATA VIA GPU E PROTETTA DA NOTCH)
+   ========================================================= */
+.photo-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  background-color: #000000;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Contenitore zoomabile nativo con accelerazione GPU */
+.photo-zoom-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+  padding-top: env(safe-area-inset-top, 20px);
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Freccia in alto a sinistra posizionata sotto la notch */
+.modal-back-btn {
+  position: absolute;
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  font-size: 1.5rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s ease, transform 0.1s ease;
+  z-index: 10002;
+  margin-top: 0;
+}
+
+.modal-back-btn:active {
+  transform: scale(0.9);
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.photo-modal-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: auto;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Fascia di dissolvenza in basso */
+.photo-modal-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 40px 20px calc(30px + env(safe-area-inset-bottom, 0px)) 20px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.6) 70%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+  z-index: 10001;
+  transition: opacity 0.3s ease;
+}
+
+.photo-modal-fade.hidden-fade {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.photo-modal-caption {
+  color: #ffffff;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+  line-height: 1.4;
+  word-break: break-word;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hidden {
+  display: none !important;
+}
+
+.btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.btns button {
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 22px 12px;
+  font: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s ease;
+  margin-top: 0;
+}
+
+.btns button:active {
+  transform: scale(0.95);
+}
+
+.btns .sym {
+  font-size: 3.2rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.btns .cnt {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+#plus { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+#minus { background: var(--neg-bg); color: var(--neg); border-color: var(--neg); }
+
+.tools {
+  display: flex;
+  gap: 12px;
+  margin: 16px 0 24px 0;
+}
+
+.tools button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 16px;
+  border: 2px solid var(--line) !important;
+  background: var(--surface);
+  color: var(--text-color);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 0;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.tools button:hover {
+  background: var(--line);
+  border-color: var(--accent-color) !important;
+}
+
+main.cristian-main h2 {
+  font-size: 1.2rem;
+  margin: 16px 0 12px;
+  font-weight: 800;
+}
+
+main.cristian-main ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+main.cristian-main li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+main.cristian-main li .tag {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+li.p .tag { background: var(--pos-bg); color: var(--pos); border: 2px solid var(--pos); }
+li.n .tag { background: var(--neg-bg); color: var(--neg); border: 2px solid var(--neg); }
+
+li .txt {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+li .time {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  flex: none;
+  font-weight: 700;
+}
+
+.empty {
+  color: var(--text-muted);
+  padding: 16px 0;
+  text-align: center;
+  font-style: italic;
+  font-weight: 500;
+}
+
+
+/* =========================================================
+   STORICO RAGGRUPPATO PER GIORNO (ACCORDION)
+   ========================================================= */
+.day-accordion {
+  margin-bottom: 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--line);
+  background: var(--surface);
+}
+
+.day-header-btn {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface);
+  color: var(--text-color);
+  border: none;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease;
+}
+
+.day-header-btn:hover {
+  background: var(--line);
+}
+
+.day-header-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-badge {
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+.day-badge.pos {
+  background: var(--pos-bg);
+  color: var(--pos);
+}
+
+.day-badge.neg {
+  background: var(--neg-bg);
+  color: var(--neg);
+}
+
+.day-badge.neutral {
+  background: var(--line);
+  color: var(--text-color);
+}
+
+.day-arrow {
+  font-size: 0.8rem;
+  transition: transform 0.25s ease;
+  color: var(--text-muted);
+}
+
+.day-accordion.open .day-arrow {
+  transform: rotate(180deg);
+}
+
+.day-content {
+  display: none;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--line);
+}
+
+.day-accordion.open .day-content {
+  display: block;
+}
+
+.day-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.day-content li {
+  margin-bottom: 8px;
+}
+
+.day-content li:last-child {
+  margin-bottom: 0;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN: DISPOSITIVI MOBILI
+   ========================================================= */
+@media (max-width: 600px) {
+  nav {
+    width: 100%;
+    padding-left: 15px;
+    padding-right: 15px;
+    overflow: visible;
   }
 
-  // Riferimenti agli elementi della Navbar e Utente
-  const userMenu = document.getElementById("userMenu");
-  const logoutBtn = document.getElementById("logout");
-  const editProfileBtn = document.getElementById("editProfile");
-  const userIcon = document.getElementById("userIcon");
-  const userName = document.getElementById("userName");
-  const overlay = document.getElementById("overlay");
-
-  // Riferimenti per la Modale Anteprima Foto
-  const photoModal = document.getElementById("photoModal");
-  const modalImage = document.getElementById("modalImage");
-  const modalCaption = document.getElementById("modalCaption");
-  const modalFadeOverlay = document.getElementById("modalFadeOverlay");
-  const closePhotoModal = document.getElementById("closePhotoModal");
-  const zoomContainer = document.getElementById("zoomContainer");
-
-  // =====================================================================
-  // BLOCCO FORZATO DELLE GESTURE LATERALI DAI BORDI PER iOS WEBKIT
-  // =====================================================================
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches.length > 0) {
-      const touchX = e.touches[0].clientX;
-      const screenWidth = window.innerWidth;
-      
-      // Blocca i tocchi nei primi e ultimi 25px dello schermo
-      if (touchX < 25 || touchX > screenWidth - 25) {
-        e.preventDefault();
-      }
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchmove', function(e) {
-    if (e.touches.length > 0) {
-      const touchX = e.touches[0].clientX;
-      const screenWidth = window.innerWidth;
-      
-      if (touchX < 25 || touchX > screenWidth - 25) {
-        e.preventDefault();
-      }
-    }
-  }, { passive: false });
-
-  // =====================================================================
-  // BLOCCO TOTALE NAVIGAZIONE HISTORY (MODALITÀ APP NATIVA)
-  // =====================================================================
-  window.history.replaceState({ page: "home" }, "", window.location.href);
-
-  window.addEventListener("popstate", (e) => {
-    if (photoModal && !photoModal.classList.contains("hidden")) {
-      photoModal.classList.add("hidden");
-      document.body.style.overflow = "";
-      if (modalImage) modalImage.style.transform = "translateZ(0)";
-    }
-    window.history.replaceState({ page: "home" }, "", window.location.href);
-  });
-
-  // =====================================================================
-  // GESTIONE DEL MENU A TENDINA (DROPDOWN) DELL'UTENTE
-  // =====================================================================
-  if (userMenu) {
-    userMenu.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const expanded = userMenu.getAttribute("aria-expanded") === "true";
-      userMenu.setAttribute("aria-expanded", String(!expanded));
-      userMenu.classList.toggle("open");
-
-      if (overlay) {
-        overlay.style.display = userMenu.classList.contains("open") ? "block" : "none";
-      }
-    });
-
-    document.addEventListener("click", (e) => {
-      if (!userMenu.contains(e.target)) {
-        userMenu.classList.remove("open");
-        userMenu.setAttribute("aria-expanded", "false");
-        if (overlay) overlay.style.display = "none";
-      }
-    });
+  nav h1 {
+    left: 50%;
+    font-size: 1.5rem;
   }
 
-  // Aggiornamento pagina cliccando sul titolo MDweb
-  const navTitle = document.querySelector("nav h1");
-  if (navTitle) {
-    navTitle.style.cursor = "pointer";
-    navTitle.addEventListener("click", () => {
-      window.location.reload();
-    });
+  nav .user-menu {
+    margin-left: auto;
+    margin-inline-start: auto;
+    margin-right: 0;
+    margin-inline-end: 0;
+    flex-shrink: 0;
+    gap: 8px;
   }
 
-  // =====================================================================
-  // GESTIONE DEL LOGOUT FIREBASE
-  // =====================================================================
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      auth.signOut().then(() => {
-        location.href = "index.html";
-      }).catch(err => alert("Errore logout: " + err.message));
-    });
+  nav .user-icon {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
   }
 
-  // =====================================================================
-  // GESTIONE MODALE ANTEPRIMA FOTO
-  // =====================================================================
-  function closePreview() {
-    if (photoModal && !photoModal.classList.contains("hidden")) {
-      photoModal.classList.add("hidden");
-      document.body.style.overflow = "";
-      if (modalImage) modalImage.style.transform = "translateZ(0)";
-    }
+  nav .arrow {
+    width: 18px;
   }
 
-  if (closePhotoModal) {
-    closePhotoModal.onclick = function(e) {
-      e.stopPropagation();
-      if (this.blur) this.blur();
-      closePreview();
-    };
+  nav .user-menu .dropdown {
+    right: 0;
+    left: auto;
+    top: calc(100% + 10px);
+    width: 250px;
+    max-width: calc(100vw - 20px);
   }
-
-  if (photoModal) {
-    photoModal.onclick = function(e) {
-      if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
-      
-      if (modalFadeOverlay) {
-        modalFadeOverlay.classList.toggle("hidden-fade");
-      }
-    };
-  }
-
-  window.openPhotoPreview = function(imgSrc, captionText) {
-    if (modalImage && photoModal) {
-      modalImage.src = imgSrc;
-      modalImage.style.transform = "translateZ(0)";
-
-      if (modalCaption) {
-        modalCaption.textContent = captionText || "";
-        if (modalFadeOverlay) {
-          modalFadeOverlay.style.display = captionText ? "block" : "none";
-          modalFadeOverlay.classList.remove("hidden-fade");
-        }
-      }
-      photoModal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
-    }
-  };
-
-  // =====================================================================
-  // STATO DELL'UTENTE E INTERFACCIA NAVBAR (FIREBASE AUTH & FIRESTORE)
-  // =====================================================================
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) return;
-
-    currentUserId = user.uid;
-
-    let displayName = user.displayName;
-
-    try {
-      const db = firebase.firestore();
-      const userDoc = await db.collection("users").doc(currentUserId).get();
-      if (userDoc.exists && userDoc.data().username) {
-        displayName = userDoc.data().username;
-      }
-    } catch (e) {
-      console.log("Impossibile leggere il nome utente da Firestore, uso Auth:", e);
-    }
-
-    const finalName = displayName || (user.email ? user.email.split("@")[0] : "Utente");
-    const initial = finalName.charAt(0).toUpperCase();
-
-    if (userName) userName.textContent = finalName;
-    if (userIcon) userIcon.textContent = initial;
-
-    const providers = user.providerData.map(p => p.providerId);
-    const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
-
-    if (editProfileBtn) {
-      editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
-    }
-
-    initFirestore(currentUserId);
-  });
-
-  // =====================================================================
-  // LOGICA DEL CONTATORE CONDIVISO CON APPROVAZIONE (CRISTIAN)
-  // =====================================================================
-  let approvedItems = [];
-  let pendingItems = [];
-  let currentUsername = "";
-  let dbInstance, currentUserId;
-  let currentPhotoBase64 = "";
-
-  const $ = function(id) { return document.getElementById(id); };
-
-  const photoInput = $("photoInput");
-  const photoName = $("photoName");
-  const removePhotoBtn = $("removePhotoBtn");
-  const logContainer = $("log");
-
-  // =====================================================================
-  // CARICAMENTO E COMPRESSIONE AUTOMATICA DELLE FOTO (> 2MB)
-  // =====================================================================
-  function compressImage(file, maxWidth, maxHeight, quality, callback) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function(event) {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = function() {
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const compressedBase64 = canvas.toDataURL("image/jpeg", quality);
-        callback(compressedBase64);
-      };
-    };
-  }
-
-  if (photoInput) {
-    photoInput.addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        if (photoName) photoName.textContent = "Elaborazione foto...";
-
-        compressImage(file, 1200, 1200, 0.7, function(base64Result) {
-          currentPhotoBase64 = base64Result;
-          if (photoName) photoName.textContent = file.name;
-          if (removePhotoBtn) removePhotoBtn.classList.remove("hidden");
-        });
-      }
-    });
-  }
-
-  if (removePhotoBtn) {
-    removePhotoBtn.addEventListener("click", function() {
-      if (this.blur) this.blur();
-      currentPhotoBase64 = "";
-      if (photoInput) photoInput.value = "";
-      if (photoName) photoName.textContent = "";
-      removePhotoBtn.classList.add("hidden");
-    });
-  }
-
-  // =====================================================================
-  // GESTIONE CLICK SULLE FOTO E SUGLI ACCORDION DELLO STORICO
-  // =====================================================================
-  if (logContainer) {
-    logContainer.addEventListener("click", function(e) {
-      if (e.target && e.target.classList.contains("clickable-photo")) {
-        const imgSrc = e.target.getAttribute("data-img");
-        const caption = e.target.getAttribute("data-caption");
-        if (imgSrc && typeof window.openPhotoPreview === "function") {
-          window.openPhotoPreview(imgSrc, caption);
-        }
-        return;
-      }
-
-      const dayHeaderBtn = e.target.closest(".day-header-btn");
-      if (dayHeaderBtn) {
-        const accordion = dayHeaderBtn.closest(".day-accordion");
-        if (accordion) {
-          accordion.classList.toggle("open");
-        }
-      }
-    });
-  }
-
-  function esc(t) { 
-    var d = document.createElement("div"); 
-    d.textContent = t; 
-    return d.innerHTML; 
-  }
-
-  // =====================================================================
-  // SALVATAGGIO E INIZIALIZZAZIONE FIRESTORE CONDIVISO
-  // =====================================================================
-  async function saveSharedData() {
-    if (!dbInstance) return;
-    try {
-      await dbInstance.collection("shared_data").doc("cristian_score").set({
-        approvedItems: approvedItems,
-        pendingItems: pendingItems
-      });
-    } catch (e) {
-      console.error("Errore salvataggio Firestore condiviso:", e);
-    }
-  }
-
-  async function initFirestore(uid) {
-    currentUserId = uid;
-    try {
-      dbInstance = firebase.firestore();
-      
-      const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
-      if (userDoc.exists && userDoc.data().username) {
-        currentUsername = userDoc.data().username;
-      } else {
-        currentUsername = auth.currentUser.displayName || (auth.currentUser.email ? auth.currentUser.email.split("@")[0] : "Utente");
-      }
-
-      // Ascolto in tempo reale dei dati condivisi
-      dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          approvedItems = data.approvedItems || [];
-          pendingItems = data.pendingItems || [];
-        } else {
-          approvedItems = [];
-          pendingItems = [];
-        }
-        render();
-      });
-    } catch (err) {
-      console.error("Errore inizializzazione dati condivisi:", err);
-    }
-  }
-
-  function render() {
-    var p = approvedItems.filter(function(i) { return i.t === "p"; }).length,
-        n = approvedItems.length - p,
-        b = p - n;
-    
-    if ($("bal")) {
-      $("bal").textContent = (b > 0 ? "+" : b < 0 ? "−" : "") + Math.abs(b);
-      $("bal").style.color = b > 0 ? "var(--pos)" : b < 0 ? "var(--neg)" : "var(--text-color)";
-    }
-    
-    if ($("verdict")) {
-      $("verdict").textContent = !approvedItems.length ? "Ancora nessun punto approvato" : b > 0 ? "Meglio i pregi dei difetti" : b < 0 ? "I difetti vincono" : "Pareggio perfetto";
-    }
-    
-    if ($("cp")) $("cp").textContent = p + (p === 1 ? " positivo" : " positivi");
-    if ($("cn")) $("cn").textContent = n + (n === 1 ? " negativo" : " negativi");
-    
-    var tot = approvedItems.length || 1;
-    if ($("bp")) $("bp").style.width = (p / tot * 100) + "%";
-    if ($("bn")) $("bn").style.width = (n / tot * 100) + "%";
-    
-    if (logContainer) {
-      let html = "";
-      const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
-
-      // 1. SEZIONE SEGNALAZIONI IN ATTESA (PENDING)
-      if (pendingItems.length > 0) {
-        html += '<div style="margin-bottom:20px; padding:12px; background:rgba(255, 193, 7, 0.15); border:2px dashed #ffc107; border-radius:16px;">' +
-                  '<h3 style="margin:0 0 10px; font-size:1rem; color:#ffc107; font-weight:800;">⏳ Segnalazioni in attesa (' + pendingItems.length + ')</h3>' +
-                  '<ul style="list-style:none; padding:0; margin:0;">';
-
-        pendingItems.slice().reverse().forEach(function(i) {
-          var d = new Date(i.d);
-          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-
-          var photoHtml = i.img 
-            ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' 
-            : '';
-
-          var actionBtns = isMudi06 ? 
-            '<div style="display:flex; gap:8px; margin-top:8px;">' +
-              '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:6px; background:var(--pos); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
-              '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:6px; background:var(--neg); color:#fff; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
-            '</div>' : '<div style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;">In attesa di approvazione da Mudi06</div>';
-
-          html += '<li class="' + i.t + '" style="margin-bottom:8px; flex-direction:column; align-items:stretch;">' +
-                    '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
-                      '<span class="time">' + h + '</span>' +
-                    '</div>' +
-                    actionBtns +
-                  '</li>';
-        });
-
-        html += '</ul></div>';
-      }
-
-      // 2. STORICO UFFICIALE APPROVATO (ACCORDION)
-      if (!approvedItems.length) {
-        if ($("empty")) $("empty").style.display = "block";
-      } else {
-        if ($("empty")) $("empty").style.display = "none";
-
-        const groups = {};
-        approvedItems.slice().reverse().forEach(function(i) {
-          var d = new Date(i.d);
-          var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-          var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
-          
-          if (!groups[dayKey]) {
-            groups[dayKey] = { title: dayTitle, items: [] };
-          }
-          groups[dayKey].items.push(i);
-        });
-
-        Object.keys(groups).forEach(function(dayKey) {
-          const group = groups[dayKey];
-          const posDay = group.items.filter(i => i.t === "p").length;
-          const negDay = group.items.length - posDay;
-          const balDay = posDay - negDay;
-          
-          let badgeClass = balDay > 0 ? "pos" : balDay < 0 ? "neg" : "neutral";
-          let badgeText = balDay > 0 ? "+" + balDay : balDay < 0 ? "−" + Math.abs(balDay) : "0";
-
-          html += '<div class="day-accordion">' +
-                    '<button type="button" class="day-header-btn">' +
-                      '<div class="day-header-info">' +
-                        '<span>' + group.title + '</span>' +
-                        '<span class="day-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                      '</div>' +
-                      '<span class="day-arrow">▼</span>' +
-                    '</button>' +
-                    '<div class="day-content"><ul>';
-
-          group.items.forEach(function(i) {
-            var d = new Date(i.d);
-            var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-            var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-            var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-            var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-            html += '<li class="' + i.t + '">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
-                      '<span class="time">' + h + '</span>' +
-                    '</li>';
-          });
-
-          html += '</ul></div></div>';
-        });
-      }
-
-      logContainer.innerHTML = html;
-    }
-  }
-
-  function add(t) {
-    const noteEl = $("note");
-    const val = noteEl ? noteEl.value.trim() : "";
-    
-    const newItem = {
-      id: "item_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
-      t: t, 
-      n: val, 
-      img: currentPhotoBase64, 
-      d: Date.now(),
-      author: currentUsername
-    };
-
-    pendingItems.push(newItem);
-
-    if (noteEl) noteEl.value = "";
-    currentPhotoBase64 = "";
-    if (photoInput) photoInput.value = "";
-    if (photoName) photoName.textContent = "";
-    if (removePhotoBtn) removePhotoBtn.classList.add("hidden");
-
-    saveSharedData();
-    render();
-    
-    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
-  }
-
-  // =====================================================================
-  // AZIONI RISERVATE ESCLUSIVAMENTE A MUDI06
-  // =====================================================================
-  window.approvePendingItem = function(id) {
-    if (currentUsername.toLowerCase() !== "mudi06") return;
-    const index = pendingItems.findIndex(i => i.id === id);
-    if (index !== -1) {
-      const item = pendingItems.splice(index, 1)[0];
-      approvedItems.push(item);
-      saveSharedData();
-      render();
-    }
-  };
-
-  window.rejectPendingItem = function(id) {
-    if (currentUsername.toLowerCase() !== "mudi06") return;
-    const index = pendingItems.findIndex(i => i.id === id);
-    if (index !== -1) {
-      pendingItems.splice(index, 1);
-      saveSharedData();
-      render();
-    }
-  };
-
-  if ($("plus")) $("plus").onclick = function() { if (this.blur) this.blur(); add("p"); };
-  if ($("minus")) $("minus").onclick = function() { if (this.blur) this.blur(); add("n"); };
-  
-  if ($("note")) {
-    $("note").addEventListener("keydown", function(e) { 
-      if (e.key === "Enter") { add("p"); } 
-    });
-  }
-  
-  if ($("undo")) {
-    $("undo").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può annullare le voci.");
-        return;
-      }
-      if (approvedItems.length) {
-        if (confirm("Sei sicuro di voler annullare l'ultimo inserimento approvato?")) {
-          approvedItems.pop();
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("Non ci sono elementi approvati da annullare.");
-      }
-    };
-  }
-  
-  if ($("reset")) {
-    $("reset").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può azzerare tutto.");
-        return;
-      }
-      if (approvedItems.length || pendingItems.length) {
-        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare tutti i punti e lo storico condiviso?")) {
-          approvedItems = [];
-          pendingItems = [];
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("Il registro è già vuoto.");
-      }
-    };
-  }
-
-  render();
-});
+}
