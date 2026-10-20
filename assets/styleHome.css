@@ -1,6 +1,12 @@
 /* =========================================================
-   VARIABILI GLOBALI (TEMA CHIARO E SCURO)
+   1. UNIFICAZIONE FONT GLOBALE E VARIABILI TEMA
    ========================================================= */
+*, html, body, input, button, select, textarea {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  box-sizing: border-box;
+  -webkit-text-size-adjust: 100%;
+}
+
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
@@ -49,14 +55,8 @@ body.dark {
 }
 
 /* =========================================================
-   RESET COMPLETO E FIX SPAZIO BIANCO IN BASSO
+   2. RESET COMPLETO E FIX SPAZIO BIANCO IN BASSO
    ========================================================= */
-* {
-  box-sizing: border-box;
-  -webkit-text-size-adjust: 100%;
-}
-
-/* Forziamo lo sfondo dell'HTML a NERO per coprire l'estremità inferiore dell'iPhone */
 html {
   background-color: #000000 !important;
   margin: 0 !important;
@@ -71,7 +71,6 @@ body {
   width: 100vw;
   min-height: 100vh;
   min-height: 100dvh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: var(--bg-color, #ffffff);
   color: var(--text-color);
   overflow-x: hidden;
@@ -86,7 +85,7 @@ a {
 }
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
+   3. BARRA DI NAVIGAZIONE SUPERIORE (NAVBAR)
    ========================================================= */
 nav:not(.bottom-nav) {
   position: sticky;
@@ -184,7 +183,7 @@ nav:not(.bottom-nav) .dropdown a {
 }
 
 /* =========================================================
-   CONTENUTO PRINCIPALE E TAB SCHERMATE
+   4. CONTENUTO PRINCIPALE E TAB SCHERMATE
    ========================================================= */
 .tab-content {
   display: none;
@@ -197,7 +196,6 @@ nav:not(.bottom-nav) .dropdown a {
 main.cristian-main {
   max-width: 480px;
   margin: 0 auto;
-  /* Padding inferiore ampio per far scorrere il contenuto al di sopra della barra di navigazione */
   padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
@@ -262,7 +260,6 @@ main.cristian-main h1 {
   border: 2px solid var(--line);
   background-color: var(--surface) !important;
   color: var(--text-color) !important;
-  font: inherit;
   font-size: 1rem;
   font-weight: 600;
   outline: none;
@@ -322,7 +319,6 @@ main.cristian-main h1 {
   border: 2px solid transparent;
   border-radius: 20px;
   padding: 22px 12px;
-  font: inherit;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -349,7 +345,6 @@ main.cristian-main h1 {
   border: 2px solid var(--line) !important;
   background: var(--surface);
   color: var(--text-color);
-  font: inherit;
   font-weight: 700;
   cursor: pointer;
 }
@@ -407,7 +402,6 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
   background: var(--surface);
   color: var(--text-color);
   border: none;
-  font: inherit;
   font-weight: 800;
   font-size: 0.95rem;
   display: flex;
@@ -441,7 +435,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 .day-accordion.open .day-content { display: block; }
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR FISSA IN BASSO)
+   5. BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR FISSA IN BASSO)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -509,7 +503,9 @@ nav.bottom-nav .nav-label {
   line-height: 1 !important;
 }
 
-/* MODALE FOTO */
+/* =========================================================
+   6. MODALE FOTO
+   ========================================================= */
 .photo-modal {
   position: fixed;
   top: 0;
