@@ -172,10 +172,15 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // =====================================================================
-  // STATO DELL'UTENTE E INTERFACCIA NAVBAR (FIREBASE AUTH & FIRESTORE)
+  // STATO DELL'UTENTE E PROTEZIONE ACCESSO (REINDIRIZZAMENTO LOGIN)
   // =====================================================================
   auth.onAuthStateChanged(async (user) => {
-    if (!user) return;
+    if (!user) {
+      // Se non si è effettuato il login, reindirizza subito alla pagina di login
+      window.location.href = "index.html";
+      return;
+    }
+
     currentUserId = user.uid;
     initFirestore(currentUserId);
   });
