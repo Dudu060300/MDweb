@@ -114,7 +114,7 @@
   <!-- TAB 3: SEGNALAZIONI INVIATE (PER UTENTI NORMALI) -->
   <main class="cristian-main tab-content" id="tab-sent">
     <h1>Segnalazioni Inviate</h1>
-    <p class="sub">Stato delle tue segnalazioni mandate all'admin.</p>
+    <p class="sub">Registro di tutte le tue segnalazioni (in attesa, accettate e rifiutate).</p>
     <div id="sentContainer"></div>
   </main>
 
@@ -175,12 +175,12 @@
       <span class="nav-label">Chat</span>
     </button>
 
-    <!-- VISIBILI SOLO AD ADMIN (MUDI06) -->
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending">
+    <!-- VISIBILI SOLO ED ESCLUSIVAMENTE AD ADMIN (MUDI06) -->
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-pending" style="display: none !important;">
       <span class="nav-icon">⏳<span id="pendingBadge" class="badge-count hidden">0</span></span>
       <span class="nav-label">In Attesa</span>
     </button>
-    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions">
+    <button type="button" class="nav-item admin-only hidden" data-tab="tab-decisions" style="display: none !important;">
       <span class="nav-icon">📋</span>
       <span class="nav-label">Decisioni</span>
     </button>
