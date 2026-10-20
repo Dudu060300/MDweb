@@ -49,41 +49,35 @@ body.dark {
 }
 
 /* =========================================================
-   RESET BORDI E CONTENITORE PRINCIPALE (NO SPAZIO BIANCO)
+   RESET COMPLETO E FIX SPAZIO BIANCO IN BASSO
    ========================================================= */
 * {
   box-sizing: border-box;
   -webkit-text-size-adjust: 100%;
 }
 
-html, body {
+/* Forziamo lo sfondo dell'HTML a NERO per coprire l'estremità inferiore dell'iPhone */
+html {
+  background-color: #000000 !important;
   margin: 0 !important;
   padding: 0 !important;
-  background-color: var(--bg-color, #ffffff);
-}
-
-html {
   width: 100%;
   height: 100%;
-  position: fixed;
-  overflow: hidden;
-  touch-action: pan-y;
-  overscroll-behavior: none;
 }
 
 body {
+  margin: 0 !important;
+  padding: 0 !important;
   width: 100vw;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-color, #ffffff);
   color: var(--text-color);
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
-  overscroll-behavior: none;
   position: relative;
-  /* Spazio interno per scorrere i pulsanti al di sopra della barra nera */
-  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 a {
@@ -203,7 +197,8 @@ nav:not(.bottom-nav) .dropdown a {
 main.cristian-main {
   max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px 48px;
+  /* Padding inferiore ampio per far scorrere il contenuto al di sopra della barra di navigazione */
+  padding: 24px 16px calc(120px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 main.cristian-main h1 {
@@ -446,7 +441,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 .day-accordion.open .day-content { display: block; }
 
 /* =========================================================
-   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR ADERENTE)
+   BARRA DI NAVIGAZIONE INFERIORE (BOTTOM TAB BAR FISSA IN BASSO)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -455,11 +450,11 @@ nav.bottom-nav {
   right: 0 !important;
   top: auto !important;
   width: 100% !important;
-  height: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+  height: calc(65px + env(safe-area-inset-bottom, 0px)) !important;
   padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   padding-top: 0 !important;
   margin: 0 !important;
-  background: #000000 !important;
+  background-color: #000000 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-around !important;
