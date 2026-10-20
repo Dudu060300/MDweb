@@ -176,7 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // =====================================================================
   auth.onAuthStateChanged(async (user) => {
     if (!user) {
-      // Se non si è effettuato il login, reindirizza subito alla pagina di login
       window.location.href = "index.html";
       return;
     }
@@ -310,6 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const currentUser = auth.currentUser;
       let foundUsername = "";
       
+      // 1. RECUPERO USERNAME DA FIRESTORE
       try {
         const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
         if (userDoc.exists && userDoc.data().username) {
@@ -327,17 +327,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Manteniamo lo username esatto recuperato dal DB (senza forzature su Mudi06)
       currentUsername = (foundUsername || "Utente").trim();
 
-      // Riconoscimento amministratore flessibile (Mudi06)
-      const userEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase() : "";
-      const isMudi06ByEmail = userEmail.includes("mudi06") || userEmail.startsWith("mudi");
-      const isMudi06ByUsername = currentUsername.toLowerCase().includes("mudi06") || currentUsername.toLowerCase() === "mudi";
-      
-      if (isMudi06ByEmail || isMudi06ByUsername) {
-        currentUsername = "Mudi06";
-      }
-
+      // Mostriamo lo username e l'iniziale corretta nella UI
       const initial = currentUsername.charAt(0).toUpperCase();
       if (userName) userName.textContent = currentUsername;
       if (userIcon) userIcon.textContent = initial;
@@ -367,9 +360,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function render() {
+    // 2. CONTROLLO ADMIN ESCLUSIVAMENTE SULLO USERNAME "MUDI06"
     const isMudi06 = (currentUsername.toLowerCase() === "mudi06");
 
-    // GESTIONE VISIBILITÀ TAB ADMIN (MUDI06)
+    // GESTIONE VISIBILITÀ TAB ADMIN (Solo se l'utente è Mudi06)
     const adminTabButtons = document.querySelectorAll(".bottom-nav .admin-only");
     adminTabButtons.forEach(btn => {
       if (isMudi06) {
@@ -377,7 +371,8 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         btn.classList.add("hidden");
         if (btn.classList.contains("active")) {
-          document.querySelector('[data-tab="tab-home"]').click();
+          const homeTab = document.querySelector('[data-tab="tab-home"]');
+          if (homeTab) homeTab.click();
         }
       }
     });
