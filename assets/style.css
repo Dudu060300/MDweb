@@ -1,28 +1,34 @@
 /* ===== STILE GENERALE BODY ===== */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+}
+
 body {
-  margin: 0; /* Rimuove margini di default */
-  font-family: 'Segoe UI', sans-serif; /* Font moderno e leggibile */
-  background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* Sfondo gradiente orizzontale */
-  display: flex; /* Usa flexbox per centrare il contenuto */
-  justify-content: center; /* Centra orizzontalmente */
-  align-items: center; /* Centra verticalmente */
-  height: 100vh; /* Altezza viewport completa */
-  padding: 20px; /* Spaziatura interna */
-  box-sizing: border-box; /* Considera padding e bordo nel calcolo dimensioni */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 /* ===== CONTENITORE PER EFFETTO 3D ===== */
 .container {
-  perspective: 1200px; /* Definisce la profondità della scena 3D */
+  perspective: 1200px;
 }
 
 /* ===== CONTENITORE FORM CON ROTAZIONE 3D ===== */
 .form-container {
-  width: 400px;
-  height: 500px;
-  position: relative; /* Per posizionamento assoluto elementi figli */
-  transition: transform 0.8s; /* Animazione fluida per rotazione */
-  transform-style: preserve-3d; /* Mantiene l’effetto 3D sui figli */
+  width: 380px;
+  max-width: 90vw;
+  height: 480px;
+  position: relative;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
 }
 
 /* Classe per ruotare il form di 180 gradi sull’asse Y */
@@ -32,19 +38,19 @@ body {
 
 /* ===== STILE DELLE CARTE (fronte e retro del form) ===== */
 .card {
-  position: absolute; /* Sovrapposto all’altro lato */
+  position: absolute;
   width: 100%;
   height: 100%;
-  backface-visibility: hidden; /* Nasconde il retro quando non visibile */
-  background: rgba(255, 255, 255, 0.05); /* Sfondo trasparente chiaro */
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4); /* Ombra per profondità */
-  border-radius: 20px; /* Angoli arrotondati */
-  padding: 40px; /* Spaziatura interna */
+  backface-visibility: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 30px;
   box-sizing: border-box;
-  display: flex; /* Flexbox verticale */
+  display: flex;
   flex-direction: column;
-  justify-content: center; /* Centra verticalmente il contenuto */
-  color: white; /* Testo bianco */
+  justify-content: center;
+  color: white;
 }
 
 /* Stile specifico per il retro della carta, ruotata di 180° */
@@ -54,90 +60,84 @@ body {
 
 /* ===== STILE INPUT ===== */
 input {
-  margin: 10px 0; /* Spaziatura verticale tra input */
-  padding: 12px; /* Spaziatura interna */
-  border-radius: 10px; /* Angoli arrotondati */
-  border: none; /* Nessun bordo */
-  background: rgba(255, 255, 255, 0.1); /* Sfondo semitrasparente chiaro */
-  color: white; /* Testo bianco */
+  margin: 8px 0;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
-/* Effetto focus su input per evidenziare */
 input:focus {
   outline: none;
-  background: rgba(255, 255, 255, 0.2); /* Sfondo un po' più chiaro */
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* ===== STILE BUTTON ===== */
 button {
-  margin-top: 10px; /* Spazio sopra il bottone */
-  padding: 12px; /* Spaziatura interna */
-  border: none; /* Nessun bordo */
-  border-radius: 10px; /* Angoli arrotondati */
-  font-weight: bold; /* Testo in grassetto */
-  cursor: pointer; /* Cambia il cursore in mano */
-  transition: transform 0.3s ease, background 0.3s ease; /* Animazione fluida */
-  box-shadow: 0 0 20px #00f7ff, 0 0 20px #00f7ff; /* Effetto luce azzurra */
-  color: #000; /* Testo nero */
+  margin-top: 10px;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease;
+  box-shadow: 0 0 20px #00f7ff, 0 0 20px #00f7ff;
+  color: #000;
 }
 
-/* Effetto hover sul bottone principale */
 button:hover {
-  transform: scale(1.05); /* Ingrandisce leggermente */
-  background: #00eaff; /* Cambia colore di sfondo */
+  transform: scale(1.05);
+  background: #00eaff;
 }
 
 /* ===== BUTTON GOOGLE ===== */
 button.google {
-  background: #4285f4; /* Blu Google */
-  box-shadow: 0 0 15px #4285f4; /* Luce blu */
-  color: white; /* Testo bianco */
-  margin-top: 15px; /* Spazio extra sopra */
+  background: #4285f4;
+  box-shadow: 0 0 15px #4285f4;
+  color: white;
+  margin-top: 12px;
 }
 
-/* Hover per bottone Google */
 button.google:hover {
-  background: #357ae8; /* Blu più scuro */
-  box-shadow: 0 0 25px #357ae8; /* Luce più intensa */
+  background: #357ae8;
+  box-shadow: 0 0 25px #357ae8;
 }
 
 /* ===== BUTTON APPLE ===== */
 button.apple {
-  background: black; /* Sfondo nero */
-  box-shadow: 0 0 15px #333; /* Luce grigia scura */
-  color: white; /* Testo bianco */
-  margin-top: 10px; /* Spazio sopra */
+  background: black;
+  box-shadow: 0 0 15px #333;
+  color: white;
+  margin-top: 8px;
 }
 
-/* Hover per bottone Apple */
 button.apple:hover {
-  background: #222; /* Nero più chiaro */
-  box-shadow: 0 0 25px #222; /* Luce più intensa */
+  background: #222;
+  box-shadow: 0 0 25px #222;
 }
 
 /* ===== LINK ===== */
 a {
-  color: #00f7ff; /* Colore azzurro brillante */
-  text-decoration: none; /* Nessuna sottolineatura */
+  color: #00f7ff;
+  text-decoration: none;
   cursor: pointer;
 }
 
 /* ===== TITOLO CARD ===== */
 .card h2 {
-  position: absolute; /* Posizionato sopra */
-  top: 40px; /* Distanza dall’alto */
-  left: 50%; /* Centrato orizzontalmente */
-  transform: translateX(-50%); /* Compensa il 50% per centratura esatta */
+  position: absolute;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
-  font-size: 2rem; /* Dimensione grande */
+  font-size: 2rem;
 }
 
-/* Font size coerente per input e button */
 input, button {
   font-size: 1rem;
 }
 
-/* Outline visibile per focus su input e button per accessibilità */
 button:focus, input:focus {
   outline: 2px solid #00f7ff;
   outline-offset: 2px;
@@ -145,7 +145,7 @@ button:focus, input:focus {
 
 /* ===== ANIMAZIONE TRANSIZIONE 3D USCITA ===== */
 body.login-transition {
-  animation: rotateOut 0.8s forwards; /* Applica animazione di rotazione */
+  animation: rotateOut 0.8s forwards;
 }
 
 @keyframes rotateOut {
@@ -156,18 +156,5 @@ body.login-transition {
   100% {
     transform: perspective(1000px) rotateY(90deg);
     opacity: 0;
-  }
-}
-
-/* ===== MEDIA QUERY PER RESPONSIVITÀ ===== */
-@media only screen and (max-height: 2500px) {
-  .form-container {
-    height: 80vh; /* Altezza 80% viewport verticale */
-    width: 90vw; /* Larghezza 90% viewport orizzontale */
-  }
-  
-  body, html {
-    overflow-x: hidden; /* Nasconde scroll orizzontale */
-    height: 90vh; /* Altezza 90% viewport */
   }
 }
