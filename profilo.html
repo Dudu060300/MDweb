@@ -89,7 +89,26 @@
 
       <!-- BOTTONE SALVA MODIFICHE -->
       <button type="submit">Salva Modifiche</button>
+
+      <!-- SEZIONE ELIMINA ACCOUNT -->
+      <div class="danger-zone">
+        <button type="button" id="deleteAccountBtn" class="danger-btn">Elimina Account Definitivamente</button>
+      </div>
     </form>
+
+    <!-- MODALE DI CONFERMA ELIMINAZIONE ACCOUNT -->
+    <div id="deleteModal" class="modal-overlay hidden">
+      <div class="modal-content">
+        <h3>Elimina Account</h3>
+        <p>Questa azione è irreversibile. Tutti i tuoi dati e i tuoi punti andranno persi per sempre.</p>
+        <p>Per confermare, inserisci la tua password attuale:</p>
+        <input type="password" id="deletePasswordInput" placeholder="Password attuale" autocomplete="current-password" />
+        <div class="modal-buttons">
+          <button type="button" id="confirmDeleteBtn" class="danger-btn">Elimina Definitivamente</button>
+          <button type="button" id="cancelDeleteBtn" class="secondary-btn">Annulla</button>
+        </div>
+      </div>
+    </div>
     
     <!-- Script specifici della pagina -->
     <script src="assets/tema.js"></script>
