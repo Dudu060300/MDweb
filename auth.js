@@ -7,7 +7,6 @@
   const MIN_PASSWORD = 8;
   let busy = false;
 
-
   // ---------- Utility ----------
   const el = (id) => document.getElementById(id);
 
@@ -34,8 +33,10 @@
   };
 
   function showError(err) {
-    console.error(err);
-    alert(MESSAGES[err && err.code] || 'Si è verificato un errore. Riprova.');
+    console.error("ERRORE RICEVUTO:", err);
+    // Mostra il messaggio mappato oppure il messaggio reale dell'errore Firebase per facilitare il debug
+    const msg = MESSAGES[err && err.code] || err.message || 'Si è verificato un errore. Riprova.';
+    alert(msg);
   }
 
   function setBusy(value) {
@@ -55,8 +56,6 @@
   const isValidUsername = (u) => USERNAME_RE.test(u);
 
   // ---------- Profilo e username ----------
-  // Crea in modo atomico usernames/{lower} e users/{uid}.
-  // Se lo username è già preso, la transazione fallisce: niente duplicati.
   function claimUsername(user, username, email) {
     const lower = username.toLowerCase();
     const nameRef = db.collection('usernames').doc(lower);
@@ -82,7 +81,6 @@
     return base;
   }
 
-  // Per Google/Apple: se l'utente non ha ancora un profilo, ne crea uno.
   async function ensureProfile(user) {
     const snap = await db.collection('users').doc(user.uid).get();
     if (snap.exists) return;
@@ -90,10 +88,12 @@
     const base = suggestUsername(user);
     for (let i = 0; i < 6; i++) {
       const suffix = String(Math.floor(100 + Math.random() * 900));
-      const candidate = i === 0 ? base : base.slice(0, 11) + '_' + suffix; // max 15
+      const candidate = i === 0 ? base : base.slice(0, 11) + '_' + suffix;
       try {
         await claimUsername(user, candidate, user.email);
-        await user.updateProfile({ displayName: candidate }).catch(() => {});
+        if (user.updateProfile) {
+          await user.updateProfile({ displayName: candidate }).catch(() => {});
+        }
         return;
       } catch (e) {
         if (e.code !== 'app/username-taken') throw e;
@@ -119,7 +119,6 @@
       if (!input.includes('@')) {
         if (!isValidUsername(input)) throw appError('auth/invalid-credential');
         const snap = await db.collection('usernames').doc(input.toLowerCase()).get();
-        // Messaggio generico: non rivela se lo username esiste
         if (!snap.exists) throw appError('auth/invalid-credential');
         email = snap.data().email;
       }
@@ -146,7 +145,6 @@
 
     setBusy(true);
     try {
-      // Controllo veloce (evita di creare account inutilmente)
       const existing = await db.collection('usernames').doc(username.toLowerCase()).get();
       if (existing.exists) throw appError('app/username-taken');
 
@@ -154,15 +152,15 @@
       const user = cred.user;
 
       try {
-        // Garanzia vera di unicità (transazione)
         await claimUsername(user, username, email);
       } catch (e) {
-        // Annulla l'account appena creato: niente account senza profilo
         await user.delete().catch(() => {});
         throw e;
       }
 
-      await user.updateProfile({ displayName: username }).catch(() => {});
+      if (user.updateProfile) {
+        await user.updateProfile({ displayName: username }).catch(() => {});
+      }
       goHome();
     } catch (err) {
       showError(err);
@@ -179,7 +177,6 @@
       await ensureProfile(result.user);
       goHome();
     } catch (err) {
-      // Popup bloccato o non supportato (es. web app su iPhone): passa al redirect
       if (
         err.code === 'auth/popup-blocked' ||
         err.code === 'auth/operation-not-supported-in-this-environment'
@@ -212,7 +209,6 @@
     return socialLogin(provider);
   }
 
-  // Esito di un eventuale signInWithRedirect
   auth
     .getRedirectResult()
     .then(async (result) => {
@@ -227,12 +223,10 @@
       setBusy(false);
     });
 
-  // ---------- Animazione flip del form ----------
   function flipCard() {
     el('formContainer').classList.toggle('flipped');
   }
 
-  // ---------- Invio con Enter ----------
   function onEnter(id, fn) {
     const node = el(id);
     if (!node) return;
@@ -243,7 +237,6 @@
   onEnter('loginPassword', login);
   onEnter('regPassword', register);
 
-  // Funzioni usate dagli onclick nell'HTML
   window.login = login;
   window.register = register;
   window.googleLogin = googleLogin;
