@@ -1,3 +1,6 @@
+// ==========================================
+// AUTH.JS COMPLETO (MDweb)
+// ==========================================
 (function () {
   'use strict';
 
@@ -23,7 +26,8 @@
     'auth/email-already-in-use': 'Email già registrata.',
     'auth/weak-password': 'Password troppo debole.',
     'auth/too-many-requests': 'Troppi tentativi. Riprova più tardi.',
-    'auth/network-request-failed': 'Problema di rete. Riprova.'
+    'auth/network-request-failed': 'Problema di rete. Riprova.',
+    'auth/operation-not-allowed': 'Metodo di accesso non abilitato nella console Firebase.'
   };
 
   function showError(err) {
@@ -48,7 +52,7 @@
   const isValidPassword = (pw) => pw.length >= MIN_PASSWORD;
   const isValidUsername = (u) => USERNAME_RE.test(u);
 
-  // ---------- CONTROLLI IN TEMPO RIFATTO (REAL-TIME) ----------
+  // ---------- CONTROLLI IN TEMPO REALE ----------
   window.checkUsernameRealtime = async function() {
     const val = el('regName').value.trim();
     const fb = el('usernameFeedback');
@@ -87,8 +91,6 @@
       fb.textContent = 'Formato email non valido.';
       return;
     }
-    // Nota: Firebase Auth non permette di interrogare direttamente le email esistenti senza admin sdk,
-    // ma possiamo avvisare l'utente sul formato.
     fb.style.color = '#4cff6b';
     fb.textContent = '✓ Formato email corretto.';
   };
@@ -127,20 +129,16 @@
 
     setBusy(true);
     try {
-      // Verifica unicità username prima di inviare l'OTP
       const existing = await db.collection('usernames').doc(username.toLowerCase()).get();
       if (existing.exists) throw appError('app/username-taken');
 
-      // Salviamo temporaneamente i dati
       temporaryUserData = { email, password, username };
 
-      // Creazione utente su Firebase Auth e invio email di verifica (OTP nativo Firebase)
       const cred = await auth.createUserWithEmailAndPassword(email, password);
       await cred.user.sendEmailVerification();
 
       alert('Ti è stata inviata un\'email di verifica. Controlla la tua casella di posta per confermare l\'indirizzo.');
       
-      // Passa allo step 2 per confermare
       el('regStep1').style.display = 'none';
       el('regStep2').style.display = 'block';
     } catch (err) {
@@ -160,7 +158,6 @@
 
     setBusy(true);
     try {
-      // Aggiorna lo stato dell'utente da Firebase
       await user.reload();
       
       if (!user.emailVerified) {
@@ -169,7 +166,6 @@
         return;
       }
 
-      // Se verificata, creiamo il profilo in modo atomico su Firestore
       const { username, email } = temporaryUserData;
       const lower = username.toLowerCase();
       
@@ -201,7 +197,6 @@
   };
 
   window.backToStep1 = function() {
-    // Se torna indietro e l'utente non ha verificato, rimuoviamo l'account temporaneo
     const user = auth.currentUser;
     if (user && !user.emailVerified) {
       user.delete().catch(() => {});
@@ -211,7 +206,7 @@
     temporaryUserData = null;
   };
 
-  // ---------- Login ----------
+  // ---------- LOGIN CLASSICO ----------
   async function login() {
     if (busy) return;
     const input = el('loginEmail').value.trim();
@@ -239,18 +234,23 @@
     }
   }
 
+  // ---------- SOCIAL LOGIN (MODIFICATO: SOLO POPUP, NESSUN REDIRECT) ----------
   async function socialLogin(provider) {
     if (busy) return;
     setBusy(true);
     try {
+      // Forza l'apertura tramite popup integrato
       const result = await auth.signInWithPopup(provider);
       await ensureProfile(result.user);
       goHome();
     } catch (err) {
-      if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
-        try { await auth.signInWithRedirect(provider); return; } catch (e) { err = e; }
+      console.error("Errore Social Login:", err);
+      if (
+        err.code !== 'auth/popup-closed-by-user' &&
+        err.code !== 'auth/cancelled-popup-request'
+      ) {
+        showError(err);
       }
-      if (err.code !== 'auth/popup-closed-by-user') showError(err);
       setBusy(false);
     }
   }
@@ -259,11 +259,67 @@
     const userDocRef = db.collection('users').doc(user.uid);
     const snap = await userDocRef.get();
     if (snap.exists) return;
-    // (Gestione automatica social login analoga alla precedente)
+
+    const raw = user.displayName || (user.email || '').split('@')[0] || '';
+    let base = raw.replace(/[^a-zA-Z0-9_]/g, '').slice(0, 15);
+    if (base.length < 3) base = 'user' + Math.floor(1000 + Math.random() * 9000);
+
+    for (let i = 0; i < 6; i++) {
+      const suffix = String(Math.floor(100 + Math.random() * 900));
+      const candidate = i === 0 ? base : base.slice(0, 11) + '_' + suffix;
+      try {
+        const lower = candidate.toLowerCase();
+        await db.runTransaction(async (tx) => {
+          const nameRef = db.collection('usernames').doc(lower);
+          const snapName = await tx.get(nameRef);
+          if (snapName.exists) throw appError('app/username-taken');
+          
+          tx.set(nameRef, { uid: user.uid, email: user.email });
+          tx.set(userDocRef, {
+            username: candidate,
+            usernameLower: lower,
+            email: user.email,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+        if (user.updateProfile) {
+          await user.updateProfile({ displayName: candidate }).catch(() => {});
+        }
+        return;
+      } catch (e) {
+        if (e.code !== 'app/username-taken') throw e;
+      }
+    }
   }
 
+  function googleLogin() {
+    return socialLogin(new firebase.auth.GoogleAuthProvider());
+  }
+
+  function appleLogin() {
+    const provider = new firebase.auth.OAuthProvider('apple.com');
+    provider.addScope('email');
+    provider.addScope('name');
+    return socialLogin(provider);
+  }
+
+  function flipCard() {
+    el('formContainer').classList.toggle('flipped');
+  }
+
+  function onEnter(id, fn) {
+    const node = el(id);
+    if (!node) return;
+    node.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') fn();
+    });
+  }
+  onEnter('loginPassword', login);
+  onEnter('regPassword', sendOtpAndProceed);
+
+  // Esportazione funzioni globali
   window.login = login;
-  window.googleLogin = () => socialLogin(new firebase.auth.GoogleAuthProvider());
-  window.appleLogin = () => socialLogin(new firebase.auth.OAuthProvider('apple.com'));
-  window.flipCard = () => el('formContainer').classList.toggle('flipped');
+  window.googleLogin = googleLogin;
+  window.appleLogin = appleLogin;
+  window.flipCard = flipCard;
 })();
