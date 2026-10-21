@@ -1,3 +1,7 @@
+// ==========================================
+// SCRIPT PROFILO COMPLETO (MDweb)
+// ==========================================
+
 const emailInput = document.getElementById("emailInput");
 const usernameInput = document.getElementById("usernameInput");
 const oldPasswordInput = document.getElementById("oldPasswordInput");
@@ -37,7 +41,6 @@ if (userMenu) {
   userMenu.addEventListener("click", (event) => {
     event.stopPropagation();
     const isOpen = userMenu.classList.contains("open");
-    userMenu.toggleAttribute("open", !isOpen); // Gestito via classe custom
     userMenu.classList.toggle("open");
     userMenu.setAttribute("aria-expanded", !isOpen);
   });
@@ -48,21 +51,30 @@ if (userMenu) {
   });
 }
 
-// Recupera dati utente all'avvio
+// Recupera dati utente all'avvio non appena Firebase Auth è pronto
 auth.onAuthStateChanged(async user => {
   if (user) {
-    emailInput.value = user.email;
+    emailInput.value = user.email || "";
 
     try {
       const userDoc = await db.collection("users").doc(user.uid).get();
       if (userDoc.exists) {
-        const username = userDoc.data().username || "Utente";
+        const username = userDoc.data().username || user.displayName || "Utente";
         usernameInput.value = username;
         if (userNameDisplay) userNameDisplay.textContent = username;
 
         const userIcon = document.getElementById("userIcon");
         if (userIcon) {
           userIcon.textContent = username.charAt(0).toUpperCase();
+        }
+      } else {
+        const fallbackName = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
+        usernameInput.value = fallbackName;
+        if (userNameDisplay) userNameDisplay.textContent = fallbackName;
+        
+        const userIcon = document.getElementById("userIcon");
+        if (userIcon) {
+          userIcon.textContent = fallbackName.charAt(0).toUpperCase();
         }
       }
     } catch (error) {
