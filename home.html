@@ -119,11 +119,19 @@
   </main>
 
   <!-- TAB 4: CHAT (VISIBILE A TUTTI) -->
-  <main class="cristian-main tab-content" id="tab-chat">
+  <main class="cristian-main tab-content chat-container-main" id="tab-chat">
     <h1>Chat</h1>
-    <p class="sub">Discussione e commenti di gruppo.</p>
-    <div id="chatContainer">
-      <p class="empty">Nessun messaggio presente.</p>
+    <p class="sub">Discussione e commenti di gruppo in tempo reale.</p>
+    
+    <!-- Box dei messaggi -->
+    <div id="chatMessages" class="chat-messages-box">
+      <div class="empty">Nessun messaggio recente...</div>
+    </div>
+
+    <!-- Input per scrivere il messaggio -->
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" class="note" placeholder="Scrivi un messaggio..." autocomplete="off" />
+      <button type="button" id="sendChatBtn" class="photo-btn" onclick="sendChatMessage()">Invia</button>
     </div>
   </main>
 
