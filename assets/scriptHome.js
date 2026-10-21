@@ -1,948 +1,325 @@
-// =========================================================================
-// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR, PIÙ/MENO E CHAT MULTI-UTENTE
-// =========================================================================
+// ==========================================
+// SCRIPT PROFILO COMPLETO (MDweb)
+// ==========================================
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 1. GESTIONE DEL TEMA (Chiaro / Scuro)
-  const savedTheme = localStorage.getItem("theme");
-  if (savedTheme === "dark") {
-    document.body.classList.add("dark");
-  } else if (savedTheme === "light") {
-    document.body.classList.remove("dark");
-  } else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.body.classList.add("dark");
-  }
+const emailInput = document.getElementById("emailInput");
+const usernameInput = document.getElementById("usernameInput");
+const oldPasswordInput = document.getElementById("oldPasswordInput");
+const newPasswordInput = document.getElementById("newPasswordInput");
+const confirmPasswordInput = document.getElementById("confirmPasswordInput");
 
-  // Riferimenti Navbar e Modale
-  const userMenu = document.getElementById("userMenu");
-  const logoutBtn = document.getElementById("logout");
-  const editProfileBtn = document.getElementById("editProfile");
-  const userIcon = document.getElementById("userIcon");
-  const userName = document.getElementById("userName");
-  const overlay = document.getElementById("overlay");
+const newPasswordLabel = document.getElementById("newPasswordLabel");
+const confirmPasswordLabel = document.getElementById("confirmPasswordLabel");
 
-  const photoModal = document.getElementById("photoModal");
-  const modalImage = document.getElementById("modalImage");
-  const modalCaption = document.getElementById("modalCaption");
-  const modalFadeOverlay = document.getElementById("modalFadeOverlay");
-  const closePhotoModal = document.getElementById("closePhotoModal");
+const errorMsg = document.getElementById("errorMsg");
+const successMsg = document.getElementById("successMsg");
 
-  // GESTIONE TAB BAR INFERIORE
-  const navItems = document.querySelectorAll(".bottom-nav .nav-item");
-  const tabContents = document.querySelectorAll(".tab-content");
+const verifyPasswordBtn = document.getElementById("verifyPasswordBtn");
+const changeUsernameBtn = document.getElementById("changeUsernameBtn");
+const profileForm = document.getElementById("profileForm");
+const userNameDisplay = document.getElementById("userName");
+const userMenu = document.getElementById("userMenu");
+const logoutBtn = document.getElementById('logout');
 
-  navItems.forEach(item => {
-    item.addEventListener("click", () => {
-      const targetTab = item.getAttribute("data-tab");
+// Elementi Eliminazione Account
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+const deleteModal = document.getElementById("deleteModal");
+const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+const deletePasswordInput = document.getElementById("deletePasswordInput");
 
-      navItems.forEach(nav => nav.classList.remove("active"));
-      tabContents.forEach(tab => tab.classList.remove("active"));
+// Stato di verifica password
+let passwordVerified = false;
 
-      item.classList.add("active");
-      const activeContent = document.getElementById(targetTab);
-      if (activeContent) activeContent.classList.add("active");
-    });
+// Tasto indietro
+document.getElementById('backButton').addEventListener('click', () => {
+  window.history.back();
+});
+
+// Gestione menu a tendina
+if (userMenu) {
+  userMenu.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const isOpen = userMenu.classList.contains("open");
+    userMenu.classList.toggle("open");
+    userMenu.setAttribute("aria-expanded", !isOpen);
   });
 
-  // BLOCCO FORZATO GESTURE LATERALI iOS WEBKIT
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches.length > 0) {
-      const touchX = e.touches[0].clientX;
-      const screenWidth = window.innerWidth;
-      if (touchX < 25 || touchX > screenWidth - 25) {
-        e.preventDefault();
-      }
-    }
-  }, { passive: false });
-
-  document.addEventListener('touchmove', function(e) {
-    if (e.touches.length > 0) {
-      const touchX = e.touches[0].clientX;
-      const screenWidth = window.innerWidth;
-      if (touchX < 25 || touchX > screenWidth - 25) {
-        e.preventDefault();
-      }
-    }
-  }, { passive: false });
-
-  // NAVIGAZIONE APP NATIVA
-  window.history.replaceState({ page: "home" }, "", window.location.href);
-  window.addEventListener("popstate", (e) => {
-    if (photoModal && !photoModal.classList.contains("hidden")) {
-      photoModal.classList.add("hidden");
-      document.body.style.overflow = "";
-      if (modalImage) modalImage.style.transform = "translateZ(0)";
-    }
-    window.history.replaceState({ page: "home" }, "", window.location.href);
+  document.addEventListener("click", () => {
+    userMenu.classList.remove("open");
+    userMenu.setAttribute("aria-expanded", "false");
   });
+}
 
-  // MENU UTENTE
-  if (userMenu) {
-    userMenu.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const expanded = userMenu.getAttribute("aria-expanded") === "true";
-      userMenu.setAttribute("aria-expanded", String(!expanded));
-      userMenu.classList.toggle("open");
-      if (overlay) overlay.style.display = userMenu.classList.contains("open") ? "block" : "none";
-    });
+// Recupera dati utente all'avvio non appena Firebase Auth è pronto
+auth.onAuthStateChanged(async user => {
+  if (user) {
+    emailInput.value = user.email || "";
 
-    document.addEventListener("click", (e) => {
-      if (!userMenu.contains(e.target)) {
-        userMenu.classList.remove("open");
-        userMenu.setAttribute("aria-expanded", "false");
-        if (overlay) overlay.style.display = "none";
-      }
-    });
-  }
+    try {
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      if (userDoc.exists) {
+        const username = userDoc.data().username || user.displayName || "Utente";
+        usernameInput.value = username;
+        if (userNameDisplay) userNameDisplay.textContent = username;
 
-  const navTitle = document.querySelector("nav h1");
-  if (navTitle) {
-    navTitle.style.cursor = "pointer";
-    navTitle.addEventListener("click", () => { window.location.reload(); });
-  }
-
-  // LOGOUT
-  if (logoutBtn) {
-    logoutBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      auth.signOut().then(() => { location.href = "index.html"; }).catch(err => alert("Errore logout: " + err.message));
-    });
-  }
-
-  // ANTEPRIMA FOTO
-  function closePreview() {
-    if (photoModal && !photoModal.classList.contains("hidden")) {
-      photoModal.classList.add("hidden");
-      document.body.style.overflow = "";
-      if (modalImage) modalImage.style.transform = "translateZ(0)";
-    }
-  }
-
-  if (closePhotoModal) {
-    closePhotoModal.onclick = function(e) {
-      e.stopPropagation();
-      if (this.blur) this.blur();
-      closePreview();
-    };
-  }
-
-  if (photoModal) {
-    photoModal.onclick = function(e) {
-      if (e.target === closePhotoModal || e.target.closest('#closePhotoModal')) return;
-      if (modalFadeOverlay) modalFadeOverlay.classList.toggle("hidden-fade");
-    };
-  }
-
-  window.openPhotoPreview = function(imgSrc, captionText) {
-    if (modalImage && photoModal) {
-      modalImage.src = imgSrc;
-      modalImage.style.transform = "translateZ(0)";
-      if (modalCaption) {
-        modalCaption.textContent = captionText || "";
-        if (modalFadeOverlay) {
-          modalFadeOverlay.style.display = captionText ? "block" : "none";
-          modalFadeOverlay.classList.remove("hidden-fade");
+        const userIcon = document.getElementById("userIcon");
+        if (userIcon) {
+          userIcon.textContent = username.charAt(0).toUpperCase();
+        }
+      } else {
+        const fallbackName = user.displayName || (user.email ? user.email.split("@")[0] : "Utente");
+        usernameInput.value = fallbackName;
+        if (userNameDisplay) userNameDisplay.textContent = fallbackName;
+        
+        const userIcon = document.getElementById("userIcon");
+        if (userIcon) {
+          userIcon.textContent = fallbackName.charAt(0).toUpperCase();
         }
       }
-      photoModal.classList.remove("hidden");
-      document.body.style.overflow = "hidden";
+    } catch (error) {
+      console.error("Errore nel recupero dati utente:", error);
     }
-  };
+  } else {
+    window.location.href = "index.html";
+  }
+});
 
-  // SISTEMA NOTIFICHE (POPUP TOAST + NOTIFICHE PUSH DI SISTEMA)
-  function requestNotificationPermission() {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
+// Cambia username
+changeUsernameBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  const newUsername = usernameInput.value.trim();
+
+  if (!newUsername) {
+    showError("Lo username non può essere vuoto.");
+    return;
   }
 
-  function triggerNotification(title, message, isApproved) {
-    if ("Notification" in window && Notification.permission === "granted") {
-      try {
-        new Notification(title, {
-          body: message,
-          icon: isApproved ? "assets/icon-pos.png" : "assets/icon-neg.png"
-        });
-      } catch (e) {
-        console.log("Errore notifica di sistema:", e);
+  try {
+    const existing = await db.collection("users")
+      .where("username", "==", newUsername)
+      .get();
+
+    if (!existing.empty) {
+      const isSelf = existing.docs.some(doc => doc.id === user.uid);
+      if (!isSelf) {
+        showError("Questo username è già in uso.");
+        return;
       }
     }
 
-    let toast = document.getElementById("appToast");
-    if (!toast) {
-      toast = document.createElement("div");
-      toast.id = "appToast";
-      toast.style.cssText = "position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; padding:14px 20px; border-radius:14px; color:#fff; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.3); transition:all 0.4s ease; opacity:0; pointer-events:none; text-align:center; max-width:90%; font-size:0.95rem;";
-      document.body.appendChild(toast);
+    await db.collection("users").doc(user.uid).update({ username: newUsername });
+    showSuccess("Username aggiornato con successo.");
+    if (userNameDisplay) userNameDisplay.textContent = newUsername;
+    
+    const userIcon = document.getElementById("userIcon");
+    if (userIcon) {
+      userIcon.textContent = newUsername.charAt(0).toUpperCase();
     }
+  } catch (error) {
+    showError("Errore durante l'aggiornamento dello username.");
+  }
+});
 
-    toast.style.background = isApproved ? "var(--pos, #2ecc71)" : "var(--neg, #e74c3c)";
-    toast.innerHTML = `<div style="font-size:1.05rem; margin-bottom:2px;">${title}</div><div style="font-size:0.85rem; font-weight:normal; opacity:0.9;">${message}</div>`;
-    toast.style.opacity = "1";
-    toast.style.transform = "translateX(-50%) translateY(10px)";
+// Verifica vecchia password
+verifyPasswordBtn.addEventListener("click", async () => {
+  const user = auth.currentUser;
+  const oldPassword = oldPasswordInput.value;
 
-    if (navigator.vibrate) { try { navigator.vibrate([100, 50, 100]); } catch (e) {} }
+  if (!oldPassword) {
+    showError("Inserisci la vecchia password.");
+    return;
+  }
+
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPassword);
+
+  try {
+    await user.reauthenticateWithCredential(credential);
+    showSuccess("Password verificata. Ora puoi inserirne una nuova.");
+    passwordVerified = true;
 
     setTimeout(() => {
-      toast.style.opacity = "0";
-      toast.style.transform = "translateX(-50%) translateY(0)";
-    }, 4500);
-  }
+      clearMessages();
+    }, 2000);
 
-  // AUTENTICAZIONE E INIZIALIZZAZIONE
-  auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      window.location.href = "index.html";
-      return;
-    }
-    currentUserId = user.uid;
-    requestNotificationPermission();
-    initFirestore(currentUserId);
-  });
-
-  // LOGICA E STATO DELLA PWA
-  let approvedItems = [];
-  let pendingItems = [];
-  let decisionHistory = [];
-  let chatMessages = [];
-  let registeredUsers = [];
-  let selectedTargetUser = "";
-  let currentUsername = "";
-  let dbInstance, currentUserId;
-  let currentPhotoBase64 = "";
-  let lastKnownDecisionsCount = -1;
-
-  const $ = function(id) { return document.getElementById(id); };
-
-  const photoInput = $("photoInput");
-  const photoName = $("photoName");
-  const removePhotoBtn = $("removePhotoBtn");
-  const logContainer = $("log");
-  const pendingContainer = $("pendingContainer");
-  const leaderboardContainer = $("leaderboardContainer");
-  const decisionsContainer = $("decisionsContainer");
-  const pendingBadge = $("pendingBadge");
-  const targetUserSelect = $("targetUserSelect");
-  const scoreCardContainer = $("scoreCardContainer");
-  const chatMessagesBox = $("chatMessages");
-  const chatInput = $("chatInput");
-  const sendChatBtn = $("sendChatBtn");
-
-  function compressImage(file, maxWidth, maxHeight, quality, callback) {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = function(event) {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = function() {
-        let width = img.width, height = img.height;
-        if (width > height) {
-          if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
-        } else {
-          if (height > maxHeight) { width = Math.round((height * maxHeight) / height); height = maxHeight; }
-        }
-        const canvas = document.createElement("canvas");
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        callback(canvas.toDataURL("image/jpeg", quality));
-      };
-    };
-  }
-
-  if (photoInput) {
-    photoInput.addEventListener("change", function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        if (photoName) photoName.textContent = "Elaborazione foto...";
-        compressImage(file, 1200, 1200, 0.7, function(base64Result) {
-          currentPhotoBase64 = base64Result;
-          if (photoName) photoName.textContent = file.name;
-          if (removePhotoBtn) removePhotoBtn.classList.remove("hidden");
-        });
-      }
-    });
-  }
-
-  if (removePhotoBtn) {
-    removePhotoBtn.addEventListener("click", function() {
-      if (this.blur) this.blur();
-      currentPhotoBase64 = "";
-      if (photoInput) photoInput.value = "";
-      if (photoName) photoName.textContent = "";
-      removePhotoBtn.classList.add("hidden");
-    });
-  }
-
-  document.addEventListener("click", function(e) {
-    if (e.target && e.target.classList.contains("clickable-photo")) {
-      const imgSrc = e.target.getAttribute("data-img");
-      const caption = e.target.getAttribute("data-caption");
-      if (imgSrc && typeof window.openPhotoPreview === "function") {
-        window.openPhotoPreview(imgSrc, caption);
-      }
-      return;
+    const oldPassGroup = document.querySelector(".old-password-group");
+    if (oldPassGroup) {
+      oldPassGroup.parentElement.style.display = "none";
     }
 
-    const dayHeaderBtn = e.target.closest(".day-header-btn");
-    if (dayHeaderBtn) {
-      const accordion = dayHeaderBtn.closest(".day-accordion");
-      if (accordion) accordion.classList.toggle("open");
-    }
-  });
-
-  function esc(t) { 
-    var d = document.createElement("div"); 
-    d.textContent = t; 
-    return d.innerHTML; 
+    [newPasswordInput, confirmPasswordInput].forEach(el => el.classList.remove("hidden"));
+    [newPasswordLabel, confirmPasswordLabel].forEach(el => el.classList.remove("hidden"));
+  } catch (error) {
+    showError("Password errata. Riprova.");
   }
-
-  async function saveSharedData() {
-    if (!dbInstance) return;
-    try {
-      await dbInstance.collection("shared_data").doc("cristian_score").set({
-        approvedItems: approvedItems,
-        pendingItems: pendingItems,
-        decisionHistory: decisionHistory
-      }, { merge: true });
-    } catch (e) {
-      console.error("Errore salvataggio Firestore:", e);
-    }
-  }
-
-  async function saveChatMessage(text) {
-    if (!dbInstance || !text.trim()) return;
-    try {
-      const msgData = {
-        id: "msg_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
-        user: currentUsername || "Utente",
-        text: text.trim(),
-        timestamp: Date.now()
-      };
-      
-      // Aggiunge alla collezione chat di Firestore
-      await dbInstance.collection("chat_messages").add(msgData);
-    } catch (e) {
-      console.error("Erroreinvio messaggio chat:", e);
-    }
-  }
-
-  // LISTA UTENTI FISSA
-  async function loadUsersList() {
-    registeredUsers = [
-      "Cristian",
-      "Samuele",
-      "Ivan",
-      "Kevin",
-      "Marco",
-      "Lorenzo",
-      "Mudi"
-    ];
-
-    populateUserSelector();
-  }
-
-  function populateUserSelector() {
-    if (!targetUserSelect) return;
-    let html = '<option value="">-- Seleziona Utente --</option>';
-    registeredUsers.forEach(u => {
-      html += `<option value="${esc(u)}" ${selectedTargetUser === u ? 'selected' : ''}>${esc(u)}</option>`;
-    });
-    targetUserSelect.innerHTML = html;
-  }
-
-  if (targetUserSelect) {
-    targetUserSelect.addEventListener("change", (e) => {
-      selectedTargetUser = e.target.value;
-      render();
-    });
-  }
-
-  async function initFirestore(uid) {
-    currentUserId = uid;
-    try {
-      dbInstance = firebase.firestore();
-      const currentUser = auth.currentUser;
-      let foundUsername = "";
-      
-      try {
-        const userDoc = await dbInstance.collection("users").doc(currentUserId).get();
-        if (userDoc.exists && userDoc.data().username) {
-          foundUsername = userDoc.data().username;
-        }
-      } catch (e) {
-        console.log("Errore lettura utente Firestore:", e);
-      }
-
-      if (!foundUsername && currentUser) {
-        if (currentUser.displayName) foundUsername = currentUser.displayName;
-        else if (currentUser.email) foundUsername = currentUser.email.split("@")[0];
-      }
-
-      currentUsername = (foundUsername || "Utente").trim();
-
-      const initial = currentUsername.charAt(0).toUpperCase();
-      if (userName) userName.textContent = currentUsername;
-      if (userIcon) userIcon.textContent = initial;
-
-      if (currentUser && editProfileBtn) {
-        const providers = currentUser.providerData.map(p => p.providerId);
-        const isSocialLogin = providers.includes("google.com") || providers.includes("apple.com");
-        editProfileBtn.style.display = isSocialLogin ? "none" : "inline-block";
-      }
-
-      await loadUsersList();
-
-      // ASCOLTATORE FIRESTORE: DATI PRINCIPALI (PUNTI, PENDING, DECISIONI)
-      dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
-        if (doc.exists) {
-          const data = doc.data();
-          approvedItems = data.approvedItems || [];
-          pendingItems = data.pendingItems || [];
-          const newDecisionHistory = data.decisionHistory || [];
-
-          if (lastKnownDecisionsCount !== -1 && newDecisionHistory.length > lastKnownDecisionsCount) {
-            const latestDecision = newDecisionHistory[newDecisionHistory.length - 1];
-            if (latestDecision && latestDecision.author && latestDecision.author.trim().toLowerCase() === currentUsername.trim().toLowerCase()) {
-              if (latestDecision.status === "approved") {
-                triggerNotification(
-                  "✓ Segnalazione Approvata!",
-                  `Il tuo punto per ${latestDecision.targetUser || 'l\'utente'} è stato accettato dall'admin.`,
-                  true
-                );
-              } else if (latestDecision.status === "rejected") {
-                triggerNotification(
-                  "✕ Segnalazione Rifiutata",
-                  `La tua segnalazione per ${latestDecision.targetUser || 'l\'utente'} è stata rifiutata dall'admin.`,
-                  false
-                );
-              }
-            }
-          }
-
-          decisionHistory = newDecisionHistory;
-          lastKnownDecisionsCount = decisionHistory.length;
-        } else {
-          approvedItems = [];
-          pendingItems = [];
-          decisionHistory = [];
-          lastKnownDecisionsCount = 0;
-        }
-        render();
-      });
-
-      // ASCOLTATORE FIRESTORE: CHAT IN TEMPO REALE
-      dbInstance.collection("chat_messages").orderBy("timestamp", "asc").onSnapshot((snapshot) => {
-        chatMessages = [];
-        snapshot.forEach((docSnap) => {
-          chatMessages.push(docSnap.data());
-        });
-        renderChatMessages();
-      });
-
-    } catch (err) {
-      console.error("Errore inizializzazione:", err);
-    }
-  }
-
-  function renderChatMessages() {
-    if (!chatMessagesBox) return;
-
-    if (chatMessages.length === 0) {
-      chatMessagesBox.innerHTML = '<div class="empty">Nessun messaggio presente. Scrivi il primo!</div>';
-      return;
-    }
-
-    let html = "";
-    chatMessages.forEach((msg) => {
-      const isMyMessage = msg.user && msg.user.trim().toLowerCase() === currentUsername.trim().toLowerCase();
-      const itemClass = isMyMessage ? "chat-message-item my-message" : "chat-message-item";
-      
-      const d = new Date(msg.timestamp || Date.now());
-      const timeStr = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-
-      html += `<div class="${itemClass}">` +
-                `<div class="chat-message-user">${esc(msg.user || 'Utente')} • ${timeStr}</div>` +
-                `<div class="chat-message-text">${esc(msg.text || '')}</div>` +
-              `</div>`;
-    });
-
-    chatMessagesBox.innerHTML = html;
-    chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-  }
-
-  // GESTIONE INVIO CHAT
-  if (sendChatBtn && chatInput) {
-    sendChatBtn.addEventListener("click", () => {
-      const text = chatInput.value;
-      if (text.trim()) {
-        saveChatMessage(text);
-        chatInput.value = "";
-      }
-    });
-
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        const text = chatInput.value;
-        if (text.trim()) {
-          saveChatMessage(text);
-          chatInput.value = "";
-        }
-      }
-    });
-  }
-
-  function render() {
-    // CONTROLLO RIGOROSO: SOLO ED ESCLUSIVAMENTE L'UTENTE "mudi06" È ADMIN
-    const isMudi06 = (currentUsername.trim().toLowerCase() === "mudi06");
-
-    // FILTRAGGIO VISIBILITÀ ELEMENTI AMMINISTRATORE (IN ATTESA / DECISIONI)
-    const adminOnlyNavButtons = document.querySelectorAll(".bottom-nav .admin-only");
-    adminOnlyNavButtons.forEach(btn => {
-      if (isMudi06) {
-        btn.style.setProperty("display", "flex", "important");
-        btn.classList.remove("hidden");
-      } else {
-        btn.style.setProperty("display", "none", "important");
-        btn.classList.add("hidden");
-        
-        if (btn.classList.contains("active")) {
-          btn.classList.remove("active");
-          const homeNav = document.querySelector('[data-tab="tab-home"]');
-          if (homeNav) homeNav.classList.add("active");
-          
-          const tabContents = document.querySelectorAll(".tab-content");
-          tabContents.forEach(tab => tab.classList.remove("active"));
-          const homeTab = document.getElementById("tab-home");
-          if (homeTab) homeTab.classList.add("active");
-        }
-      }
-    });
-
-    if (pendingBadge) {
-      if (pendingItems.length > 0 && isMudi06) {
-        pendingBadge.textContent = pendingItems.length;
-        pendingBadge.classList.remove("hidden");
-      } else {
-        pendingBadge.classList.add("hidden");
-      }
-    }
-
-    if (scoreCardContainer) {
-      scoreCardContainer.style.display = "none";
-    }
-
-    // FILTRAGGIO ELEMENTI APPROVATI PER L'UTENTE SELEZIONATO
-    const targetApproved = approvedItems.filter(i => {
-      const target = i.targetUser || "Cristian";
-      return selectedTargetUser && target.toLowerCase() === selectedTargetUser.toLowerCase();
-    });
-
-    // 1. STORICO APPROVATO DELL'UTENTE SELEZIONATO (TAB HOME)
-    if (logContainer) {
-      if (!selectedTargetUser) {
-        logContainer.innerHTML = '<div class="empty">Seleziona un utente dal menu in alto per vederne lo storico.</div>';
-        if ($("empty")) $("empty").style.display = "none";
-      } else if (!targetApproved.length) {
-        logContainer.innerHTML = `<div class="empty">Nessun punto ancora registrato per ${esc(selectedTargetUser)}.</div>`;
-        if ($("empty")) $("empty").style.display = "none";
-      } else {
-        if ($("empty")) $("empty").style.display = "none";
-
-        const groups = {};
-        targetApproved.slice().reverse().forEach(function(i) {
-          var d = new Date(i.d);
-          var dayKey = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
-          var dayTitle = d.toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
-          
-          if (!groups[dayKey]) {
-            groups[dayKey] = { title: dayTitle, items: [] };
-          }
-          groups[dayKey].items.push(i);
-        });
-
-        let html = "";
-        Object.keys(groups).forEach(function(dayKey) {
-          const group = groups[dayKey];
-          const posDay = group.items.filter(i => i.t === "p").length;
-          const negDay = group.items.length - posDay;
-          const balDay = posDay - negDay;
-          
-          let badgeClass = balDay > 0 ? "pos" : balDay < 0 ? "neg" : "neutral";
-          let badgeText = balDay > 0 ? "+" + balDay : balDay < 0 ? "−" + Math.abs(balDay) : "0";
-
-          html += '<div class="day-accordion">' +
-                    '<button type="button" class="day-header-btn">' +
-                      '<div class="day-header-info">' +
-                        '<span>' + group.title + '</span>' +
-                        '<span class="day-badge ' + badgeClass + '">' + badgeText + '</span>' +
-                      '</div>' +
-                      '<span class="day-arrow">▼</span>' +
-                    '</button>' +
-                    '<div class="day-content"><ul>';
-
-          group.items.forEach(function(i) {
-            var d = new Date(i.d);
-            var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-            var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-            var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-            var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-            html += '<li class="' + i.t + '">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + authorText + photoHtml + '</div>' +
-                      '<span class="time">' + h + '</span>' +
-                    '</li>';
-          });
-
-          html += '</ul></div></div>';
-        });
-
-        logContainer.innerHTML = html;
-      }
-    }
-
-    // 2. CLASSIFICA (ORDINATA PER PUNTI POSITIVI / BILANCIO MAGGIORE)
-    if (leaderboardContainer) {
-      const stats = {};
-
-      registeredUsers.forEach(user => {
-        stats[user] = { pos: 0, neg: 0, balance: 0 };
-      });
-
-      approvedItems.forEach(i => {
-        const target = i.targetUser || "Cristian";
-        if (!stats[target]) {
-          stats[target] = { pos: 0, neg: 0, balance: 0 };
-        }
-        if (i.t === "p") stats[target].pos++;
-        else stats[target].neg++;
-
-        stats[target].balance = stats[target].pos - stats[target].neg;
-      });
-
-      const sortedUsers = Object.keys(stats).sort((a, b) => {
-        if (stats[b].balance !== stats[a].balance) {
-          return stats[b].balance - stats[a].balance;
-        }
-        return stats[b].pos - stats[a].pos;
-      });
-
-      if (sortedUsers.length === 0) {
-        leaderboardContainer.innerHTML = '<div class="empty">Nessun dato ancora in classifica.</div>';
-      } else {
-        let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        sortedUsers.forEach((user, index) => {
-          const u = stats[user];
-          const rankNumber = index + 1;
-          
-          let balanceDisplay = (u.balance > 0 ? "+" : "") + u.balance;
-          let balanceColor = u.balance > 0 ? "var(--pos)" : u.balance < 0 ? "var(--neg)" : "var(--text-color)";
-
-          html += '<li style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:var(--surface); border:2px solid var(--line); border-radius:16px; margin-bottom:10px;">' +
-                    '<div style="display:flex; align-items:center; gap:12px; flex:1;">' +
-                      '<span style="font-size:1.2rem; font-weight:bold; min-width:20px; text-align:center; color:var(--text-muted);">' + rankNumber + '</span>' +
-                      '<div style="font-weight:bold; font-size:1.1rem;">' + esc(user) + '</div>' +
-                    '</div>' +
-                    '<div style="display:flex; gap:6px; font-weight:bold; font-size:0.9rem; justify-content:center; flex:1;">' +
-                      '<span style="color:var(--pos); background:var(--pos-bg); padding:6px 10px; border-radius:8px;">+' + u.pos + '</span>' +
-                      '<span style="color:var(--neg); background:var(--neg-bg); padding:6px 10px; border-radius:8px;">−' + u.neg + '</span>' +
-                    '</div>' +
-                    '<div style="font-size:1.4rem; font-weight:800; color:' + balanceColor + '; min-width:50px; text-align:right;">' +
-                      balanceDisplay +
-                    '</div>' +
-                  '</li>';
-        });
-        html += '</ul>';
-        leaderboardContainer.innerHTML = html;
-      }
-    }
-
-    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO)
-    const sentContainer = document.getElementById("sentContainer");
-    if (sentContainer) {
-      const pendingUserItems = pendingItems
-        .filter(i => i.author && i.author.trim().toLowerCase() === currentUsername.trim().toLowerCase())
-        .map(i => ({ ...i, currentStatus: "pending" }));
-
-      const decidedUserItems = decisionHistory
-        .filter(i => i.author && i.author.trim().toLowerCase() === currentUsername.trim().toLowerCase())
-        .map(i => ({ ...i, currentStatus: i.status }));
-
-      const allMySent = [...pendingUserItems, ...decidedUserItems].sort((a, b) => (b.d || 0) - (a.d || 0));
-
-      if (allMySent.length === 0) {
-        sentContainer.innerHTML = '<div class="empty">Non hai ancora inviato nessuna segnalazione.</div>';
-      } else {
-        let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        allMySent.forEach(i => {
-          const d = new Date(i.d);
-          const h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-          const dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-          const noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          const targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
-          const photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-          let badgeHtml = "";
-          if (i.currentStatus === "pending") {
-            badgeHtml = '<span style="background: #f39c12; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">⏳ In Attesa</span>';
-          } else if (i.currentStatus === "approved") {
-            badgeHtml = '<span style="background: var(--pos-bg); color: var(--pos); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">✓ Approvata</span>';
-          } else if (i.currentStatus === "rejected") {
-            badgeHtml = '<span style="background: var(--neg-bg); color: var(--neg); padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">✕ Rifiutata</span>';
-          } else if (i.currentStatus === "canceled") {
-            badgeHtml = '<span style="background: #666; color: #fff; padding: 4px 8px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">Annullata</span>';
-          }
-
-          html += '<li class="' + i.t + '" style="margin-bottom:10px; padding:12px; background:var(--surface); border:2px solid var(--line); border-radius:12px; display:flex; flex-direction:column; gap:6px;">' +
-                    '<div style="display:flex; align-items:center; justify-content:space-between;">' +
-                      badgeHtml +
-                      '<span style="font-size:0.8rem; color:var(--text-muted);">' + dayStr + ' ' + h + '</span>' +
-                    '</div>' +
-                    '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + targetText + photoHtml + '</div>' +
-                    '</div>' +
-                  '</li>';
-        });
-        html += '</ul>';
-        sentContainer.innerHTML = html;
-      }
-    }
-
-    // 4. IN ATTESA (TAB PENDING - ESCLUSIVA MUDI06)
-    if (pendingContainer && isMudi06) {
-      if (pendingItems.length === 0) {
-        pendingContainer.innerHTML = '<div class="empty">Nessuna segnalazione in attesa.</div>';
-      } else {
-        let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        pendingItems.slice().reverse().forEach(function(i) {
-          var d = new Date(i.d);
-          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-          var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-          var noteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
-          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer;" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-          var actionBtns = 
-            '<div style="display:flex; gap:8px; margin-top:10px;">' +
-              '<button type="button" onclick="approvePendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--pos); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✓ Approva</button>' +
-              '<button type="button" onclick="rejectPendingItem(\'' + i.id + '\')" style="flex:1; padding:10px; background:var(--neg); color:#fff; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">✕ Rifiuta</button>' +
-            '</div>';
-
-          html += '<li class="' + i.t + '" style="margin-bottom:12px; flex-direction:column; align-items:stretch;">' +
-                    '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
-                      '<span class="time">' + dayStr + ' ' + h + '</span>' +
-                    '</div>' +
-                    actionBtns +
-                  '</li>';
-        });
-        html += '</ul>';
-        pendingContainer.innerHTML = html;
-      }
-    }
-
-    // 5. ULTIMI MOVIMENTI / DECISIONI (ESCLUSIVA MUDI06)
-    if (decisionsContainer && isMudi06) {
-      if (decisionHistory.length === 0) {
-        decisionsContainer.innerHTML = '<div class="empty">Ancora nessuna decisione registrata.</div>';
-      } else {
-        let html = '<ul style="list-style:none; padding:0; margin:0;">';
-        decisionHistory.slice().reverse().forEach(function(i) {
-          var d = new Date(i.decisionDate || i.d);
-          var h = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
-          var dayStr = d.toLocaleDateString("it-IT", { day: "numeric", month: "short" });
-          var rawNoteText = i.n ? esc(i.n) : '<span style="color:var(--text-muted)">senza motivo</span>';
-          var targetText = i.targetUser ? ' <strong>per ' + esc(i.targetUser) + '</strong>' : '';
-          var authorText = i.author ? ' <small style="opacity:0.7;">(da ' + esc(i.author) + ')</small>' : '';
-          
-          let statusBadge = "";
-          let isCanceled = (i.status === "canceled");
-
-          if (i.status === "approved") {
-            statusBadge = '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✓ Approvato</span>';
-          } else if (i.status === "rejected") {
-            statusBadge = '<span style="background:var(--neg-bg); color:var(--neg); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">✕ Rifiutato</span>';
-          } else if (isCanceled) {
-            statusBadge = '<div style="display:flex; align-items:center; gap:6px;">' +
-                            '<span style="background:var(--pos-bg); color:var(--pos); padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold; text-decoration:line-through; opacity:0.6;">✓ Approvato</span>' +
-                            '<span style="background:#666; color:#fff; padding:4px 8px; border-radius:8px; font-size:0.8rem; font-weight:bold;">Annullato</span>' +
-                          '</div>';
-          }
-
-          var noteText = isCanceled 
-            ? '<span style="text-decoration:line-through; opacity:0.6;">' + rawNoteText + '</span>' 
-            : rawNoteText;
-
-          var photoHtml = i.img ? '<img src="' + i.img + '" class="entry-photo clickable-photo" alt="Foto allegata" style="cursor:pointer; ' + (isCanceled ? 'opacity:0.5;' : '') + '" data-img="' + i.img + '" data-caption="' + esc(i.n || '') + '" />' : '';
-
-          html += '<li class="' + i.t + '" style="margin-bottom:10px; flex-direction:column; align-items:stretch;">' +
-                    '<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">' +
-                      statusBadge +
-                      '<span class="time">' + dayStr + ' ' + h + '</span>' +
-                    '</div>' +
-                    '<div style="display:flex; align-items:center; gap:10px;">' +
-                      '<span class="tag" style="' + (isCanceled ? 'opacity:0.5;' : '') + '">' + (i.t === "p" ? "+" : "−") + '</span>' +
-                      '<div class="txt">' + noteText + targetText + authorText + photoHtml + '</div>' +
-                    '</div>' +
-                  '</li>';
-        });
-        html += '</ul>';
-        decisionsContainer.innerHTML = html;
-      }
-    }
-  }
-
-  function add(t) {
-    if (!selectedTargetUser) {
-      alert("Seleziona prima l'utente a cui desideri assegnare il punto!");
-      if (targetUserSelect) targetUserSelect.focus();
-      return;
-    }
-
-    const noteEl = $("note");
-    const val = noteEl ? noteEl.value.trim() : "";
-    const isMudi06 = (currentUsername.trim().toLowerCase() === "mudi06");
-    const now = Date.now();
-    
-    const newItem = {
-      id: "item_" + now + "_" + Math.random().toString(36).substr(2, 4),
-      t: t, 
-      n: val, 
-      img: currentPhotoBase64, 
-      d: now,
-      author: currentUsername,
-      targetUser: selectedTargetUser
-    };
-
-    if (isMudi06) {
-      newItem.status = "approved";
-      newItem.decisionDate = now;
-      approvedItems.push(newItem);
-      decisionHistory.push(newItem);
-    } else {
-      pendingItems.push(newItem);
-    }
-
-    if (noteEl) noteEl.value = "";
-    currentPhotoBase64 = "";
-    if (photoInput) photoInput.value = "";
-    if (photoName) photoName.textContent = "";
-    if (removePhotoBtn) removePhotoBtn.classList.add("hidden");
-
-    saveSharedData();
-    render();
-    
-    if (isMudi06) {
-      alert(`Punto registrato e approvato direttamente per ${selectedTargetUser}!`);
-    } else {
-      alert(`Segnalazione inviata per ${selectedTargetUser}! In attesa di approvazione admin.`);
-    }
-    
-    if (navigator.vibrate) { try { navigator.vibrate(15); } catch (e) {} }
-  }
-
-  window.approvePendingItem = function(id) {
-    if (currentUsername.trim().toLowerCase() !== "mudi06") return;
-    const index = pendingItems.findIndex(i => i.id === id);
-    if (index !== -1) {
-      const item = pendingItems.splice(index, 1)[0];
-      item.status = "approved";
-      item.decisionDate = Date.now();
-      approvedItems.push(item);
-      decisionHistory.push(item);
-      saveSharedData();
-      render();
-    }
-  };
-
-  window.rejectPendingItem = function(id) {
-    if (currentUsername.trim().toLowerCase() !== "mudi06") return;
-    const index = pendingItems.findIndex(i => i.id === id);
-    if (index !== -1) {
-      const item = pendingItems.splice(index, 1)[0];
-      item.status = "rejected";
-      item.decisionDate = Date.now();
-      decisionHistory.push(item);
-      saveSharedData();
-      render();
-    }
-  };
-
-  if ($("plus")) $("plus").onclick = function() { if (this.blur) this.blur(); add("p"); };
-  if ($("minus")) $("minus").onclick = function() { if (this.blur) this.blur(); add("n"); };
-  
-  if ($("note")) {
-    $("note").addEventListener("keydown", function(e) { if (e.key === "Enter") { add("p"); } });
-  }
-  
-  // 1. ANNULLA ULTIMO APPROVATO
-  if ($("undo")) {
-    $("undo").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.trim().toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può annullare le voci.");
-        return;
-      }
-      if (approvedItems.length) {
-        if (confirm("Sei sicuro di voler annullare l'ultimo inserimento approvato?")) {
-          const lastItem = approvedItems.pop();
-          lastItem.status = "canceled";
-          lastItem.decisionDate = Date.now();
-          decisionHistory.push(lastItem);
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("Non ci sono elementi approvati da annullare.");
-      }
-    };
-  }
-
-  // 2. AZZERA TUTTI I PUNTI E LA CLASSIFICA
-  if ($("reset")) {
-    $("reset").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.trim().toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può azzerare tutto.");
-        return;
-      }
-      if (approvedItems.length || pendingItems.length || decisionHistory.length) {
-        if (confirm("ATTENZIONE: Sei sicuro di voler azzerare TUTTI i punti e la classifica generale?")) {
-          approvedItems = [];
-          pendingItems = [];
-          decisionHistory = [];
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("Non ci sono punti o dati da azzerare.");
-      }
-    };
-  }
-
-  // 3. SVUOTA CACHE ULTIMI MOVIMENTI
-  if ($("clearCache")) {
-    $("clearCache").onclick = function() {
-      if (this.blur) this.blur();
-      if (currentUsername.trim().toLowerCase() !== "mudi06") {
-        alert("Solo Mudi06 può svuotare la cache.");
-        return;
-      }
-      if (decisionHistory.length) {
-        if (confirm("Vuoi svuotare lo storico degli ultimi movimenti? Questa operazione NON modificherà i punti né la classifica.")) {
-          decisionHistory = [];
-          saveSharedData();
-          render();
-        }
-      } else {
-        alert("La cache dei movimenti è già vuota.");
-      }
-    };
-  }
-
-  render();
 });
+
+// Salva modifiche password tramite submit
+profileForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  clearMessages();
+
+  const user = auth.currentUser;
+  if (!user) {
+    showError("Utente non autenticato.");
+    return;
+  }
+
+  const passwordChangeRequested = !newPasswordInput.classList.contains("hidden");
+
+  if (!passwordChangeRequested) {
+    showError("Nessuna modifica alla password richiesta (usa il pulsante per lo username).");
+    return;
+  }
+
+  if (!passwordVerified) {
+    showError("Devi prima verificare la vecchia password.");
+    return;
+  }
+
+  const newPassword = newPasswordInput.value.trim();
+  const confirmPassword = confirmPasswordInput.value.trim();
+
+  if (newPassword.length < 6) {
+    showError("La nuova password deve contenere almeno 6 caratteri.");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showError("Le password non coincidono.");
+    return;
+  }
+
+  try {
+    await user.updatePassword(newPassword);
+    showSuccess("Password aggiornata con successo.");
+    profileForm.reset();
+    passwordVerified = false;
+  } catch (error) {
+    if (error.code === 'auth/requires-recent-login') {
+      showError("Devi eseguire nuovamente il login prima di cambiare la password.");
+    } else {
+      showError("Errore durante l'aggiornamento della password: " + error.message);
+    }
+  }
+});
+
+// --- ELIMINAZIONE DEFINITIVA ACCOUNT ---
+if (deleteAccountBtn) {
+  deleteAccountBtn.addEventListener("click", () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const providerId = user.providerData[0] ? user.providerData[0].providerId : '';
+
+    if (providerId === 'google.com' || providerId === 'apple.com') {
+      if (confirm("Sei sicuro di voler eliminare definitivamente il tuo account? L'operazione è irreversibile.")) {
+        executeAccountDeletion(user);
+      }
+    } else {
+      deleteModal.classList.remove("hidden");
+      deletePasswordInput.value = "";
+      deletePasswordInput.focus();
+    }
+  });
+}
+
+if (cancelDeleteBtn) {
+  cancelDeleteBtn.addEventListener("click", () => {
+    deleteModal.classList.add("hidden");
+  });
+}
+
+if (confirmDeleteBtn) {
+  confirmDeleteBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    const password = deletePasswordInput.value;
+
+    if (!password) {
+      alert("Inserisci la password per confermare l'eliminazione.");
+      return;
+    }
+
+    try {
+      const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+      await user.reauthenticateWithCredential(credential);
+      
+      deleteModal.classList.add("hidden");
+      await executeAccountDeletion(user);
+    } catch (error) {
+      console.error("Errore di riautenticazione:", error);
+      alert("Password errata o errore di autenticazione. Impossibile eliminare l'account.");
+    }
+  });
+}
+
+async function executeAccountDeletion(user) {
+  try {
+    showSuccess("Eliminazione account in corso...");
+
+    const userDocRef = db.collection("users").doc(user.uid);
+    const userSnap = await userDocRef.get();
+    
+    if (userSnap.exists) {
+      const username = userSnap.data().username;
+      if (username) {
+        await db.collection("usernames").doc(username.toLowerCase()).delete().catch(err => console.log(err));
+      }
+    }
+    await userDocRef.delete().catch(err => console.log(err));
+
+    await user.delete();
+
+    alert("Il tuo account è stato eliminato definitivamente.");
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Errore durante l'eliminazione dell'account:", error);
+    if (error.code === 'auth/requires-recent-login') {
+      showError("Per motivi di sicurezza, effettua nuovamente il login prima di eliminare l'account.");
+    } else {
+      showError("Errore durante l'eliminazione: " + error.message);
+    }
+  }
+}
+
+// Funzioni per la gestione dei messaggi
+function showError(message) {
+  if (!errorMsg) return;
+  errorMsg.textContent = message;
+  errorMsg.classList.add('visible');
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+function showSuccess(message) {
+  if (!successMsg) return;
+  successMsg.textContent = message;
+  successMsg.classList.add('visible');
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+}
+
+function clearMessages() {
+  if (errorMsg) {
+    errorMsg.textContent = '';
+    errorMsg.classList.remove('visible');
+  }
+  if (successMsg) {
+    successMsg.textContent = '';
+    successMsg.classList.remove('visible');
+  }
+}
+
+// Gestione Logout
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    auth.signOut().then(() => {
+      location.href = 'index.html';
+    });
+  });
+}
