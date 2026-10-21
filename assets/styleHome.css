@@ -509,7 +509,72 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA INFERIORE (LIGHT MODE: #00f7ff, DARK MODE: #000000)
+   5. SEZIONE CHAT STYLES
+   ========================================================= */
+.chat-container-main {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 140px);
+  max-height: 80vh;
+}
+
+.chat-messages-box {
+  flex: 1;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 14px;
+  box-shadow: var(--card-shadow);
+}
+
+.chat-message-item {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 80%;
+  word-break: break-word;
+  background: var(--bg-color);
+  border: 1px solid var(--line);
+  color: var(--text-color);
+}
+
+.chat-message-item.my-message {
+  align-self: flex-end;
+  background: var(--accent-color);
+  color: #000000;
+  border: none;
+}
+
+.chat-message-user {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+  opacity: 0.8;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-area input {
+  flex: 1;
+  margin-bottom: 0 !important;
+}
+
+.chat-input-area button {
+  margin-top: 0 !important;
+  padding: 0 20px;
+  background: var(--accent-color) !important;
+  color: #000000 !important;
+}
+
+/* =========================================================
+   6. BARRA INFERIORE (LIGHT MODE: #00f7ff, DARK MODE: #000000)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -617,7 +682,7 @@ nav.bottom-nav .nav-label {
 }
 
 /* =========================================================
-   6. MODALE FOTO
+   7. MODALE FOTO
    ========================================================= */
 .photo-modal {
   position: fixed;
