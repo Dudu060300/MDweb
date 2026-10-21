@@ -509,9 +509,12 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. SEZIONE CHAT STYLES (FULL SCREEN & INPUT FISSO IN BASSO)
+   5. SEZIONE CHAT STYLES (VISIBILE SOLO SE ATTIVA & FULL SCREEN)
    ========================================================= */
-main.cristian-main.chat-container-main {
+/* La chat è nascosta di default grazie a .tab-content { display: none; } */
+
+/* Diventa visibile in layout flex SOLO quando possiede la classe .active */
+main.cristian-main.chat-container-main.active {
   display: flex !important;
   flex-direction: column !important;
   height: calc(100dvh - 60px - env(safe-area-inset-top, 0px) - 70px - env(safe-area-inset-bottom, 0px)) !important;
