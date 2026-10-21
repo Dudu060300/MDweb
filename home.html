@@ -118,20 +118,17 @@
     <div id="sentContainer"></div>
   </main>
 
-  <!-- TAB 4: CHAT (VISIBILE A TUTTI) -->
+  <!-- TAB 4: CHAT (VISIBILE A TUTTI - FULL SCREEN) -->
   <main class="cristian-main tab-content chat-container-main" id="tab-chat">
-    <h1>Chat</h1>
-    <p class="sub">Discussione e commenti di gruppo in tempo reale.</p>
-    
-    <!-- Box dei messaggi -->
+    <!-- Box dei messaggi che occupa tutto lo spazio -->
     <div id="chatMessages" class="chat-messages-box">
-      <div class="empty">Nessun messaggio recente...</div>
+      <div class="empty">Nessun messaggio presente.</div>
     </div>
 
-    <!-- Input per scrivere il messaggio -->
+    <!-- Input fisso in basso -->
     <div class="chat-input-area">
       <input type="text" id="chatInput" class="note" placeholder="Scrivi un messaggio..." autocomplete="off" />
-      <button type="button" id="sendChatBtn" class="photo-btn" onclick="sendChatMessage()">Invia</button>
+      <button type="button" id="sendChatBtn" class="photo-btn">Invia</button>
     </div>
   </main>
 
