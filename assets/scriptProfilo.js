@@ -1,18 +1,3 @@
-const firebaseConfig = {
-  apiKey: "AIzaSyA1U8IL5gdwoKmsdZgANGR_646ZDbjU50c",
-  authDomain: "proghtml-2e571.firebaseapp.com",
-  projectId: "proghtml-2e571",
-  storageBucket: "proghtml-2e571.appspot.com",
-  messagingSenderId: "771370443646",
-  appId: "1:771370443646:web:5dd712f9e03448ebda2463"
-};
-
-// Configura Firebase
-firebase.initializeApp(firebaseConfig);
-
-const auth = firebase.auth();
-const db = firebase.firestore();
-
 const emailInput = document.getElementById("emailInput");
 const usernameInput = document.getElementById("usernameInput");
 const oldPasswordInput = document.getElementById("oldPasswordInput");
@@ -31,7 +16,13 @@ const profileForm = document.getElementById("profileForm");
 const userNameDisplay = document.getElementById("userName");
 const userMenu = document.getElementById("userMenu");
 const logoutBtn = document.getElementById('logout');
-const editProfileBtn = document.getElementById('editProfile');
+
+// Elementi Eliminazione Account
+const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+const deleteModal = document.getElementById("deleteModal");
+const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+const deletePasswordInput = document.getElementById("deletePasswordInput");
 
 // Stato di verifica password
 let passwordVerified = false;
@@ -46,6 +37,7 @@ if (userMenu) {
   userMenu.addEventListener("click", (event) => {
     event.stopPropagation();
     const isOpen = userMenu.classList.contains("open");
+    userMenu.toggleAttribute("open", !isOpen); // Gestito via classe custom
     userMenu.classList.toggle("open");
     userMenu.setAttribute("aria-expanded", !isOpen);
   });
@@ -68,7 +60,6 @@ auth.onAuthStateChanged(async user => {
         usernameInput.value = username;
         if (userNameDisplay) userNameDisplay.textContent = username;
 
-        // Mostra l'iniziale nello userIcon
         const userIcon = document.getElementById("userIcon");
         if (userIcon) {
           userIcon.textContent = username.charAt(0).toUpperCase();
@@ -98,7 +89,6 @@ changeUsernameBtn.addEventListener("click", async () => {
       .get();
 
     if (!existing.empty) {
-      // Verifica se appartiene allo stesso utente
       const isSelf = existing.docs.some(doc => doc.id === user.uid);
       if (!isSelf) {
         showError("Questo username è già in uso.");
@@ -140,13 +130,11 @@ verifyPasswordBtn.addEventListener("click", async () => {
       clearMessages();
     }, 2000);
 
-    // Nascondi il gruppo della vecchia password
     const oldPassGroup = document.querySelector(".old-password-group");
     if (oldPassGroup) {
       oldPassGroup.parentElement.style.display = "none";
     }
 
-    // Mostra i campi per la nuova password
     [newPasswordInput, confirmPasswordInput].forEach(el => el.classList.remove("hidden"));
     [newPasswordLabel, confirmPasswordLabel].forEach(el => el.classList.remove("hidden"));
   } catch (error) {
@@ -154,7 +142,7 @@ verifyPasswordBtn.addEventListener("click", async () => {
   }
 });
 
-// Salva modifiche (Nuova password tramite submit del form)
+// Salva modifiche password tramite submit
 profileForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   clearMessages();
@@ -203,6 +191,84 @@ profileForm.addEventListener("submit", async (e) => {
     }
   }
 });
+
+// --- ELIMINAZIONE DEFINITIVA ACCOUNT ---
+if (deleteAccountBtn) {
+  deleteAccountBtn.addEventListener("click", () => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const providerId = user.providerData[0] ? user.providerData[0].providerId : '';
+
+    if (providerId === 'google.com' || providerId === 'apple.com') {
+      if (confirm("Sei sicuro di voler eliminare definitivamente il tuo account? L'operazione è irreversibile.")) {
+        executeAccountDeletion(user);
+      }
+    } else {
+      deleteModal.classList.remove("hidden");
+      deletePasswordInput.value = "";
+      deletePasswordInput.focus();
+    }
+  });
+}
+
+if (cancelDeleteBtn) {
+  cancelDeleteBtn.addEventListener("click", () => {
+    deleteModal.classList.add("hidden");
+  });
+}
+
+if (confirmDeleteBtn) {
+  confirmDeleteBtn.addEventListener("click", async () => {
+    const user = auth.currentUser;
+    const password = deletePasswordInput.value;
+
+    if (!password) {
+      alert("Inserisci la password per confermare l'eliminazione.");
+      return;
+    }
+
+    try {
+      const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+      await user.reauthenticateWithCredential(credential);
+      
+      deleteModal.classList.add("hidden");
+      await executeAccountDeletion(user);
+    } catch (error) {
+      console.error("Errore di riautenticazione:", error);
+      alert("Password errata o errore di autenticazione. Impossibile eliminare l'account.");
+    }
+  });
+}
+
+async function executeAccountDeletion(user) {
+  try {
+    showSuccess("Eliminazione account in corso...");
+
+    const userDocRef = db.collection("users").doc(user.uid);
+    const userSnap = await userDocRef.get();
+    
+    if (userSnap.exists) {
+      const username = userSnap.data().username;
+      if (username) {
+        await db.collection("usernames").doc(username.toLowerCase()).delete().catch(err => console.log(err));
+      }
+    }
+    await userDocRef.delete().catch(err => console.log(err));
+
+    await user.delete();
+
+    alert("Il tuo account è stato eliminato definitivamente.");
+    window.location.href = "index.html";
+  } catch (error) {
+    console.error("Errore durante l'eliminazione dell'account:", error);
+    if (error.code === 'auth/requires-recent-login') {
+      showError("Per motivi di sicurezza, effettua nuovamente il login prima di eliminare l'account.");
+    } else {
+      showError("Errore durante l'eliminazione: " + error.message);
+    }
+  }
+}
 
 // Funzioni per la gestione dei messaggi
 function showError(message) {
