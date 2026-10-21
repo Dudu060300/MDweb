@@ -509,7 +509,7 @@ li .time { color: var(--text-muted); font-size: 0.85rem; flex: none; font-weight
 }
 
 /* =========================================================
-   5. BARRA INFERIORE (CON GAP 10PX)
+   5. BARRA INFERIORE (LIGHT MODE: #00f7ff, DARK MODE: #000000)
    ========================================================= */
 nav.bottom-nav {
   position: fixed !important;
@@ -538,7 +538,7 @@ nav.bottom-nav .nav-item {
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 10px !important; /* Spazio tra icona e scritta impostato a 10px */
+  gap: 10px !important;
   flex: 1 !important;
   max-width: 16.66% !important;
   height: 52px !important;
@@ -563,16 +563,29 @@ nav.bottom-nav .nav-item.hidden {
   display: none !important;
 }
 
-/* Stato attivo: pillola nera con icona e testo verde acqua */
+/* STATO ATTIVO IN LIGHT MODE (Sfondo #00f7ff, testo/icona #000000) */
 nav.bottom-nav .nav-item.active {
-  background: #000000 !important;
-  color: #00f7ff !important;
+  background: #00f7ff !important;
+  color: #000000 !important;
   font-weight: 700 !important;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
 }
 
 nav.bottom-nav .nav-item.active .nav-label,
 nav.bottom-nav .nav-item.active .nav-icon {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* STATO ATTIVO IN DARK MODE (Inverte: Sfondo #000000, testo/icona #00f7ff) */
+body.dark nav.bottom-nav .nav-item.active {
+  background: #000000 !important;
+  color: #00f7ff !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark nav.bottom-nav .nav-item.active .nav-label,
+body.dark nav.bottom-nav .nav-item.active .nav-icon {
   color: #00f7ff !important;
   text-shadow: 0 0 8px rgba(0, 247, 255, 0.4);
 }
