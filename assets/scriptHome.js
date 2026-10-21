@@ -1,5 +1,5 @@
 // =========================================================================
-// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR E SISTEMA PIÙ E MENO MULTI-UTENTE
+// SCRIPT PRINCIPALE: AUTENTICAZIONE, NAVBAR, PIÙ/MENO E CHAT MULTI-UTENTE
 // =========================================================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -204,6 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let approvedItems = [];
   let pendingItems = [];
   let decisionHistory = [];
+  let chatMessages = [];
   let registeredUsers = [];
   let selectedTargetUser = "";
   let currentUsername = "";
@@ -223,6 +224,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const pendingBadge = $("pendingBadge");
   const targetUserSelect = $("targetUserSelect");
   const scoreCardContainer = $("scoreCardContainer");
+  const chatMessagesBox = $("chatMessages");
+  const chatInput = $("chatInput");
+  const sendChatBtn = $("sendChatBtn");
 
   function compressImage(file, maxWidth, maxHeight, quality, callback) {
     const reader = new FileReader();
@@ -235,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (width > height) {
           if (width > maxWidth) { height = Math.round((height * maxWidth) / width); width = maxWidth; }
         } else {
-          if (height > maxHeight) { width = Math.round((width * maxHeight) / height); height = maxHeight; }
+          if (height > maxHeight) { width = Math.round((height * maxHeight) / height); height = maxHeight; }
         }
         const canvas = document.createElement("canvas");
         canvas.width = width; canvas.height = height;
@@ -300,9 +304,26 @@ document.addEventListener("DOMContentLoaded", () => {
         approvedItems: approvedItems,
         pendingItems: pendingItems,
         decisionHistory: decisionHistory
-      });
+      }, { merge: true });
     } catch (e) {
       console.error("Errore salvataggio Firestore:", e);
+    }
+  }
+
+  async function saveChatMessage(text) {
+    if (!dbInstance || !text.trim()) return;
+    try {
+      const msgData = {
+        id: "msg_" + Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+        user: currentUsername || "Utente",
+        text: text.trim(),
+        timestamp: Date.now()
+      };
+      
+      // Aggiunge alla collezione chat di Firestore
+      await dbInstance.collection("chat_messages").add(msgData);
+    } catch (e) {
+      console.error("Erroreinvio messaggio chat:", e);
     }
   }
 
@@ -372,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       await loadUsersList();
 
+      // ASCOLTATORE FIRESTORE: DATI PRINCIPALI (PUNTI, PENDING, DECISIONI)
       dbInstance.collection("shared_data").doc("cristian_score").onSnapshot((doc) => {
         if (doc.exists) {
           const data = doc.data();
@@ -379,7 +401,6 @@ document.addEventListener("DOMContentLoaded", () => {
           pendingItems = data.pendingItems || [];
           const newDecisionHistory = data.decisionHistory || [];
 
-          // VERIFICA NOTIFICHE APPROVAZIONE / RIFIUTO PER L'UTENTE LOGGATO
           if (lastKnownDecisionsCount !== -1 && newDecisionHistory.length > lastKnownDecisionsCount) {
             const latestDecision = newDecisionHistory[newDecisionHistory.length - 1];
             if (latestDecision && latestDecision.author && latestDecision.author.trim().toLowerCase() === currentUsername.trim().toLowerCase()) {
@@ -409,9 +430,66 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         render();
       });
+
+      // ASCOLTATORE FIRESTORE: CHAT IN TEMPO REALE
+      dbInstance.collection("chat_messages").orderBy("timestamp", "asc").onSnapshot((snapshot) => {
+        chatMessages = [];
+        snapshot.forEach((docSnap) => {
+          chatMessages.push(docSnap.data());
+        });
+        renderChatMessages();
+      });
+
     } catch (err) {
       console.error("Errore inizializzazione:", err);
     }
+  }
+
+  function renderChatMessages() {
+    if (!chatMessagesBox) return;
+
+    if (chatMessages.length === 0) {
+      chatMessagesBox.innerHTML = '<div class="empty">Nessun messaggio presente. Scrivi il primo!</div>';
+      return;
+    }
+
+    let html = "";
+    chatMessages.forEach((msg) => {
+      const isMyMessage = msg.user && msg.user.trim().toLowerCase() === currentUsername.trim().toLowerCase();
+      const itemClass = isMyMessage ? "chat-message-item my-message" : "chat-message-item";
+      
+      const d = new Date(msg.timestamp || Date.now());
+      const timeStr = d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" });
+
+      html += `<div class="${itemClass}">` +
+                `<div class="chat-message-user">${esc(msg.user || 'Utente')} • ${timeStr}</div>` +
+                `<div class="chat-message-text">${esc(msg.text || '')}</div>` +
+              `</div>`;
+    });
+
+    chatMessagesBox.innerHTML = html;
+    chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
+  }
+
+  // GESTIONE INVIO CHAT
+  if (sendChatBtn && chatInput) {
+    sendChatBtn.addEventListener("click", () => {
+      const text = chatInput.value;
+      if (text.trim()) {
+        saveChatMessage(text);
+        chatInput.value = "";
+      }
+    });
+
+    chatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        const text = chatInput.value;
+        if (text.trim()) {
+          saveChatMessage(text);
+          chatInput.value = "";
+        }
+      }
+    });
   }
 
   function render() {
@@ -428,7 +506,6 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.style.setProperty("display", "none", "important");
         btn.classList.add("hidden");
         
-        // Se un utente normale è su una tab admin, lo sposta subito alla Home
         if (btn.classList.contains("active")) {
           btn.classList.remove("active");
           const homeNav = document.querySelector('[data-tab="tab-home"]');
@@ -581,7 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO: MOSTRA IN ATTESA, APPROVATE E RIFIUTATE)
+    // 3. SEGNALAZIONI INVIATE (PER UTENTE LOGGATO)
     const sentContainer = document.getElementById("sentContainer");
     if (sentContainer) {
       const pendingUserItems = pendingItems
